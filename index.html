@@ -1,0 +1,554 @@
+
+<div id="app" style="font-family:var(--font-sans);color:var(--color-text-primary);min-height:600px"></div>
+
+<style>
+.pc-btn{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:8px;color:var(--color-text-primary);cursor:pointer;font-family:var(--font-sans);font-size:13px;padding:8px 14px}
+.pc-btn:hover{background:var(--color-background-tertiary)}
+.pc-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:18px 20px}
+.pc-sm{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 14px}
+.pc-lbl{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.pc-spin{width:16px;height:16px;border:2px solid var(--color-border-secondary);border-top-color:orange;border-radius:50%;animation:pcspin .7s linear infinite;display:inline-block}
+@keyframes pcspin{to{transform:rotate(360deg)}}
+@keyframes pcfu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.pcfu{animation:pcfu .3s ease}
+@keyframes pcpulse{0%{box-shadow:0 0 0 0 rgba(220,50,50,.4)}70%{box-shadow:0 0 0 10px rgba(220,50,50,0)}100%{box-shadow:0 0 0 0 rgba(220,50,50,0)}}
+</style>
+
+<script>
+const CATS=[
+  {id:"daily",name:"일상 회화",desc:"인사·감정·날씨·약속"},
+  {id:"business",name:"비즈니스",desc:"미팅·이메일·발표·협상"},
+  {id:"travel",name:"여행",desc:"공항·호텔·식당·길찾기"},
+  {id:"tricky",name:"까다로운 발음",desc:"TH·R/L·연음·묵음"},
+  {id:"slang",name:"슬랭·구어체",desc:"원어민 캐주얼 표현"},
+  {id:"food",name:"음식·식당",desc:"주문·레시피·맛 묘사"},
+  {id:"news",name:"뉴스·미디어",desc:"시사·경제·앵커"},
+  {id:"academic",name:"학술·발표",desc:"토론·논리·학문"},
+];
+
+const PRMT={
+  daily:"일상 영어 회화 (인사, 감정, 날씨, 약속, 전화, 쇼핑, 취미)",
+  business:"비즈니스 영어 (회의, 이메일, 발표, 협상, 보고)",
+  travel:"여행 영어 (공항, 호텔, 식당, 길 묻기, 교통)",
+  tricky:"발음 까다로운 영어 (TH 유성/무성, R vs L, 연음, 묵음)",
+  slang:"미국 구어체/슬랭 (Z세대, 관용구, 캐주얼)",
+  food:"음식/식당 영어 (주문, 재료, 맛 묘사, 레시피)",
+  news:"뉴스/미디어 영어 (시사, 경제, 앵커 스타일)",
+  academic:"학술 영어 (논문, 발표, 토론, 의견 제시)",
+};
+
+const FB={
+  daily:[
+    {text:"How's your day going so far?",kr:"오늘 하루 어떻게 지냈어요?",into:"rise",
+     w:[{w:"How's",s:"HOWZ",e:1},{w:"your",s:"yer",e:0},{w:"day",s:"DAY",e:2},{w:"going",s:"GOH·ing",e:0},{w:"so",s:"soh",e:0},{w:"far?",s:"FAR",e:2}],
+     tips:["'How's your' → HOWZ·yer 연음","'day' → DAY 이중모음, 끝에 이 살짝"]},
+    {text:"Could you do me a favor?",kr:"부탁 하나 들어줄 수 있어요?",into:"rise",
+     w:[{w:"Could",s:"kud",e:0},{w:"you",s:"yuh",e:0},{w:"do",s:"DOO",e:2},{w:"me",s:"mee",e:0},{w:"a",s:"uh",e:0},{w:"favor?",s:"FAY·ver",e:1}],
+     tips:["'Could you' → kud·yuh 연음","'favor' → FAY·ver, 마지막 r 약하게"]},
+    {text:"I haven't seen you in ages!",kr:"정말 오랜만이에요!",into:"rise-fall",
+     w:[{w:"I",s:"eye",e:0},{w:"haven't",s:"HAY·vnt",e:2},{w:"seen",s:"SEEN",e:1},{w:"you",s:"yuh",e:0},{w:"in",s:"in",e:0},{w:"ages!",s:"AY·jiz",e:1}],
+     tips:["'SEEN'과 'AGES'에 강세","'ages' → AY·jiz 이중모음"]},
+    {text:"Mind if I sit here?",kr:"여기 앉아도 될까요?",into:"rise",
+     w:[{w:"Mind",s:"MYND",e:2},{w:"if",s:"if",e:0},{w:"I",s:"eye",e:0},{w:"sit",s:"SIT",e:1},{w:"here?",s:"HEER",e:1}],
+     tips:["'Mind if I' → MYND·if·eye 연음","'here' → HEER 이중모음"]},
+    {text:"What are you up to this weekend?",kr:"이번 주말에 뭐 해요?",into:"rise",
+     w:[{w:"What",s:"WUHT",e:1},{w:"are",s:"er",e:0},{w:"you",s:"yuh",e:0},{w:"up",s:"UP",e:2},{w:"to",s:"tuh",e:0},{w:"this",s:"thiss",e:0},{w:"weekend?",s:"WEEK·end",e:2}],
+     tips:["'What are you' → WUHT·er·yuh 빠르게","'up' → UP 강조"]},
+    {text:"Let me know if you need anything.",kr:"필요한 게 있으면 알려줘요.",into:"fall",
+     w:[{w:"Let",s:"LET",e:2},{w:"me",s:"mee",e:0},{w:"know",s:"NOH",e:1},{w:"if",s:"if",e:0},{w:"you",s:"yuh",e:0},{w:"need",s:"NEED",e:2},{w:"anything.",s:"EN·ee·thing",e:2}],
+     tips:["'Let me' → LET·mee 연음","'anything' -thing의 TH는 혀 이 사이에"]},
+  ],
+  business:[
+    {text:"Let's circle back on this later.",kr:"이 건은 나중에 다시 이야기해요.",into:"fall",
+     w:[{w:"Let's",s:"LETS",e:2},{w:"circle",s:"SER·kul",e:1},{w:"back",s:"BAK",e:2},{w:"on",s:"on",e:0},{w:"this",s:"thiss",e:0},{w:"later.",s:"LAY·ter",e:2}],
+     tips:["'circle' → SER·kul, 한국어 써클보다 짧음","'Let's circle' 연음"]},
+    {text:"Can we take this offline?",kr:"이건 따로 이야기할 수 있을까요?",into:"rise",
+     w:[{w:"Can",s:"kun",e:0},{w:"we",s:"wee",e:0},{w:"take",s:"TAYK",e:2},{w:"this",s:"thiss",e:0},{w:"offline?",s:"OFF·lyne",e:1}],
+     tips:["'Can we' → kun·wee 약화","'offline' ff 발음 확실히"]},
+    {text:"Does that work for everyone?",kr:"모두에게 괜찮을까요?",into:"rise",
+     w:[{w:"Does",s:"duz",e:0},{w:"that",s:"that",e:0},{w:"work",s:"WERK",e:1},{w:"for",s:"fer",e:0},{w:"everyone?",s:"EV·ree·wun",e:1}],
+     tips:["'work' → WERK, r을 굴려서","'for everyone' 연음"]},
+    {text:"I'd like to schedule a follow-up meeting.",kr:"후속 미팅을 잡고 싶습니다.",into:"fall",
+     w:[{w:"I'd",s:"id",e:0},{w:"like",s:"LYK",e:2},{w:"to",s:"tuh",e:0},{w:"schedule",s:"SKEJ·ool",e:1},{w:"a",s:"uh",e:0},{w:"follow-up",s:"FOL·oh·up",e:2},{w:"meeting.",s:"MEET·ing",e:0}],
+     tips:["미국식 schedule → SKEJ·ool","'SCHEDULE'과 'FOLLOW-UP' 강세"]},
+    {text:"Let me run that by my manager first.",kr:"먼저 매니저한테 얘기해볼게요.",into:"fall",
+     w:[{w:"Let",s:"LET",e:2},{w:"me",s:"mee",e:0},{w:"run",s:"RUN",e:2},{w:"that",s:"that",e:0},{w:"by",s:"by",e:0},{w:"my",s:"my",e:0},{w:"manager",s:"MAN·uh·jer",e:1},{w:"first.",s:"FERST",e:2}],
+     tips:["'run that by' 연음","'manager' → MAN·uh·jer 3음절"]},
+    {text:"I'll loop you in on the email chain.",kr:"이메일 스레드에 추가해 드릴게요.",into:"fall",
+     w:[{w:"I'll",s:"ile",e:0},{w:"loop",s:"LOOP",e:1},{w:"you",s:"yuh",e:0},{w:"in",s:"in",e:0},{w:"on",s:"on",e:0},{w:"the",s:"thuh",e:0},{w:"email",s:"EE·mayl",e:2},{w:"chain.",s:"CHAYN",e:2}],
+     tips:["'loop' → LOOP 충분히 길게","'EMAIL', 'CHAIN' 강세"]},
+  ],
+  travel:[
+    {text:"I'd like to check in, please.",kr:"체크인 하고 싶습니다.",into:"fall",
+     w:[{w:"I'd",s:"id",e:0},{w:"like",s:"LYK",e:2},{w:"to",s:"tuh",e:0},{w:"check",s:"CHEK",e:1},{w:"in,",s:"in",e:0},{w:"please.",s:"PLEEZ",e:2}],
+     tips:["'I'd like to' 연음","'CHECK'에 가장 강한 강세"]},
+    {text:"Is breakfast included in the room rate?",kr:"객실 요금에 조식이 포함되나요?",into:"rise",
+     w:[{w:"Is",s:"iz",e:0},{w:"breakfast",s:"BREK·fust",e:1},{w:"included",s:"in·KLOOD·id",e:2},{w:"in",s:"in",e:0},{w:"the",s:"thuh",e:0},{w:"room",s:"ROOM",e:2},{w:"rate?",s:"RAYT",e:2}],
+     tips:["'breakfast' → BREK·fust 빠르게","'BREAKFAST', 'INCLUDED', 'ROOM RATE' 강세"]},
+    {text:"I think I left my bag on the bus.",kr:"버스에 가방을 두고 내린 것 같아요.",into:"fall",
+     w:[{w:"I",s:"eye",e:0},{w:"think",s:"THINK",e:2},{w:"I",s:"eye",e:0},{w:"left",s:"LEFT",e:1},{w:"my",s:"my",e:0},{w:"bag",s:"BAG",e:1},{w:"on",s:"on",e:0},{w:"the",s:"thuh",e:0},{w:"bus.",s:"BUS",e:2}],
+     tips:["'think' TH는 혀를 이 사이에","'left my bag' 연음"]},
+    {text:"Can I get a window seat?",kr:"창가 자리로 주실 수 있나요?",into:"rise",
+     w:[{w:"Can",s:"kun",e:0},{w:"I",s:"eye",e:0},{w:"get",s:"GET",e:2},{w:"a",s:"uh",e:0},{w:"window",s:"WIN·doh",e:1},{w:"seat?",s:"SEET",e:1}],
+     tips:["'window' → WIN·doh 이중모음","'Can I get a' 연음"]},
+    {text:"What time does the last train leave?",kr:"막차가 몇 시에 출발하나요?",into:"rise",
+     w:[{w:"What",s:"WUHT",e:1},{w:"time",s:"TYM",e:2},{w:"does",s:"duz",e:0},{w:"the",s:"thuh",e:0},{w:"last",s:"LAST",e:2},{w:"train",s:"TRAYN",e:1},{w:"leave?",s:"LEEV",e:1}],
+     tips:["'does the' → duz·thuh 약화","'WHAT TIME', 'LAST TRAIN' 강조"]},
+    {text:"I'd like to exchange some currency.",kr:"환전을 하고 싶습니다.",into:"fall",
+     w:[{w:"I'd",s:"id",e:0},{w:"like",s:"LYK",e:2},{w:"to",s:"tuh",e:0},{w:"exchange",s:"iks·CHAYNJ",e:1},{w:"some",s:"sum",e:0},{w:"currency.",s:"KER·en·see",e:1}],
+     tips:["'exchange' → iks·CHAYNJ 2음절 강세","'currency' → KER·en·see 3음절"]},
+  ],
+  tricky:[
+    {text:"The thought of breathing through the thick cloth.",kr:"두꺼운 천을 통해 숨쉬는 생각.",into:"fall",
+     w:[{w:"The",s:"thuh",e:0},{w:"thought",s:"THAWT",e:2},{w:"of",s:"uv",e:0},{w:"breathing",s:"BREE·thing",e:1},{w:"through",s:"throo",e:0},{w:"the",s:"thuh",e:0},{w:"thick",s:"THIK",e:2},{w:"cloth.",s:"KLAWTH",e:2}],
+     tips:["무성 TH: thought, thick, cloth — 혀 이 사이, 바람만","유성 TH: the, breathing — 혀 + 목청 진동"]},
+    {text:"Really rural roads require rare bravery.",kr:"진정한 시골 길은 드문 용기를 요구한다.",into:"fall",
+     w:[{w:"Really",s:"REE·lee",e:2},{w:"rural",s:"ROOR·ul",e:1},{w:"roads",s:"ROHDZ",e:2},{w:"require",s:"rih·KWY·er",e:2},{w:"rare",s:"RAIR",e:2},{w:"bravery.",s:"BRAYV·uh·ree",e:1}],
+     tips:["R 발음: 혀를 어디에도 닿지 않게 들어올리기","'rural' → ROOR·ul, R이 두 번"]},
+    {text:"She specifically asked for a light flight.",kr:"그녀는 가벼운 비행편을 특별히 요청했다.",into:"fall",
+     w:[{w:"She",s:"shee",e:0},{w:"specifically",s:"spuh·SIF·ik·lee",e:2},{w:"asked",s:"ASKT",e:2},{w:"for",s:"fer",e:0},{w:"a",s:"uh",e:0},{w:"light",s:"LYT",e:1},{w:"flight.",s:"FLYT",e:1}],
+     tips:["L vs R: 'light' 혀 앞쪽 닿음, 'right' 혀 안 닿음","'flight' → fl 이어서 발음"]},
+    {text:"She sells seashells by the seashore.",kr:"그녀는 해변에서 조개껍데기를 판다.",into:"fall",
+     w:[{w:"She",s:"shee",e:0},{w:"sells",s:"SELZ",e:2},{w:"seashells",s:"SEE·shelz",e:1},{w:"by",s:"by",e:0},{w:"the",s:"thuh",e:0},{w:"seashore.",s:"SEE·shor",e:1}],
+     tips:["/s/ vs /sh/: 'sea/sells' 혀 앞쪽, 'she/shore/shells' 혀 뒤쪽","'SEA-shells', 'SEA-shore' 첫 음절 강세"]},
+    {text:"His colleague thoroughly rehearsed the procedure.",kr:"그의 동료는 절차를 철저히 리허설했다.",into:"fall",
+     w:[{w:"His",s:"hiz",e:0},{w:"colleague",s:"KOL·eeg",e:2},{w:"thoroughly",s:"THER·uh·lee",e:1},{w:"rehearsed",s:"rih·HERST",e:2},{w:"the",s:"thuh",e:0},{w:"procedure.",s:"pruh·SEE·jer",e:1}],
+     tips:["'thoroughly' → THER·uh·lee (TH + ɜː 모음)","'procedure' → pruh·SEE·jer"]},
+    {text:"Would you rather walk or take a comfortable bus?",kr:"걷는 것과 편안한 버스 중 어느 쪽이 좋아요?",into:"rise",
+     w:[{w:"Would",s:"wud",e:0},{w:"you",s:"yuh",e:0},{w:"rather",s:"RATH·er",e:2},{w:"walk",s:"WAWK",e:1},{w:"or",s:"or",e:0},{w:"take",s:"TAYK",e:0},{w:"a",s:"uh",e:0},{w:"comfortable",s:"KUMF·ter·bul",e:1},{w:"bus?",s:"BUS",e:0}],
+     tips:["'Would you' → wud·yuh 연음","'comfortable' → KUMF·ter·bul 3음절!"]},
+  ],
+  slang:[
+    {text:"That's totally lit, no cap!",kr:"그거 완전 쩐다, 진짜로!",into:"rise-fall",
+     w:[{w:"That's",s:"thats",e:0},{w:"totally",s:"TOH·tuh·lee",e:2},{w:"lit,",s:"LIT",e:1},{w:"no",s:"noh",e:0},{w:"cap!",s:"KAP",e:1}],
+     tips:["'lit' 짧고 강하게, 끝 t 명확히","'TOTALLY LIT' 강조, 'no cap' 빠르게"]},
+    {text:"She's lowkey obsessed with that show.",kr:"걔 그 드라마에 은근 빠졌어.",into:"fall",
+     w:[{w:"She's",s:"sheez",e:0},{w:"lowkey",s:"LOH·kee",e:2},{w:"obsessed",s:"ub·SEST",e:1},{w:"with",s:"with",e:0},{w:"that",s:"that",e:0},{w:"show.",s:"SHOH",e:2}],
+     tips:["'lowkey' → LOH·kee, 이중모음","'LOWKEY'와 'OBSESSED' 강조"]},
+    {text:"I'm not gonna lie, that slaps.",kr:"솔직히 말하면, 그거 완전 좋다.",into:"fall",
+     w:[{w:"I'm",s:"im",e:0},{w:"not",s:"not",e:0},{w:"gonna",s:"GUN·uh",e:2},{w:"lie,",s:"LY",e:2},{w:"that",s:"that",e:0},{w:"slaps.",s:"SLAPS",e:1}],
+     tips:["'gonna' = 'going to' 구어체 단축","'slaps' → sl 연속 자음 빠르게"]},
+    {text:"No way, that's actually insane.",kr:"말도 안 돼, 그거 진짜 미쳤다.",into:"rise-fall",
+     w:[{w:"No",s:"NOH",e:2},{w:"way,",s:"WAY",e:2},{w:"that's",s:"thats",e:0},{w:"actually",s:"AK·choo·uh·lee",e:2},{w:"insane.",s:"in·SAYN",e:1}],
+     tips:["'actually' → AK·choo·uh·lee 4음절","'NO WAY' 과장해서 강조"]},
+    {text:"This is giving main character energy.",kr:"이거 완전 주인공 에너지 넘친다.",into:"fall",
+     w:[{w:"This",s:"thiss",e:0},{w:"is",s:"iz",e:0},{w:"giving",s:"GIV·ing",e:2},{w:"main",s:"MAYN",e:1},{w:"character",s:"KAIR·ik·ter",e:2},{w:"energy.",s:"EN·er·jee",e:2}],
+     tips:["'GIVING', 'MAIN CHARACTER', 'ENERGY' 강조","'character' → KAIR·ik·ter 3음절"]},
+    {text:"That hit different, honestly.",kr:"그거 왠지 다르게 와닿더라.",into:"fall",
+     w:[{w:"That",s:"that",e:0},{w:"hit",s:"HIT",e:1},{w:"different,",s:"DIF·rent",e:2},{w:"honestly.",s:"ON·ist·lee",e:2}],
+     tips:["'different' → DIF·rent, 2음절처럼","'honestly' h 묵음 아님, ON·ist·lee"]},
+  ],
+  food:[
+    {text:"I'll have the grilled salmon with a side salad.",kr:"그릴드 연어에 사이드 샐러드로 주세요.",into:"fall",
+     w:[{w:"I'll",s:"ile",e:0},{w:"have",s:"HAV",e:2},{w:"the",s:"thuh",e:0},{w:"grilled",s:"GRILD",e:1},{w:"salmon",s:"SAM·un",e:1},{w:"with",s:"with",e:0},{w:"a",s:"uh",e:0},{w:"side",s:"SYD",e:2},{w:"salad.",s:"SAL·ud",e:2}],
+     tips:["'salmon' → SAM·un, l 묵음!","'salad' → SAL·ud, 강세 첫 음절"]},
+    {text:"Does this dish contain any nuts or dairy?",kr:"이 요리에 견과류나 유제품이 들어가나요?",into:"rise",
+     w:[{w:"Does",s:"duz",e:0},{w:"this",s:"thiss",e:0},{w:"dish",s:"DISH",e:2},{w:"contain",s:"kun·TAYN",e:2},{w:"any",s:"EN·ee",e:0},{w:"nuts",s:"NUTS",e:1},{w:"or",s:"or",e:0},{w:"dairy?",s:"DAIR·ee",e:1}],
+     tips:["'Does this dish' 연음","'dairy' → DAIR·ee 이중모음"]},
+    {text:"Could I get this medium-rare, please?",kr:"미디엄 레어로 주실 수 있나요?",into:"rise",
+     w:[{w:"Could",s:"kud",e:0},{w:"I",s:"eye",e:0},{w:"get",s:"GET",e:2},{w:"this",s:"thiss",e:0},{w:"medium-rare,",s:"MEE·dee·um·RAIR",e:1},{w:"please?",s:"PLEEZ",e:2}],
+     tips:["'medium' → MEE·dee·um 3음절","'MEDIUM-rare, PLEASE' 강조"]},
+    {text:"I'm allergic to shellfish and peanuts.",kr:"저는 갑각류와 땅콩 알레르기가 있어요.",into:"fall",
+     w:[{w:"I'm",s:"im",e:0},{w:"allergic",s:"uh·LER·jik",e:1},{w:"to",s:"tuh",e:0},{w:"shellfish",s:"SHEL·fish",e:2},{w:"and",s:"und",e:0},{w:"peanuts.",s:"PEE·nuts",e:2}],
+     tips:["'allergic' → uh·LER·jik 2음절 강세","'SHELLFISH'와 'PEANUTS' 강조"]},
+    {text:"This is way too spicy for me.",kr:"이거 저한테는 너무 매워요.",into:"fall",
+     w:[{w:"This",s:"thiss",e:0},{w:"is",s:"iz",e:0},{w:"way",s:"WAY",e:2},{w:"too",s:"TOO",e:2},{w:"spicy",s:"SPY·see",e:1},{w:"for",s:"fer",e:0},{w:"me.",s:"mee",e:0}],
+     tips:["'WAY TOO SPICY' 세 단어 모두 강조","'spicy' → SPY·see 이중모음"]},
+    {text:"What do you recommend for a first-timer?",kr:"처음 오신 분께 뭘 추천해 주시겠어요?",into:"rise",
+     w:[{w:"What",s:"WUHT",e:1},{w:"do",s:"duh",e:0},{w:"you",s:"yuh",e:0},{w:"recommend",s:"rek·uh·MEND",e:1},{w:"for",s:"fer",e:0},{w:"a",s:"uh",e:0},{w:"first-timer?",s:"FERST·ty·mer",e:1}],
+     tips:["'recommend' → rek·uh·MEND 3음절 강세","'What do you' 빠르게"]},
+  ],
+  news:[
+    {text:"Authorities are investigating the incident.",kr:"당국이 사건을 조사 중입니다.",into:"fall",
+     w:[{w:"Authorities",s:"uh·THOR·ih·teez",e:1},{w:"are",s:"ar",e:0},{w:"investigating",s:"in·VES·tih·gay·ting",e:2},{w:"the",s:"thuh",e:0},{w:"incident.",s:"IN·sih·dent",e:1}],
+     tips:["'authorities' → uh·THOR·ih·teez 2음절 강세","'INVESTIGATING' → in·VES·tih·gay·ting"]},
+    {text:"Markets responded sharply to the announcement.",kr:"시장은 발표에 급격히 반응했습니다.",into:"fall",
+     w:[{w:"Markets",s:"MAR·kits",e:2},{w:"responded",s:"rih·SPOND·id",e:2},{w:"sharply",s:"SHARP·lee",e:1},{w:"to",s:"tuh",e:0},{w:"the",s:"thuh",e:0},{w:"announcement.",s:"uh·NOWNS·ment",e:1}],
+     tips:["'responded' → rih·SPOND·id","'MARKETS', 'SHARPLY', 'ANNOUNCEMENT' 강세"]},
+    {text:"The summit resulted in a historic agreement.",kr:"정상회담은 역사적인 합의로 이어졌습니다.",into:"fall",
+     w:[{w:"The",s:"thuh",e:0},{w:"summit",s:"SUM·it",e:2},{w:"resulted",s:"rih·ZUL·tid",e:2},{w:"in",s:"in",e:0},{w:"a",s:"uh",e:0},{w:"historic",s:"hih·STOR·ik",e:1},{w:"agreement.",s:"uh·GREE·ment",e:1}],
+     tips:["'historic' → hih·STOR·ik, h 발음 확실히","'resulted in' 연음"]},
+    {text:"Inflation has reached a decade-long high.",kr:"인플레이션이 10년 만의 최고치에 달했습니다.",into:"fall",
+     w:[{w:"Inflation",s:"in·FLAY·shun",e:1},{w:"has",s:"huz",e:0},{w:"reached",s:"REECHT",e:2},{w:"a",s:"uh",e:0},{w:"decade-long",s:"DEK·ayd·long",e:2},{w:"high.",s:"HY",e:1}],
+     tips:["'inflation' → in·FLAY·shun 2음절 강세","'REACHED'와 'DECADE-LONG HIGH' 강조"]},
+    {text:"Rescue teams are working around the clock.",kr:"구조대가 24시간 작업하고 있습니다.",into:"fall",
+     w:[{w:"Rescue",s:"RES·kyoo",e:2},{w:"teams",s:"TEEMZ",e:2},{w:"are",s:"ar",e:0},{w:"working",s:"WERK·ing",e:0},{w:"around",s:"uh·ROWND",e:2},{w:"the",s:"thuh",e:0},{w:"clock.",s:"KLOK",e:1}],
+     tips:["'rescue' → RES·kyoo 2음절","'working around' 연음"]},
+    {text:"Officials have yet to comment on the allegations.",kr:"관계자들은 혐의에 대한 논평을 하지 않았습니다.",into:"fall",
+     w:[{w:"Officials",s:"uh·FISH·ulz",e:2},{w:"have",s:"huv",e:0},{w:"yet",s:"YET",e:2},{w:"to",s:"tuh",e:0},{w:"comment",s:"KOM·ent",e:1},{w:"on",s:"on",e:0},{w:"the",s:"thuh",e:0},{w:"allegations.",s:"al·ih·GAY·shunz",e:1}],
+     tips:["'allegations' → al·ih·GAY·shunz 3음절 강세","'officials' → uh·FISH·ulz"]},
+  ],
+  academic:[
+    {text:"The data suggests a strong correlation.",kr:"데이터는 강한 상관관계를 시사합니다.",into:"fall",
+     w:[{w:"The",s:"thuh",e:0},{w:"data",s:"DAY·tuh",e:2},{w:"suggests",s:"sug·JESTS",e:2},{w:"a",s:"uh",e:0},{w:"strong",s:"STRAWNG",e:2},{w:"correlation.",s:"kaw·ruh·LAY·shun",e:1}],
+     tips:["'correlation' → kaw·ruh·LAY·shun","'data' 미국식 DAY·tuh vs 영국식 DAH·tuh"]},
+    {text:"I'd like to argue that this approach is flawed.",kr:"이 접근법에 결함이 있다고 주장합니다.",into:"fall",
+     w:[{w:"I'd",s:"id",e:0},{w:"like",s:"LYK",e:0},{w:"to",s:"tuh",e:0},{w:"argue",s:"AR·gyoo",e:2},{w:"that",s:"that",e:0},{w:"this",s:"thiss",e:0},{w:"approach",s:"uh·PROHCH",e:2},{w:"is",s:"iz",e:0},{w:"flawed.",s:"FLAWD",e:1}],
+     tips:["'argue' → AR·gyoo","'ARGUE', 'APPROACH', 'FLAWED' 강세"]},
+    {text:"To summarize, there are three key takeaways.",kr:"요약하면, 세 가지 핵심 시사점이 있습니다.",into:"fall",
+     w:[{w:"To",s:"tuh",e:0},{w:"summarize,",s:"SUM·uh·ryz",e:1},{w:"there",s:"thair",e:0},{w:"are",s:"ar",e:0},{w:"three",s:"THREE",e:2},{w:"key",s:"KEE",e:2},{w:"takeaways.",s:"TAYK·uh·wayz",e:1}],
+     tips:["'summarize' → SUM·uh·ryz","'three' → TH + R 동시에"]},
+    {text:"Could you elaborate on that point?",kr:"그 부분에 대해 더 설명해 주시겠어요?",into:"rise",
+     w:[{w:"Could",s:"kud",e:0},{w:"you",s:"yuh",e:0},{w:"elaborate",s:"ih·LAB·uh·rayt",e:1},{w:"on",s:"on",e:0},{w:"that",s:"that",e:0},{w:"point?",s:"POYNT",e:2}],
+     tips:["'elaborate' → ih·LAB·uh·rayt 2음절 강세","'Could you' 연음"]},
+    {text:"This finding challenges existing assumptions.",kr:"이 발견은 기존 가정에 의문을 제기합니다.",into:"fall",
+     w:[{w:"This",s:"thiss",e:0},{w:"finding",s:"FYN·ding",e:2},{w:"challenges",s:"CHAL·en·jiz",e:1},{w:"existing",s:"ig·ZIS·ting",e:2},{w:"assumptions.",s:"uh·SUMP·shunz",e:1}],
+     tips:["'existing' → ig·ZIS·ting ('ex'는 ig+z)","'FINDING', 'EXISTING', 'ASSUMPTIONS' 강세"]},
+    {text:"In conclusion, further research is needed.",kr:"결론적으로, 추가 연구가 필요합니다.",into:"fall",
+     w:[{w:"In",s:"in",e:0},{w:"conclusion,",s:"kun·KLOO·zhun",e:2},{w:"further",s:"FER·ther",e:2},{w:"research",s:"REE·serch",e:1},{w:"is",s:"iz",e:0},{w:"needed.",s:"NEE·did",e:2}],
+     tips:["'conclusion' → kun·KLOO·zhun","'further' → ther 유성 TH"]},
+  ],
+};
+
+// ── state ──────────────────────────────
+let view="land", cat=null, sents=[], idx=0, genBusy=false;
+let recog=null, isRec=false, liveText="";
+
+// ── API ────────────────────────────────
+async function claudeAPI(prompt, maxTok){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:maxTok||1200,
+      messages:[{role:"user",content:prompt}]})
+  });
+  const d=await r.json();
+  const txt=(d.content||[]).map(b=>b.text||"").join("");
+  const m=txt.replace(/```json|```/g,"").match(/[\[{][\s\S]*[\]}\n]/);
+  if(!m) return null;
+  try{return JSON.parse(m[0]);}catch{return null;}
+}
+
+// ── render helpers ─────────────────────
+function sl(s){
+  return s.split("·").map((p,i)=>{
+    const stressed=p!==p.toLowerCase()&&/[A-Z]/.test(p);
+    return `${i>0?'<span style="color:var(--color-text-tertiary);font-size:10px">·</span>':''}`+
+      `<span style="color:${stressed?"orange":"var(--color-text-secondary)"};font-weight:${stressed?"500":"400"};font-size:${stressed?"14px":"12px"}">${p}</span>`;
+  }).join("");
+}
+
+// ── gen ────────────────────────────────
+async function genMore(){
+  if(genBusy||!cat) return;
+  genBusy=true;
+  const existing=sents.slice(-8).map(s=>s.text).join("\n");
+  const prompt=`영어 발음 코치. "${PRMT[cat.id]||cat.name}" 카테고리 연습 문장 8개.
+중복 금지:\n${existing}
+JSON 배열만(설명없이):
+[{"text":"영어문장","kr":"한국어번역","w":[{"w":"단어","s":"SOW·nds","e":0}],"into":"fall","tips":["팁1","팁2"]}]
+w.s: 구글식 발음표기 CAPS=강세음절 ·=음절구분 / w.e: 0일반 1주강조 2보조 / into:fall|rise|rise-fall / 5~12단어`;
+  try{
+    const arr=await claudeAPI(prompt,3000);
+    if(Array.isArray(arr)&&arr.length>0){
+      const ex=new Set(sents.map(s=>s.text));
+      const fresh=arr.filter(s=>s.text&&!ex.has(s.text));
+      sents.push(...fresh);
+      if(view==="drill") render();
+    }
+  }catch(e){console.error("gen err",e);}
+  genBusy=false;
+}
+
+// ── mic ────────────────────────────────
+function errMsg(code){
+  return {
+    "not-allowed":"마이크 권한을 허용해 주세요 (주소창 자물쇠 아이콘)",
+    "permission-denied":"마이크 권한을 허용해 주세요",
+    "no-speech":"음성이 감지되지 않았습니다. 더 크게 말해 보세요.",
+    "network":"네트워크 오류입니다.",
+    "audio-capture":"마이크가 감지되지 않습니다.",
+  }[code]||`오류: ${code}`;
+}
+
+function startRec(onFinal){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showErr("Chrome 또는 Edge 브라우저를 사용해 주세요.");return;}
+  recog=new SR(); recog.lang="en-US"; recog.interimResults=true; recog.continuous=false;
+  let last="";
+  recog.onstart=()=>{isRec=true; render();};
+  recog.onresult=e=>{
+    const t=Array.from(e.results).map(r=>r[0].transcript).join("");
+    last=t; liveText=t; render();
+  };
+  recog.onerror=e=>{isRec=false; showErr(errMsg(e.error)); render();};
+  recog.onend=()=>{
+    isRec=false; render();
+    if(last.trim()) onFinal(last.trim());
+  };
+  try{recog.start();}catch(e){showErr("마이크를 시작할 수 없습니다.");}
+}
+function stopRec(){
+  if(recog){try{recog.stop();}catch(_){}recog=null;}
+  isRec=false; render();
+}
+function showErr(msg){
+  document.getElementById("mic-err").innerHTML=msg;
+  document.getElementById("mic-err").style.display="block";
+}
+
+// ── analysis ───────────────────────────
+let analResult=null, analLoading=false;
+async function analyze(input, target){
+  analLoading=true; analResult=null; render();
+  const prompt=`한국인 영어 발음 분석가.
+학습자 발화: "${input}"${target?`\n연습 문장: "${target}"`:""}
+
+미국 원어민이 실제로 들었을 때 어떻게 들리는지만 써줘.
+교정하거나 올바른 버전 보여주지 마. 오직 들리는 소리만.
+한국인 발음 패턴: TH→D or T, R/L 혼동, 자음 사이 모음 삽입, 잘못된 강세, 모음 길이 오류.
+
+예:
+"I want to eat rice" → "I won't to eat lice"
+"This is very difficult" → "Dis is belly diff-ee-cult"
+
+JSON만:
+{"native_hears":"들린 영어(어색한 발음 그대로)","issues":[{"word":"원래단어","heard":"들린것","why":"이유 한국어 1문장"}],"score":0}
+issues 최대 4개. 좋으면 빈 배열.`;
+  try{
+    const r=await claudeAPI(prompt,700);
+    analResult=r;
+  }catch(e){analResult=null;}
+  analLoading=false; render();
+}
+
+// ── navigation ─────────────────────────
+async function nextS(){
+  const next=idx+1;
+  analResult=null; liveText=""; isRec=false;
+  document.getElementById("mic-err").style.display="none";
+  if(next<sents.length){idx=next; render(); if(sents.length-next<=3) genMore(); return;}
+  // need to wait
+  document.getElementById("nextbtn").textContent="불러오는 중...";
+  document.getElementById("nextbtn").disabled=true;
+  if(!genBusy) genMore();
+  for(let i=0;i<24;i++){
+    await new Promise(r=>setTimeout(r,500));
+    if(next<sents.length){idx=next; render(); return;}
+  }
+  // fallback recycle
+  sents.push(...(FB[cat.id]||FB.daily).map(s=>({...s})));
+  idx=next; render();
+}
+
+// ── render ─────────────────────────────
+function render(){
+  const app=document.getElementById("app");
+  if(!app) return;
+
+  if(view==="land"){
+    app.innerHTML=`
+<div style="padding:40px 20px;display:flex;flex-direction:column;align-items:center">
+  <div style="font-size:28px;font-weight:500;letter-spacing:-0.5px;margin-bottom:6px">Phonix<span style="color:orange">Coach</span></div>
+  <div style="color:var(--color-text-secondary);font-size:14px;margin-bottom:40px">원어민처럼 발음하기 위한 AI 코치</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:580px;width:100%;margin-bottom:36px">
+    <div class="pc-card" onclick="view='checker';liveText='';analResult=null;render()" style="cursor:pointer">
+      <div style="font-weight:500;font-size:15px;margin-bottom:8px">🎙 Pronunciation Checker</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">내가 말한 영어가 원어민 귀에 어떻게 들리는지 분석합니다</div>
+      <div style="margin-top:14px;font-size:12px;color:orange;font-weight:500">시작하기 →</div>
+    </div>
+    <div class="pc-card" onclick="view='cats';render()" style="cursor:pointer">
+      <div style="font-weight:500;font-size:15px;margin-bottom:8px">📖 Practice Course</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">카테고리별 연습 문장 · 구글식 발음 표기 · 강세 · 억양</div>
+      <div style="margin-top:14px;font-size:12px;color:orange;font-weight:500">시작하기 →</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Practice 카테고리 바로가기</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:580px">
+    ${CATS.map(c=>`<button class="pc-btn" onclick="quickStart('${c.id}','${c.name}')" style="font-size:13px">${c.name}</button>`).join("")}
+  </div>
+</div>`;
+    return;
+  }
+
+  if(view==="checker"){
+    app.innerHTML=`
+<div style="max-width:560px;margin:0 auto;padding:28px 20px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:0.5px solid var(--color-border-tertiary)">
+    <button class="pc-btn" onclick="stopRec();view='land';render()">← 홈</button>
+    <span style="font-weight:500;font-size:15px">Pronunciation Checker</span>
+  </div>
+  <div class="pc-card" style="text-align:center;margin-bottom:16px">
+    <button onclick="${isRec?"stopRec()":"startCheckerRec()"}" 
+      style="width:68px;height:68px;border-radius:50%;border:1px solid ${isRec?"var(--color-border-danger)":"var(--color-border-secondary)"};background:${isRec?"var(--color-background-danger)":"var(--color-background-secondary)"};cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;${isRec?"animation:pcpulse 1.4s ease infinite":""}">
+      ${isRec?"⏹":"🎙"}
+    </button>
+    <div style="font-size:14px;font-weight:500;margin-bottom:4px;color:${isRec?"var(--color-text-danger)":"var(--color-text-primary)"}">
+      ${isRec?"🔴 녹음 중... 영어로 말하세요":"클릭해서 영어로 말해보세요"}
+    </div>
+    <div style="font-size:12px;color:var(--color-text-tertiary)">${isRec?"버튼을 다시 누르면 중지됩니다":"말하는 영어를 원어민 관점에서 분석합니다"}</div>
+    ${liveText?`<div style="margin-top:12px;padding:8px 12px;background:var(--color-background-secondary);border-radius:8px;font-size:15px;font-weight:500;color:var(--color-text-info)">${liveText}</div>`:""}
+    <div id="mic-err" style="display:none;font-size:12px;color:var(--color-text-danger);margin-top:8px;padding:8px 12px;background:var(--color-background-danger);border-radius:8px"></div>
+  </div>
+  <div id="anal-area">${renderAnalysis()}</div>
+</div>`;
+    return;
+  }
+
+  if(view==="cats"){
+    app.innerHTML=`
+<div style="padding:28px 20px;display:flex;flex-direction:column;align-items:center">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;align-self:flex-start">
+    <button class="pc-btn" onclick="view='land';render()">← 홈</button>
+    <span style="font-weight:500;font-size:15px">Practice Course</span>
+  </div>
+  <div style="font-weight:500;font-size:17px;margin-bottom:6px">카테고리를 선택하세요</div>
+  <div style="color:var(--color-text-secondary);font-size:13px;margin-bottom:24px">AI가 카테고리별 연습 문장을 계속 생성합니다</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px;max-width:720px;width:100%">
+    ${CATS.map(c=>`
+    <div class="pc-card" onclick="startDrill('${c.id}','${c.name}')" style="cursor:pointer">
+      <div style="font-weight:500;font-size:14px;margin-bottom:4px">${c.name}</div>
+      <div style="font-size:12px;color:var(--color-text-tertiary)">${c.desc}</div>
+    </div>`).join("")}
+  </div>
+</div>`;
+    return;
+  }
+
+  if(view==="drill"){
+    const s=sents[idx];
+    if(!s){app.innerHTML=`<div style="padding:40px;text-align:center"><div class="pc-spin"></div></div>`;return;}
+    const iMap={fall:"↘ 하강 Falling",rise:"↗ 상승 Rising","rise-fall":"↗↘ 상승-하강"};
+    const iCol={fall:"var(--color-text-warning)",rise:"var(--color-text-info)","rise-fall":"var(--color-text-danger)"};
+    const iBg={fall:"var(--color-background-warning)",rise:"var(--color-background-info)","rise-fall":"var(--color-background-danger)"};
+    app.innerHTML=`
+<div style="display:flex;flex-direction:column">
+  <div style="height:46px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)">
+    <button class="pc-btn" onclick="stopRec();view='cats';render()" style="font-size:12px;padding:6px 11px">← 카테고리</button>
+    <span style="font-weight:500;font-size:13px;color:orange">${cat.name}</span>
+    <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-text-tertiary)">${idx+1} / ${sents.length}</span>
+  </div>
+  <div style="padding:6px 18px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--color-text-tertiary)">
+    <span><span style="color:orange;font-weight:500">대문자</span> = 강세 음절</span>
+    <span><span style="color:var(--color-text-secondary)">소문자</span> = 약한 음절</span>
+    <span style="color:var(--color-text-warning);font-weight:500">main</span> = 주강조&nbsp;
+    <span style="color:var(--color-text-secondary)">sub</span> = 보조강조
+  </div>
+  <div style="display:flex;min-height:520px">
+    <div style="width:50%;border-right:0.5px solid var(--color-border-tertiary);overflow-y:auto;max-height:520px;padding:22px 24px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--color-text-tertiary);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">문장 #${idx+1} · ${cat.name}</div>
+      <div style="font-size:20px;font-weight:500;line-height:1.4;margin-bottom:6px">${s.text}</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:22px">${s.kr}</div>
+
+      <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;display:flex;align-items:center;gap:8px">발음 표기 <span style="font-size:10px">(대문자=강세)</span><span style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px 15px;margin-bottom:20px">
+        ${(s.w||[]).map(word=>`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:3px 7px;font-family:var(--font-mono);line-height:1.3">${sl(word.s)}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">${word.w}</div>
+        </div>`).join("")}
+      </div>
+
+      <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;display:flex;align-items:center;gap:8px">단어 강조<span style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
+        ${(s.w||[]).map(word=>{
+          const col=word.e===1?"var(--color-text-warning)":word.e===2?"var(--color-text-secondary)":"var(--color-text-tertiary)";
+          const bg=word.e===1?"var(--color-background-warning)":word.e===2?"var(--color-background-secondary)":"transparent";
+          const fw=word.e===1?"500":"400";
+          const fs=word.e===1?"15px":"13px";
+          const tag=word.e===1?"main":word.e===2?"sub":"·";
+          return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="color:${col};background:${bg};font-weight:${fw};font-size:${fs};padding:3px 8px;border-radius:6px">${word.w}</span>
+            <span style="font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase">${tag}</span>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;display:flex;align-items:center;gap:8px">억양<span style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></span></div>
+      <div style="margin-bottom:20px"><span style="padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;background:${iBg[s.into]||iBg.fall};color:${iCol[s.into]||iCol.fall}">${iMap[s.into]||iMap.fall}</span></div>
+
+      <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;display:flex;align-items:center;gap:8px">발음 팁<span style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:18px">
+        ${(s.tips||[]).map(t=>`<div style="font-size:12px;padding:5px 10px;background:var(--color-background-secondary);border-radius:6px;border-left:2px solid orange;color:var(--color-text-secondary);line-height:1.5">${t}</div>`).join("")}
+      </div>
+      <button class="pc-btn" onclick="speakIt('${s.text.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">▶ 원어민 발음 듣기</button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;max-height:520px;padding:22px 18px;display:flex;flex-direction:column;gap:10px">
+      <div class="pc-card" style="text-align:center">
+        <button onclick="${isRec?"stopRec()":"startPracticeRec()"}"
+          style="width:64px;height:64px;border-radius:50%;border:1px solid ${isRec?"var(--color-border-danger)":"var(--color-border-secondary)"};background:${isRec?"var(--color-background-danger)":"var(--color-background-secondary)"};cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;${isRec?"animation:pcpulse 1.4s ease infinite":""}">
+          ${isRec?"⏹":"🎙"}
+        </button>
+        <div style="font-size:13px;font-weight:500;margin-bottom:3px;color:${isRec?"var(--color-text-danger)":"var(--color-text-primary)"}">
+          ${isRec?"🔴 녹음 중... 영어로 말하세요":"마이크 버튼을 누르고 말하세요"}
+        </div>
+        <div style="font-size:12px;color:var(--color-text-tertiary)">${isRec?"버튼을 다시 누르면 중지됩니다":"왼쪽 문장을 읽어보세요"}</div>
+        ${liveText?`<div style="margin-top:10px;padding:7px 11px;background:var(--color-background-secondary);border-radius:7px;font-size:14px;font-weight:500;color:var(--color-text-info)">${liveText}</div>`:""}
+        <div id="mic-err" style="display:none;font-size:12px;color:var(--color-text-danger);margin-top:7px;padding:7px 11px;background:var(--color-background-danger);border-radius:7px"></div>
+      </div>
+      <div id="anal-area" class="pcfu">${renderAnalysis()}</div>
+      ${!analResult&&!analLoading&&!liveText?`<div style="text-align:center;color:var(--color-text-tertiary);padding:20px 0;font-size:13px"><div style="font-size:26px;margin-bottom:8px">👂</div>녹음하면 원어민 귀에 어떻게 들리는지<br>분석해 드립니다</div>`:""}
+    </div>
+  </div>
+
+  <div style="padding:11px 18px;display:flex;gap:9px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)">
+    <button class="pc-btn" onclick="if(idx>0){idx--;analResult=null;liveText='';isRec=false;render();}" ${idx===0?"disabled":""} style="flex:1;padding:10px;font-size:13px;font-weight:500;opacity:${idx===0?".35":"1"}">← 이전</button>
+    <button id="nextbtn" onclick="nextS()" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:orange;border:none;border-radius:8px;color:#000;cursor:pointer">다음 →</button>
+  </div>
+</div>`;
+    return;
+  }
+}
+
+function renderAnalysis(){
+  if(analLoading) return `<div style="display:flex;align-items:center;gap:8px;color:var(--color-text-secondary);font-size:13px;padding:12px 0"><div class="pc-spin"></div>원어민 귀에 어떻게 들리는지 분석 중...</div>`;
+  if(!analResult) return "";
+  const sc=Math.max(0,Math.min(100,analResult.score||70));
+  const col=sc>=80?"var(--color-text-success)":sc>=55?"orange":"var(--color-text-danger)";
+  return `<div style="display:flex;flex-direction:column;gap:9px">
+    <div class="pc-sm">
+      <div class="pc-lbl">📡 원어민 귀에 이렇게 들림</div>
+      <div style="font-family:var(--font-mono);font-size:15px;color:var(--color-text-info);line-height:1.6">${analResult.native_hears||analResult.heard||"—"}</div>
+    </div>
+    ${analResult.issues&&analResult.issues.length>0?`
+    <div class="pc-sm" style="display:flex;flex-direction:column;gap:9px">
+      <div class="pc-lbl">발음 문제 ${analResult.issues.length}개</div>
+      ${analResult.issues.map((iss,i)=>`
+      <div style="display:flex;gap:9px">
+        <div style="width:20px;height:20px;border-radius:50%;background:var(--color-background-danger);color:var(--color-text-danger);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+        <div>
+          <div style="font-family:var(--font-mono);font-size:12px;color:orange;margin-bottom:3px">"${iss.word}" → "${iss.heard}"</div>
+          <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.5">${iss.why}</div>
+        </div>
+      </div>`).join("")}
+    </div>`:`<div style="font-size:14px;color:var(--color-text-success);padding:6px 0">원어민 귀에 자연스럽게 들립니다</div>`}
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:11px;color:var(--color-text-tertiary)">명확도</div>
+      <div style="flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${sc}%;background:${col};border-radius:3px"></div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:15px;font-weight:500;color:${col}">${sc}%</div>
+    </div>
+  </div>`;
+}
+
+function startCheckerRec(){
+  liveText=""; analResult=null;
+  startRec(async t=>{ await analyze(t,""); });
+}
+function startPracticeRec(){
+  liveText=""; analResult=null;
+  const target=sents[idx]?.text||"";
+  startRec(async t=>{ await analyze(t,target); });
+}
+
+function startDrill(id,name){
+  cat={id,name}; sents=[...(FB[id]||FB.daily)]; idx=0;
+  analResult=null; liveText=""; isRec=false;
+  view="drill"; render();
+  genMore();
+}
+function quickStart(id,name){
+  view="cats"; render();
+  setTimeout(()=>startDrill(id,name),10);
+}
+function speakIt(txt){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang="en-US"; u.rate=0.82;
+  speechSynthesis.speak(u);
+}
+
+render();
+</script>
