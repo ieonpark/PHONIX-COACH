@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>PhonixCoach</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0eb;color:#1a1a1a;max-width:520px;margin:0 auto;min-height:100vh}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,50,50,.4)}70%{box-shadow:0 0 0 14px rgba(220,50,50,0)}100%{box-shadow:0 0 0 0 rgba(220,50,50,0)}}
+.sp{width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:#FF6B35;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:inline-block}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var CATS=[
+  {id:"daily",    name:"일상 회화",     color:"#FF6B35",bg:"#FFF0EB",desc:"인사·감정·일상"},
+  {id:"travel",   name:"여행",          color:"#059669",bg:"#ECFDF5",desc:"공항·호텔·관광"},
+  {id:"tricky",   name:"까다로운 발음", color:"#7C3AED",bg:"#F5F3FF",desc:"TH·R/L·묵음"},
+  {id:"slang",    name:"슬랭·구어체",   color:"#DB2777",bg:"#FDF2F8",desc:"원어민 캐주얼"},
+  {id:"food",     name:"음식·식당",     color:"#D97706",bg:"#FFFBEB",desc:"주문·레시피"},
+  {id:"news",     name:"뉴스·미디어",   color:"#0891B2",bg:"#ECFEFF",desc:"시사·앵커"},
+  {id:"academic", name:"학술·발표",     color:"#65A30D",bg:"#F7FEE7",desc:"토론·논문"},
+  {id:"interview",name:"인터뷰·협상",   color:"#1D4ED8",bg:"#EFF6FF",desc:"채용·연봉"},
+  {id:"architect",name:"건축·현장",     color:"#92400E",bg:"#FEF3C7",desc:"설계·현장"},
+  {id:"cs",       name:"컴퓨터사이언스",color:"#0F766E",bg:"#F0FDF4",desc:"코딩·개발"},
+  {id:"realestate",name:"부동산개발",   color:"#6D28D9",bg:"#F5F3FF",desc:"개발·취득"},
+  {id:"tax",      name:"회계·세무", color:"#1F2937",bg:"#F9FAFB",desc:"회계·세무·재무"}
+];
+
+var DATA = {"daily": [["How's your day going so far?", "오늘 하루 어때요?", "HOWZ-yer-DAY-goh-ing", "'How's your' HOWZ-yer 연음"], ["I haven't seen you in ages!", "정말 오랜만이에요!", "HAY-vnt-SEEN-AY-jiz", "'I' → 'ages' AY-jiz 이중모음 이중모음으로 길게"], ["Mind if I sit here?", "여기 앉아도 될까요?", "MYND-SIT-HEER", "'here' → 'here' HEER 이중모음 이중모음으로 길게"], ["Could you do me a favor?", "부탁 하나 들어줄 수 있어요?", "kud-yuh-DOO-FAY-ver", "'Could you' kud-yuh 연음"], ["I'm absolutely exhausted today.", "오늘 완전히 지쳤어요.", "AB-suh-loot-lee-ig-ZAWST-id", "'exhausted' → ex 는 'ig+z' 로 발음해요 ('AB-suh-loot-lee-ig-ZAWST-id')"], ["Let me know if you need anything.", "필요하면 알려줘요.", "LET-mee-NOH-EN-ee-thing", "'anything'의 '-thing' → TH는 혀를 이 사이에 대고 발음해요"], ["What are you up to this weekend?", "이번 주말에 뭐 해요?", "WUHT-er-yuh-UP-WEEK-end", "'What are you' 빠르게"], ["I really appreciate your help.", "도움 정말 감사해요.", "uh-PREE-shee-ayt", "'appreciate' 4음절"], ["Sorry, I didn't mean to bother you.", "방해할 의도가 아니었어요.", "BOH-ther", "'bother' 유성 TH"], ["We should catch up sometime soon.", "조만간 연락하고 지내요.", "KACH-up-SUM-tym", "'catch'(KACH) + 'sometime'(up-SUM-tym) 두 단어 모두 강하게"], ["It completely slipped my mind.", "완전히 잊어버렸어요.", "kum-PLEET-lee-SLIPT", "'completely' 3음절"], ["That's exactly what I was thinking.", "그게 정확히 제가 생각하던 거예요.", "ig-ZAKT-lee", "'exactly' → ex 는 'ig+z' 로 발음해요 ('ig-ZAKT-lee')"], ["Can you believe it? That's crazy!", "믿어져? 완전 미쳤다!", "bih-LEEV-KRAY-zee", "'believe' bih-LEEV"], ["Long time no see! How have you been?", "오랜만이에요!", "LONG-tym-noh-SEE", "'Long time no' 이어서 한 번에 발음하세요"], ["Make yourself at home.", "편하게 있어요.", "MAYK-yer-SELF", "'yourself' 연음"], ["Keep me posted.", "계속 알려줘요.", "KEEP-mee-POHST-id", "'posted' POHST-id"], ["I'm running a bit late.", "좀 늦을 것 같아요.", "RUN-ing-uh-bit-LAYT", "'running a bit' → RUN-ing-uh-bit 이어서 발음해요"], ["That sounds like a plan.", "좋은 계획이네요.", "SOWNDZ-lyk-uh-PLAN", "'sounds like' 연음"], ["I can't thank you enough.", "정말 감사해요.", "KAANT-THANGK-yuh", "'thank' 무성 TH"], ["What time works for you?", "몇 시가 편하세요?", "WUHT-TYM-WERKS", "'works' WERKS r 굴려서"], ["I'll have to take a rain check.", "다음에 해요.", "TAYK-RAYN-chek", "'I'll have to take a rain check' → 통째로 외워두세요!"], ["You're a lifesaver!", "정말 고마워요!", "LYF-say-ver", "'a' → LYF-say-ver 로 발음해요"], ["I'm swamped with work.", "일이 너무 많아요.", "SWOMPT-with-WERK", "'swamped' SWOMPT"], ["Let's split the bill.", "더치페이 해요.", "SPLIT-thuh-BIL", "'the bill' 연음"], ["I'm just kidding.", "농담이에요.", "just-KID-ing", "'kidding' → KID-ing 로 발음해요"], ["That makes total sense.", "완전히 이해돼요.", "MAYKS-TOH-tul-SENS", "'TOH-tul' 로 발음해요"], ["I totally forgot about that.", "완전히 잊고 있었어요.", "TOH-tuh-lee-fer-GOT", "'forgot' fer-GOT"], ["Can we reschedule?", "다시 잡을 수 있을까요?", "ree-SKEJ-ool", "SKEJ-ool 미국식"], ["I'm on my way.", "가고 있어요.", "im-on-my-WAY", "'im·on·my·WAY' 이어서 한 번에"], ["I owe you one.", "신세 졌어요.", "eye-OH-yuh-WUN", "'owe' → 'owe' OH 이중모음 이중모음으로 길게"], ["I'm so proud of you.", "정말 자랑스러워요.", "PROWD-uv-yuh", "'PROWD·uv·yuh' 이어서 한 번에"], ["Don't be so hard on yourself.", "너무 자책하지 마세요.", "HARD-on-yer-SELF", "'yourself' 연음"], ["My pleasure.", "천만에요.", "my-PLEZH-er", "'pleasure' → PLEZH-er 로 발음해요"], ["Have you heard the news?", "소식 들었어요?", "HERD-thuh-NOOZ", "'the' → thuh, 유성 TH (목청 진동 있음)"], ["I'll be right back.", "금방 올게요.", "RYT-BAK", "'I'll'(RYT) + 'right'(BAK) 두 단어 모두 강하게"], ["Do you want to grab some coffee?", "커피 마실래요?", "GRAB-KAW-fee", "'want to' wanna"], ["How's everything going?", "요즘 어때요?", "EV-ree-thing-GOH-ing", "'everything' → ree-thing-GOH (3음절 단어!)"], ["I had a blast!", "정말 즐거웠어요!", "had-uh-BLAST", "'had·uh·BLAST' 이어서 한 번에"], ["Fingers crossed!", "잘 되길 바라요!", "FING-gerz-KRAWST", "'Fingers'(FING-gerz) + 'crossed'(KRAWST) 두 단어 모두 강하게"], ["You made my day!", "덕분에 기분 좋아졌어요!", "MAYD-my-DAY", "'MAYD·my·DAY' 이어서 한 번에"], ["No worries at all.", "전혀 걱정 마세요.", "NOH-WUR-eez", "'WUR-eez' 로 발음해요"], ["Catch you later!", "나중에 봐요!", "KACH-yuh-LAY-ter", "'KACH·yuh·LAY·ter' 이어서 한 번에"], ["Same here.", "저도요.", "SAYM-HEER", "'Same here' 짧고 강하게 발음해요"], ["Take care of yourself.", "몸 조심해요.", "TAYK-KAIR-yer-SELF", "'TAYK·KAIR·yer·SELF' 이어서 한 번에"], ["It was nice running into you.", "우연히 만나서 반가웠어요.", "RUN-ing-IN-tuh-yuh", "'RUN·ing·IN·tuh·yuh' 이어서 한 번에"], ["I was up all night.", "밤을 새웠어요.", "up-AWL-NYT", "'up·AWL·NYT' 이어서 한 번에"], ["Let's touch base later.", "나중에 연락해요.", "TUCH-BAYS-LAY-ter", "'Let's'(TUCH) + 'touch'(BAYS) 두 단어 모두 강하게"], ["I'm looking forward to it.", "기대하고 있어요.", "LUK-ing-FOR-werd", "'LUK·ing·FOR·werd' 이어서 한 번에"], ["We should do this again sometime.", "다음에 또 이렇게 해요.", "uh-GEN-SUM-tym", "'uh·GEN·SUM·tym' 이어서 한 번에"], ["I feel like we haven't talked in forever.", "진짜 오랫동안 못 얘기한 것 같아요.", "fer-EV-er", "'forever' fer-EV-er"]], "travel": [["I'd like to check in, please.", "체크인 하고 싶습니다.", "id-LYK-tuh-CHEK-in", "'id·LYK·tuh·CHEK·in' 이어서 한 번에"], ["Could you tell me how to get to the station?", "역까지 어떻게 가나요?", "HOW-tuh-GET-STAY-shun", "'-tion' shun"], ["Is breakfast included in the room rate?", "조식이 포함되나요?", "BREK-fust-in-KLOOD-id", "'breakfast' BREK-fust"], ["I think I left my bag on the bus.", "버스에 가방을 두고 내렸어요.", "LEFT-my-BAG-BUS", "'think' → TH 혀를 이 사이에 대고, 바람만 나와야 해요"], ["Can I get a window seat?", "창가 자리로 주실 수 있나요?", "WIN-doh-SEET", "'I' → WIN-doh 이중모음 이중모음으로 길게"], ["What time does the last train leave?", "막차가 몇 시에 출발하나요?", "LAST-TRAYN-LEEV", "'What'(LAST) + 'time'(TRAYN-LEEV) 두 단어 모두 강하게"], ["Do you accept credit cards?", "신용카드 받으시나요?", "ak-SEPT-KRED-it", "'accept' → ak-SEPT, 두 번째 음절에 강세 (a-CCEPT)"], ["I'd like to exchange some currency.", "환전을 하고 싶습니다.", "iks-CHAYNJ-KER-en-see", "'currency' 3음절"], ["My luggage didn't arrive with my flight.", "짐이 도착하지 않았어요.", "LUG-ij-uh-RYV", "'luggage' LUG-ij"], ["What's the Wi-Fi password?", "와이파이 비밀번호가 뭐예요?", "WY-fy-PAS-werd", "'What's' → WY 첫 음절에 강세"], ["Could I get a receipt for this?", "영수증 받을 수 있을까요?", "rih-SEET", "'receipt' → 'p' 묵음, 안 읽어요! (rih-SEET)"], ["How far is it from here to the airport?", "여기서 공항까지 얼마나 걸리나요?", "HOW-FAR-AIR-port", "'far'(HOW) + 'airport?'(FAR-AIR) 두 단어 모두 강하게"], ["I have a reservation under the name Kim.", "김 이름으로 예약이 되어 있어요.", "rez-er-VAY-shun", "'reservation' → rez-er-VAY-shun (4음절 단어!)"], ["Could you recommend a good local restaurant?", "현지 식당을 추천해 주시겠어요?", "rek-uh-MEND", "'recommend' → rek-uh-MEND (3음절 단어!)"], ["Is this seat taken?", "이 자리 비어 있나요?", "SEET-TAY-kun", "TAY-kun 이중모음"], ["Where can I find the baggage claim?", "수하물 찾는 곳이 어디인가요?", "BAG-ij-KLAYM", "'find'(BAG) + 'baggage'(ij-KLAYM) 두 단어 모두 강하게"], ["I need to report a stolen wallet.", "지갑을 도난당했다고 신고해야 해요.", "rih-PORT-STOH-lun", "'I' → rih-PORT 로 발음해요"], ["Can I get a map of the city?", "도시 지도를 받을 수 있나요?", "MAP-SIT-ee", "'MAP·SIT·ee' 이어서 한 번에"], ["Is there a pharmacy nearby?", "근처에 약국이 있나요?", "FAR-muh-see-NEER-by", "'pharmacy' → FAR-muh (3음절 단어!)"], ["Could you call me a taxi, please?", "택시를 불러주실 수 있나요?", "KAWL-mee-TAK-see", "'KAWL·mee·TAK·see' 이어서 한 번에"], ["What's the check-out time?", "체크아웃 시간이 어떻게 되나요?", "CHEK-owt-TYM", "'check-out' → CHEK-owt 첫 음절에 강세"], ["The air conditioning isn't working.", "에어컨이 작동하지 않아요.", "air-kun-DISH-un-ing", "'conditioning' → kun-DISH-un-ing (5음절 단어!)"], ["Is there a shuttle to the airport?", "공항행 셔틀이 있나요?", "SHUT-ul-AIR-port", "'shuttle' → SHUT-ul 로 발음해요"], ["I'd like to book a tour.", "투어를 예약하고 싶어요.", "BUK-uh-TUR", "'BUK·uh·TUR' 이어서 한 번에"], ["What's included in the ticket price?", "티켓 가격에 무엇이 포함되나요?", "in-KLOOD-id-TIK-it", "'in·KLOOD·id·TIK·it' 이어서 한 번에"], ["How long does the tour take?", "투어가 얼마나 걸리나요?", "HOW-LONG-TUR", "'long'(HOW) + 'tour'(LONG) 두 단어 모두 강하게"], ["Is tipping expected here?", "여기서 팁을 줘야 하나요?", "TIP-ing-ik-SPEK-tid", "'tipping'(TIP-ing) + 'expected'(ik-SPEK-tid) 두 단어 모두 강하게"], ["I missed my connecting flight.", "환승편을 놓쳤어요.", "kuh-NEK-ting-FLYT", "'connecting' → ting-FLYT (3음절 단어!)"], ["Where is the nearest ATM?", "가장 가까운 ATM이 어디 있나요?", "NEER-est-AY-tee-em", "'NEER-est' 로 발음해요"], ["I'd like to upgrade my seat.", "좌석을 업그레이드하고 싶어요.", "UP-grayd-my-SEET", "'I'd' → UP 첫 음절에 강세"], ["Can I leave my luggage here?", "여기에 짐을 맡길 수 있나요?", "LEEV-LUG-ij-HEER", "'LEEV·LUG·ij·HEER' 이어서 한 번에"], ["Is the museum open on Sundays?", "박물관이 일요일에 열어요?", "myoo-ZEE-um-OH-pun", "'museum' → myoo-ZEE (3음절 단어!)"], ["I need to change my reservation.", "예약을 변경해야 해요.", "CHAYNJ-rez-er-VAY-shun", "'reservation' → VAY-shun (4음절 단어!)"], ["What's the local currency?", "현지 화폐가 무엇인가요?", "LOH-kul-KER-en-see", "'local' → kul-KER (3음절 단어!)"], ["Is there free parking available?", "무료 주차가 가능한가요?", "FREE-PAR-king-uh-VAY-luh-bul", "'available' → uh-VAY-luh-bul (5음절 단어!)"], ["Can I get a wake-up call at six?", "6시에 모닝콜을 받을 수 있나요?", "WAYK-up-KAWL-SIKS", "'WAYK·up·KAWL·SIKS' 이어서 한 번에"], ["I need directions to the embassy.", "대사관 가는 방향을 알고 싶어요.", "dih-REK-shunz-EM-buh-see", "'directions' → REK-shunz-EM (3음절 단어!)"], ["Where's the nearest subway station?", "가장 가까운 지하철역이 어디예요?", "NEER-est-SUB-way-STAY-shun", "'-tion' → '-shun' 으로 발음 (예: NEER-est-SUB-way-STAY-shun)"], ["Do you have any vegetarian options?", "채식 옵션이 있나요?", "vej-uh-TAIR-ee-un-OP-shunz", "'vegetarian' → vej-uh-TAIR-ee (5음절 단어!)"], ["I'd like to extend my stay by one more night.", "하루 더 연장하고 싶어요.", "ik-STEND-my-STAY", "'ik-STEND' 로 발음해요"], ["What time does check-in start?", "체크인은 몇 시부터 시작하나요?", "CHEK-in-START", "'CHEK·in·START' 이어서 한 번에"], ["Can I have a room with a view?", "전망 좋은 방으로 주실 수 있나요?", "ROOM-with-uh-VYOO", "'ROOM·with·uh·VYOO' 이어서 한 번에"], ["What's the cancellation policy?", "취소 정책이 어떻게 되나요?", "kan-suh-LAY-shun-POL-ih-see", "'cancellation' → suh-LAY-shun-POL (4음절 단어!)"], ["I'd like a non-smoking room, please.", "금연실로 주세요.", "non-SMOH-king-ROOM", "'SMOH-king' 에 강세"], ["Can you store my luggage?", "짐을 맡아주실 수 있나요?", "STOR-my-LUG-ij", "'STOR·my·LUG·ij' 이어서 한 번에"], ["How do I get to the city center?", "시내 중심부로 어떻게 가나요?", "SIT-ee-SEN-ter", "'get'(SIT) + 'center?'(SEN-ter) 두 단어 모두 강하게"], ["Is the hotel near the beach?", "호텔이 해변 근처인가요?", "hoh-TEL-NEER-BEECH", "'hoh-TEL' 로 발음해요"], ["What voltage are the outlets here?", "여기 콘센트 전압이 얼마예요?", "VOHL-tij-OWT-lets", "'OWT-lets' 로 발음해요"], ["Can I get an extra blanket?", "담요 하나 더 받을 수 있나요?", "EKS-truh-BLANG-kit", "'get'(EKS) + 'extra'(truh-BLANG) 두 단어 모두 강하게"]], "tricky": [["The thought of breathing through the thick cloth.", "두꺼운 천을 통해 숨쉬는 생각.", "THAWT-BREE-thing-THROO-THIK-KLAWTH", "무성TH: thought/thick/cloth 유성TH: the/breathing"], ["Really rural roads require rare bravery.", "시골 길은 드문 용기를 요구한다.", "REE-lee-ROOR-ul-ROHDZ-rih-KWYR", "R: 혀 어디에도 닿지 않게"], ["She specifically asked for a light flight.", "그녀는 가벼운 비행편을 특별히 요청했다.", "spuh-SIF-ik-lee-LYT-FLYT", "L 혀 앞쪽, R 혀 안 닿음"], ["She sells seashells by the seashore.", "그녀는 해변에서 조개껍데기를 판다.", "SEE-shelz-SEE-shor", "s 혀 앞, sh 혀 뒤"], ["Would you rather walk or take a comfortable bus?", "편안한 버스 중 어느 쪽이 좋아요?", "RATH-er-WAWK-KUMF-ter-bul", "'comfortable' KUMF-ter-bul 3음절"], ["His colleague thoroughly rehearsed the procedure.", "그의 동료는 절차를 철저히 리허설했다.", "THER-uh-lee-rih-HERST-pruh-SEE-jer", "'thoroughly' → THER-uh-lee, TH + ɜː 모음 함께 연습"], ["The world's worst weather was in Worcester.", "세계 최악의 날씨는 우스터에 있었다.", "WORLDZ-WERST-WOOS-ter", "'Worcester' WOOS-ter 철자와 다름"], ["I specifically need a statistics textbook.", "통계학 교재가 특히 필요합니다.", "spuh-SIF-ik-lee-stuh-TIS-tiks", "'textbook' → spuh-SIF-ik-lee-stuh-TIS-tiks (2음절 단어!)"], ["He thought the thing thoroughly through.", "그는 그 일을 철저히 생각했다.", "THAWT-THING-THER-uh-lee-THROO", "'thought', 'the', 'thing', 'thoroughly' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Please pull the purple curtain to the right.", "보라색 커튼을 오른쪽으로 당겨주세요.", "PUL-PER-pul-KER-tin-RYT", "'pull', 'purple' → p 발음 입술 모아 바람 두 번"], ["Whether the weather is fine or not.", "날씨가 좋든 나쁘든.", "WETH-er-WETH-er", "'Whether', 'the', 'weather' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Red lorry, yellow lorry.", "빨간 트럭, 노란 트럭.", "RED-LOR-ee-YEL-oh-LOR-ee", "L/R: L 혀 잇몸 닿음"], ["The colonel carefully reviewed the documents.", "대령은 서류를 신중하게 검토했다.", "KER-nul-KAIR-fuh-lee", "'colonel' KER-nul 철자 달라"], ["Sixth sheep's sixth sheep is sick.", "여섯 번째 양이 아파요.", "SIKSTH-SHEEPS-SIKSTH-SIK", "'Sixth', 'sixth' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Unique New York, unique New York.", "독특한 뉴욕 발음 연습.", "yoo-NEEK-NOO-YORK", "'unique' yoo-NEEK"], ["The refrigerator repair requires a specialist.", "냉장고 수리에는 전문가가 필요합니다.", "rih-FRIJ-er-ay-ter-SPESH-uh-list", "'refrigerator' → rih-FRIJ-er-ay-ter (5음절 단어!)"], ["The rhythm of the music was difficult to follow.", "음악의 리듬을 따라가기 어려웠어요.", "RITH-um-MYOO-zik-DIF-ih-kult", "'rhythm' h 묵음"], ["Thirty thousand feathers fell through the sky.", "삼만 개의 깃털이 하늘로 떨어졌다.", "THER-tee-THOW-zund-FETH-erz", "'Thirty', 'thousand', 'feathers', 'through' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Library or bookstore? Either works for me.", "도서관이나 서점? 둘 다 괜찮아요.", "LY-brer-ee-EE-ther-WERKS", "'library' 3음절"], ["February has the fewest days.", "2월은 날이 가장 적어요.", "FEB-yoo-ehr-ee", "'February' → FEB-yoo (4음절 단어!)"], ["The knight knew the answer.", "기사는 답을 알고 있었다.", "NYT-NOO-AN-ser", "kn→N wr→R 묵음 — 앞 자음 묵음, NYT-NOO-AN-ser 로 발음"], ["Psychology is a fascinating subject.", "심리학은 매혹적인 과목이에요.", "sy-KOL-uh-jee", "'Psychology' → 'p' 묵음, 안 읽어요! (sy-KOL-uh-jee)"], ["The receipt showed the wrong amount.", "영수증에 금액이 잘못 나왔어요.", "rih-SEET-RONG", "'receipt' → 'p' 묵음, 안 읽어요! (rih-SEET-RONG)"], ["The debt caused enormous stress.", "빚이 엄청난 스트레스를 야기했어요.", "DET-ih-NOR-mus", "'debt' → 'b' 묵음, 안 읽어요! (DET-ih-NOR-mus)"], ["Every Wednesday we exercise.", "매주 수요일마다 운동해요.", "EV-ree-WEN-zdee", "'Wednesday' WEN-zdee"], ["The island had a beautiful lighthouse.", "그 섬에는 아름다운 등대가 있었어요.", "EY-lund-LYT-hows", "'island' → 's' 묵음, 안 읽어요! (EY-lund-LYT-hows)"], ["A subtle hint changed everything.", "미묘한 힌트 하나가 모든 것을 바꿨어요.", "SUT-ul-HINT", "'subtle' → 'b' 묵음, 안 읽어요! (SUT-ul-HINT)"], ["Iron the wrinkles out of your shirt.", "셔츠의 주름을 다려서 펴세요.", "EYE-ern-RING-kulz", "'Iron' → 'r' 묵음, 안 읽어요! (EYE-ern-RING-kulz)"], ["The pneumonia diagnosis was difficult.", "폐렴 진단이 어려웠어요.", "nyoo-MOH-nyuh", "'pneumonia' → 'p' 묵음, 안 읽어요! (nyoo-MOH-nyuh)"], ["The beautiful bouquet arrived yesterday.", "아름다운 꽃다발이 어제 도착했다.", "BYOO-tih-ful-boh-KAY", "'bouquet' → boh-KAY, 프랑스어 차용어라 2음절이에요"], ["Length and strength require breath control.", "길이와 힘은 호흡 조절이 필요해요.", "LENGKTH-STRENKTH-BRETH", "ngth 비음+k+th"], ["Scissors and tissues are in the drawer.", "가위와 티슈는 서랍 안에 있어요.", "SIZ-erz-TISH-ooz-DROR", "'drawer' → 'w' 묵음, 안 읽어요! (SIZ-erz-TISH-ooz-DROR)"], ["The foreign minister resigned.", "외무장관이 사임했습니다.", "FOR-in-MIN-ih-ster-rih-ZYND", "'foreign' → 'g' 묵음, 안 읽어요! (FOR-in-MIN-ih-ster-rih-ZYND)"], ["Through thorough thought he achieved the goal.", "철저한 생각으로 목표 달성.", "THROO-THER-uh-THAWT", "'Through', 'thorough', 'thought', 'the' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["The psychiatrist prescribed the medication.", "정신과 의사가 약을 처방했어요.", "sy-KY-uh-trist", "'psychiatrist' → 'p' 묵음, 안 읽어요! (sy-KY-uh-trist)"], ["Choir practice is scheduled for Thursday.", "합창단 연습이 목요일로 잡혀 있어요.", "KWYR-PRAK-tis-SKEJ-ooled", "'choir' KWYR ch=k"], ["The vehicle's engine made a peculiar noise.", "자동차 엔진이 특이한 소리를 냈어요.", "VEE-ih-kul-pih-KYOO-lee-er", "'vehicle's' → VEE-ih-kul (3음절 단어!)"], ["I'd rather have chocolate than vanilla.", "바닐라보다 초콜릿이 더 좋아요.", "CHOK-lit-vuh-NIL-uh", "'chocolate' CHOK-lit 2음절"], ["She would have could have should have.", "조건절 연습.", "wud-uv-kud-uv-shud-uv", "have → -uv 약화"], ["Worcestershire sauce is delicious.", "우스터셔 소스는 맛있어요.", "WUS-ter-sheer-SAWSS", "'WUS-ter-sheer' 로 발음해요"], ["The kneel before the gnarly knight.", "발음 연습용 문장.", "NEEL-NAR-lee-NYT", "'kneel'→NEEL, 'gnarly'→NAR-lee, kn/gn은 n만 발음해요"], ["I'm thoroughly exhausted after that rehearsal.", "리허설 후에 완전히 지쳤어요.", "THER-uh-lee-ig-ZAWST-id-rih-HER-sul", "'exhausted' → ig-ZAWST-id (3음절 단어!)"], ["An honest hour of thorough thought.", "정직한 한 시간의 철저한 생각.", "ON-ist-OWR-THER-uh-THAWT", "'honest' → 'h' 묵음, 안 읽어요! (ON-ist-OWR-THER-uh-THAWT)"], ["The whole world should know the truth.", "온 세상이 진실을 알아야 해요.", "HOHL-WERLD-TROOTH", "'The', 'the', 'truth' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Wren wrapped the wrong package.", "잘못된 패키지를 포장했어요.", "REN-RAPT-RONG", "'Wren'→REN, 'wrapped'→RAPT, wr은 r만 발음해요"], ["He knit a neat knitted knot.", "깔끔한 뜨개질 매듭.", "NIT-NEET-NIT-id-NOT", "'knit'→NIT, 'knot'→NOT, kn은 n만 발음해요"], ["Two witches watched two wristwatches.", "두 마녀가 두 손목시계를 봤어요.", "WICH-iz-WOCHT-RIST-woch-iz", "'wristwatches'→RIST-woch-iz, wr는 r만 발음해요"], ["Pneumatic tools are absolutely necessary.", "공압 도구는 절대적으로 필요합니다.", "nyoo-MAT-ik-AB-suh-loot-lee", "'Pneumatic' → 'p' 묵음, 안 읽어요! (nyoo-MAT-ik-AB-suh-loot-lee)"], ["Psychological phenomena fascinate scientists.", "심리적 현상은 과학자들을 매혹시킵니다.", "sy-kuh-LOJ-ih-kul-fih-NOM-ih-nuh", "'Psychological' → 'p' 묵음, 안 읽어요! (sy-kuh-LOJ-ih-kul-fih-NOM-ih-nuh)"]], "slang": [["That's totally lit, no cap!", "그거 완전 쩐다, 진짜로!", "TOH-tuh-lee-LIT-noh-KAP", "'lit' 짧고 강하게"], ["She's lowkey obsessed with that show.", "걔 그 드라마에 은근 빠졌어.", "LOH-kee-ub-SEST", "LOH-kee 이중모음"], ["I'm not gonna lie, that slaps.", "솔직히 말하면, 그거 완전 좋다.", "GUN-uh-LY-SLAPS", "'gonna'=going to"], ["No way, that's actually insane.", "말도 안 돼, 그거 진짜 미쳤다.", "NOH-WAY-AK-choo-uh-lee-in-SAYN", "'insane' → uh-lee-in (4음절 단어!)"], ["This is giving main character energy.", "이거 완전 주인공 에너지.", "GIV-ing-MAYN-KAIR-ik-ter", "'character' 3음절"], ["That hit different, honestly.", "그거 왠지 다르게 와닿더라.", "HIT-DIF-rent-ON-ist-lee", "DIF-rent 2음절처럼"], ["I'm so here for this.", "이거 완전 내 취향이야.", "SOH-HEER-THISS", "'SO'와 'THIS' 강하게 강조해요"], ["She ate and left no crumbs.", "완벽하게 해냈어.", "AYT-LEFT-KRUMZ", "'crumbs' → 'b' 묵음, 안 읽어요! (AYT-LEFT-KRUMZ)"], ["It's giving very much elegant.", "완전 고급스러운 느낌.", "GIV-ing-VER-ee-EL-ih-gunt", "'giving' · 'very' · 'elegant' 강하게 강조해요"], ["I'm literally dead right now.", "진짜 지금 죽겠어.", "LIT-er-uh-lee-DED", "'literally' → er-uh-lee (4음절 단어!)"], ["That's rent-free living in my head.", "머릿속에서 떠나지 않아.", "RENT-free-LIV-ing-HED", "'RENT·free·LIV·ing·HED' 이어서 한 번에"], ["The plot twist though.", "반전이 진짜.", "PLOT-TWIST-thoh", "'though' → thoh, 유성 TH (목청 진동)"], ["Main character behavior, honestly.", "완전 주인공 행동이야.", "MAYN-KAIR-ik-ter-bih-HAYV-yer", "'character' → KAIR-ik-ter (3음절 단어!)"], ["I'm in my flop era, not gonna lie.", "나 지금 슬럼프야.", "FLOP-EE-ruh-GUN-uh-LY", "'era' EE-ruh"], ["That's such a vibe.", "분위기 완전 좋다.", "SUCH-uh-VYB", "'vibe' → VYB, 짧고 강하게 끝내요"], ["We love to see it.", "완전 좋다 이거.", "LUV-tuh-SEE", "'LOVE'와 'SEE' 강하게 강조해요"], ["She's absolutely unhinged.", "걔 완전 미쳤어.", "AB-suh-loot-lee-un-HINJD", "'un-HINJD' 로 발음해요"], ["I'm living my best life.", "나 요즘 인생 최고야.", "LIV-ing-BEST-LYF", "'I'm'(LIV) + 'living'(ing-BEST) 두 단어 모두 강하게"], ["That came out of nowhere.", "그건 완전 뜬금없었어.", "KAYM-owt-NOH-wair", "'NOH-wair' 로 발음해요"], ["I can't even right now.", "지금 진짜 아무것도 못 하겠어.", "KAANT-EE-vun-RYT-NOW", "'even' → EE-vun, 강조해서 길게 늘려요"], ["You're really out here doing that?", "진짜 그러고 있어?", "owt-HEER-DOO-ing", "'owt·HEER·DOO·ing' 이어서 한 번에"], ["It's giving chaos energy.", "완전 혼돈 그 자체.", "GIV-ing-KAY-os", "'KAY-os' 로 발음해요"], ["I'm deceased.", "완전 죽겠어 (웃겨).", "dih-SEEST", "'dih-SEEST' 로 발음해요"], ["That's lowkey the move.", "그게 사실 제일 좋은 선택이야.", "LOH-kee-MOOV", "'move' → MOOV, oo 이중모음으로 길게"], ["Hard pass on that one.", "그건 완전 패스.", "HARD-PASS", "'Hard'(HARD) + 'pass'(PASS) 두 단어 모두 강하게"], ["We're not gonna gatekeep this.", "이건 독점 안 해.", "GUN-uh-GAYT-keep", "'gonna' → GUN-uh 첫 음절에 강세"], ["I'm obsessed, I'm not even sorry.", "푹 빠졌어, 전혀 미안하지 않아.", "ub-SEST-SOR-ee", "'ub-SEST' 로 발음해요"], ["That's a whole mood.", "그게 딱 내 기분이야.", "HOHL-MOOD", "'whole' → HOHL, wh는 W 발음, oo 길게"], ["No thoughts, head empty.", "아무 생각 없어.", "NOH-THAWTS-HED", "'thoughts' → THAWTS, 무성 TH (바람만, 목청 X)"], ["This era is serving looks.", "이 시기는 외모 면에서 진짜.", "EE-ruh-SER-ving-LUKS", "'era'(EE-ruh) + 'serving'(SER-ving) 두 단어 모두 강하게"], ["Okay but that actually goes hard.", "근데 그거 진짜 쩐다.", "AK-choo-uh-lee-GOHZ-HARD", "'Okay'(AK-choo) + 'goes'(GOHZ) 두 단어 모두 강하게"], ["That's sending me.", "그거 때문에 진짜 미치겠어.", "SEN-ding-mee", "'SEN·ding·mee' 이어서 한 번에"], ["Respectfully, that's a terrible idea.", "죄송하지만, 그건 최악의 생각이야.", "rih-SPEK-tfuh-lee", "'Respectfully' → rih-SPEK-tfuh (5음절 단어!)"], ["It's not giving what it's supposed to give.", "기대한 느낌이 아니야.", "GIV-ing-suh-POHZD-GIV", "'giving'이 두 번 반복 — 자연스러운 리듬 익히세요"], ["That's the tea.", "그게 진짜야.", "thats-thuh-TEE", "'That's tea' 짧고 강하게 발음해요"], ["We're absolutely unwell.", "우리 완전 미쳤어.", "AB-suh-loot-lee-un-WEL", "'unwell' → un-WEL, 슬랭으로 '미쳤어'란 뜻이에요"], ["That's sending me to another dimension.", "완전 미치게 만들어.", "uh-NUTH-er-dih-MEN-shun", "'another' → dih-MEN-shun (3음절 단어!)"], ["We're in our villain arc.", "우리 지금 악당 모드야.", "VIL-un-ARK", "'villain' → VIL-un 로 발음해요"], ["Main character moment!", "주인공 순간!", "MAYN-KAIR-ik-ter-MOH-munt", "'MOH-munt' 로 발음해요"], ["The audacity.", "이 뻔뻔함이란.", "aw-DAS-ih-tee", "'audacity' → aw-DAS-ih (4음절 단어!)"], ["Slay, honestly.", "진짜 완전 잘했어.", "SLAY-ON-ist-lee", "'honestly' → ON-ist (3음절 단어!)"], ["I was today years old when I learned that.", "오늘에야 그걸 알았어.", "tuh-DAY-YEERZ-OHLD", "'I was today years old when I learned that' → 통째로 외워두세요!"], ["She ate that up, no crumbs left.", "완벽하게 해냈어.", "AYT-that-UP-KRUMZ", "'crumbs' → 'b' 묵음, 안 읽어요! (AYT-that-UP-KRUMZ)"], ["I really said what I said.", "나 진짜 그 말 그대로야.", "REE-lee-SED-wut-eye-SED", "'said what I said' → 강한 반복 강조 패턴이에요"], ["That's iconic, not gonna lie.", "그거 진짜 전설이야.", "eye-KON-ik-GUN-uh-LY", "'iconic' → KON-ik-GUN (3음절 단어!)"], ["It's giving everything.", "완전 다 갖췄어.", "GIV-ing-EV-ree-thing", "'everything' → EV-ree-thing (3음절 단어!)"], ["That's absolutely sending me.", "그거 완전 미치게 만들어.", "AB-suh-loot-lee-SEN-ding-mee", "'absolutely' → suh-loot-lee-SEN (4음절 단어!)"], ["We don't do that here.", "여기선 그런 거 안 해.", "DOHNT-doo-that-HEER", "'don't here' 짧고 강하게 발음해요"], ["I'm in my main character era.", "나 지금 주인공 모드야.", "MAYN-KAIR-ik-ter-EE-ruh", "'I'm'(MAYN) + 'main'(KAIR) 두 단어 모두 강하게"]], "food": [["I'll have the grilled salmon with a side salad.", "그릴드 연어에 사이드 샐러드로 주세요.", "GRILD-SAM-un-SYD-SAL-ud", "'I'll' → 'l' 묵음, 안 읽어요! (GRILD-SAM-un-SYD-SAL-ud)"], ["Does this dish contain any nuts or dairy?", "이 요리에 견과류나 유제품이 들어가나요?", "kun-TAYN-NUTS-DAIR-ee", "DAIR-ee 이중모음"], ["Could I get this medium-rare, please?", "미디엄 레어로 주실 수 있나요?", "MEE-dee-um-RAIR", "'medium-rare' → dee-um-RAIR (3음절 단어!)"], ["I'm allergic to shellfish and peanuts.", "갑각류와 땅콩 알레르기가 있어요.", "uh-LER-jik-SHEL-fish-PEE-nuts", "'shellfish' → fish-PEE (2음절 단어!)"], ["This is way too spicy for me.", "이거 너무 매워요.", "WAY-TOO-SPY-see", "'way' · 'too' · 'spicy' 강하게 강조해요"], ["What do you recommend for a first-timer?", "처음 오신 분께 뭘 추천해 주시겠어요?", "rek-uh-MEND-FERST-ty-mer", "'recommend' → uh-MEND-FERST (3음절 단어!)"], ["Can I substitute the fries for a salad?", "감자튀김 대신 샐러드로 바꿀 수 있나요?", "SUB-stih-toot-FRYZ", "'substitute' → SUB-stih-toot-FRYZ (4음절 단어!)"], ["Could I have the bill, please?", "계산서 주시겠어요?", "BIL-PLEEZ", "BIL-PLEEZ → 대문자=강세, 소문자=약하게"], ["Is there a vegetarian option on the menu?", "메뉴에 채식 옵션이 있나요?", "vej-uh-TAIR-ee-un-OP-shun", "'vegetarian' → vej-uh-TAIR-ee (5음절 단어!)"], ["This is absolutely delicious, compliments to the chef.", "정말 맛있어요, 셰프에게 칭찬 전해주세요.", "dih-LISH-us-KOM-plih-ments-SHEF", "dih-LISH-us-KOM-plih-ments-SHEF → 대문자=강세, 소문자=약하게"], ["I'd like my steak well done, please.", "스테이크 웰던으로 주세요.", "STAYK-WEL-DUN", "'STAYK-WEL-DUN' — 이중모음을 자연스럽게 이어서"], ["Can I get a doggy bag for the leftovers?", "남은 음식 포장해 주실 수 있나요?", "DOG-ee-BAG-LEFT-oh-verz", "'leftovers' → LEFT-oh-verz (3음절 단어!)"], ["We'd like separate checks, please.", "계산서 따로 주세요.", "SEP-uh-rit-CHEKS", "'separate' → CHEKS (3음절 단어!)"], ["Is this dish gluten-free?", "이 요리 글루텐 프리인가요?", "GLOO-tun-FREE", "'GLOO-tun' 로 발음해요"], ["Could you ask the chef to hold the onions?", "셰프에게 양파를 빼달라고 해주시겠어요?", "SHEF-HOHLD-UN-yunz", "'UN-yunz' 로 발음해요"], ["The sauce has a rich, velvety texture.", "소스가 풍부하고 벨벳같은 질감이에요.", "VEL-vih-tee-TEKS-cher", "VEL-vih-tee-TEKS-cher → 대문자=강세, 소문자=약하게"], ["I'd love to try the tasting menu.", "코스 요리를 먹어보고 싶어요.", "LUV-TRY-TAYST-ing-MEN-yoo", "'I'd'(LUV) + 'love'(TRY-TAYST) 두 단어 모두 강하게"], ["How do you like your eggs?", "달걀을 어떻게 해드릴까요?", "HOW-LYK-yer-EGZ", "'HOW·LYK·yer·EGZ' 이어서 한 번에"], ["I'm on a gluten-free diet.", "글루텐 프리 다이어트 중이에요.", "GLOO-tun-free-DY-ut", "GLOO-tun-free-DY-ut → 대문자=강세, 소문자=약하게"], ["Can we get a table for four?", "4인용 테이블을 주실 수 있나요?", "TAY-bul-fer-FOR", "'TAY·bul·fer·FOR' 이어서 한 번에"], ["I'd like the dressing on the side.", "드레싱은 따로 주세요.", "DRES-ing-on-thuh-SYD", "'DRES·ing·on·thuh·SYD' 이어서 한 번에"], ["Can I see the dessert menu?", "디저트 메뉴를 볼 수 있을까요?", "dih-ZERT-MEN-yoo", "dih-ZERT-MEN-yoo → 대문자=강세, 소문자=약하게"], ["The portion size is huge!", "양이 엄청나게 많아요!", "POR-shun-SYZ-HYOOJ", "'HYOOJ' 로 발음해요"], ["How spicy is this dish?", "이 요리는 얼마나 맵나요?", "HOW-SPY-see-DISH", "'spicy'(HOW) + 'dish?'(SPY) 두 단어 모두 강하게"], ["I'd like to make a reservation for two.", "2명으로 예약하고 싶어요.", "rez-er-VAY-shun-fer-TOO", "'reservation' → TOO (4음절 단어!)"], ["Is this organic?", "이거 유기농인가요?", "or-GAN-ik", "'organic' → or-GAN-ik (2음절 단어!)"], ["Could you make this less salty?", "이걸 덜 짜게 해주실 수 있나요?", "less-SAWL-tee", "'SAWL-tee' 로 발음해요"], ["I'll have whatever the chef recommends.", "셰프 추천 요리로 할게요.", "wut-EV-er-SHEF-rek-uh-MENDZ", "'wut-EV-er' 로 발음해요"], ["Can I get extra napkins?", "냅킨을 더 주실 수 있나요?", "EKS-truh-NAP-kinz", "'EKS-truh' 로 발음해요"], ["What's the soup of the day?", "오늘의 수프는 무엇인가요?", "SOOP-uv-thuh-DAY", "'SOOP·uv·thuh·DAY' 이어서 한 번에"], ["Could I have a glass of water?", "물 한 잔 주시겠어요?", "GLAS-uv-WAW-ter", "'GLAS·uv·WAW·ter' 이어서 한 번에"], ["Is there a daily special?", "오늘의 특별 요리가 있나요?", "DAY-lee-SPESH-ul", "'special' → SPESH-ul 로 발음해요"], ["I'd like to order the chef's special.", "오늘의 셰프 특별 요리로 주세요.", "OR-der-SHEFS-SPESH-ul", "'SHEFS' 로 발음해요"], ["Can I have this to go?", "포장해 주실 수 있나요?", "hav-this-tuh-GOH", "'hav·this·tuh·GOH' 이어서 한 번에"], ["The ambiance here is wonderful.", "여기 분위기가 정말 좋아요.", "AM-bee-uns-WUN-der-ful", "'AM-bee-uns' 로 발음해요"], ["We're celebrating a special occasion.", "특별한 날을 축하하러 왔어요.", "sel-uh-BRAY-ting-uh-KAY-zhun", "'a' → uh-KAY-zhun 로 발음해요"], ["Is this dish vegan?", "이 요리는 비건인가요?", "DISH-VEE-gun", "'VEE-gun' 로 발음해요"], ["Can I have more bread, please?", "빵 더 주실 수 있나요?", "MOR-BRED-PLEEZ", "'MOR·BRED·PLEEZ' 이어서 한 번에"], ["What's the house specialty?", "이 집 특선 요리가 뭐예요?", "HOWS-SPESH-ul-tee", "'specialty' → SPESH-ul-tee 로 발음해요"], ["Could we move to a quieter table?", "더 조용한 테이블로 옮길 수 있을까요?", "KWYE-uh-ter-TAY-bul", "'KWYE-uh-ter' 로 발음해요"], ["The flavor profile is incredible.", "맛의 프로필이 놀라워요.", "FLAY-ver-PROH-fyl-in-KRED-ih-bul", "'incredible' → KRED-ih-bul (4음절 단어!)"], ["I'm vegan, not vegetarian.", "저는 비건이에요.", "VEE-gun-vej-uh-TAIR-ee-un", "VEE-gun-vej-uh-TAIR-ee-un → 대문자=강세, 소문자=약하게"], ["The food here is to die for.", "여기 음식은 정말 최고예요.", "FOOD-HEER-tuh-DY-fer", "'The food here is to die for' → 통째로 외워두세요!"], ["Could I get a refill on my coffee?", "커피 리필 해주실 수 있나요?", "REE-fil-KAW-fee", "'refill' → REE-fil 첫 음절에 강세"], ["I have a nut allergy.", "저는 견과류 알레르기가 있어요.", "NUT-AL-er-jee", "'allergy' → AL-er (3음절 단어!)"], ["Is there a service charge included?", "서비스 요금이 포함되어 있나요?", "SER-vis-CHARJ-in-KLOOD-id", "'service'(SER-vis-CHARJ) + 'charge'(in-KLOOD) 두 단어 모두 강하게"], ["Could I see the wine list?", "와인 리스트를 볼 수 있을까요?", "WYN-LIST", "'see'(WYN) + 'wine'(LIST) 두 단어 모두 강하게"], ["The presentation was stunning.", "플레이팅이 정말 아름다웠어요.", "prez-un-TAY-shun-STUN-ing", "'presentation' → prez-un-TAY-shun (4음절 단어!)"], ["I'd like a table by the window.", "창가 자리로 주세요.", "TAY-bul-by-thuh-WIN-doh", "'TAY·bul·by·thuh·WIN·doh' 이어서 한 번에"]], "news": [["Authorities are investigating the incident.", "당국이 사건을 조사 중입니다.", "uh-THOR-ih-teez-in-VES-tih-gay-ting", "'investigating' → in-VES-tih-gay-ting (2음절 단어!)"], ["Markets responded sharply to the announcement.", "시장은 발표에 급격히 반응했습니다.", "rih-SPOND-id-SHARP-lee-uh-NOWNS-ment", "'responded' → id-SHARP-lee (3음절 단어!)"], ["The summit resulted in a historic agreement.", "정상회담은 역사적인 합의로 이어졌습니다.", "SUM-it-rih-ZUL-tid-hih-STOR-ik", "SUM-it-rih-ZUL-tid-hih-STOR-ik → 대문자=강세, 소문자=약하게"], ["Inflation has reached a decade-long high.", "인플레이션이 10년 최고치에 달했습니다.", "in-FLAY-shun-REECHT-DEK-ayd", "'reached' → REECHT-DEK (2음절 단어!)"], ["Officials have yet to comment on the allegations.", "관계자들은 혐의에 논평하지 않았습니다.", "uh-FISH-ulz-al-ih-GAY-shunz", "'Officials' → uh-FISH-ulz (3음절 단어!)"], ["Scientists have made a breakthrough discovery.", "과학자들이 획기적인 발견을 했습니다.", "BRAYK-throo-dih-SKUV-er-ee", "BRAYK-throo-dih-SKUV-er-ee → 대문자=강세, 소문자=약하게"], ["Rescue teams are working around the clock.", "구조대가 24시간 작업하고 있습니다.", "RES-kyoo-TEEMZ-uh-ROWND-KLOK", "'Rescue' → RES-kyoo (2음절 단어!)"], ["The environmental impact remains under review.", "환경적 영향은 아직 검토 중입니다.", "in-vy-run-MEN-tul-IM-pakt", "'environmental' → in-vy-run-MEN-tul (6음절 단어!)"], ["Negotiations between the two parties have stalled.", "양측 협상이 교착 상태에 빠졌습니다.", "nih-goh-shee-AY-shunz-STAWLD", "'Negotiations' → nih-goh-shee-AY (5음절 단어!)"], ["Tech stocks surged following the earnings report.", "실적 보고서 이후 기술주가 급등했습니다.", "SERJD-ER-ningz-rih-PORT", "'SERJD' 로 발음해요"], ["The suspect was taken into custody this morning.", "용의자가 오늘 아침 구금되었습니다.", "SUS-pekt-KUS-tuh-dee", "'suspect' → SUS-pekt (3음절 단어!)"], ["Voters head to the polls on Tuesday.", "유권자들이 화요일에 투표소로 향합니다.", "VOH-terz-POHLZ-TOOZ-dee", "'to' → TOOZ-dee 로 발음해요"], ["The new legislation takes effect next month.", "새 법안이 다음 달부터 발효됩니다.", "lej-is-LAY-shun-ih-FEKT", "'legislation' → is-LAY-shun-ih (4음절 단어!)"], ["The CEO resigned amid growing controversy.", "CEO가 커지는 논란 속에 사임했습니다.", "SEE-ee-OH-rih-ZYND-KON-truh-ver-see", "'resigned' → ee-OH-rih (4음절 단어!)"], ["A major earthquake struck the region overnight.", "강진이 하룻밤 사이에 그 지역을 강타했습니다.", "ERTH-kwayk-STRUK-oh-ver-NYT", "ERTH-kwayk-STRUK-oh-ver-NYT → 대문자=강세, 소문자=약하게"], ["Experts warn of potential long-term consequences.", "전문가들이 잠재적 장기적 결과에 경고합니다.", "puh-TEN-shul-KON-sih-kwens-iz", "'consequences' → puh-TEN-shul-KON-sih-kwens-iz (4음절 단어!)"], ["Emergency services were called to the scene.", "응급대가 현장에 출동했습니다.", "ih-MER-jun-see-SER-vis-iz", "'Emergency' → ih-MER-jun (4음절 단어!)"], ["The international community is calling for sanctions.", "국제 사회가 제재를 요구하고 있습니다.", "in-ter-NASH-un-ul-SANGK-shunz", "'international' → in-ter-NASH-un-ul (5음절 단어!)"], ["The prime minister addressed the nation.", "총리가 국민에게 연설했습니다.", "PRYM-MIN-ih-ster-NAY-shun", "'-tion' → '-shun' 으로 발음 (예: PRYM-MIN-ih-ster-NAY-shun)"], ["Witnesses described the scene as chaotic.", "목격자들은 현장이 혼란스러웠다고 묘사했습니다.", "WIT-nes-iz-dih-SKRYBD-kay-OT-ik", "'kay-OT-ik' 로 발음해요"], ["The government announced a new economic policy.", "정부가 새로운 경제 정책을 발표했습니다.", "GUV-ern-munt-uh-NOWNSED-ek-uh-NOM-ik", "'government' → GUV-ern-munt (3음절 단어!)"], ["Relief efforts are underway in the affected areas.", "피해 지역에서 구호 활동이 진행 중입니다.", "rih-LEEF-EF-erts-UN-der-way", "'UN-der-way' 로 발음해요"], ["Citizens are urged to remain indoors.", "시민들은 실내에 있을 것을 촉구받고 있습니다.", "SIT-ih-zunz-URJD-in-DORZ", "'SIT-ih-zunz' 로 발음해요"], ["The trial begins next week.", "재판이 다음 주에 시작됩니다.", "TRYE-ul-bih-GINZ", "'begins' → ul-bih (2음절 단어!)"], ["Analysts predict a slowdown in growth.", "분석가들은 성장 둔화를 예측합니다.", "AN-uh-lists-prih-DIKT-SLOH-down", "'Analysts' → AN-uh (3음절 단어!)"], ["The merger was approved by regulators.", "합병이 규제 당국에 의해 승인됐습니다.", "MER-jer-uh-PROOVD-REG-yuh-lay-terz", "'regulators' → yuh-lay-terz (4음절 단어!)"], ["Thousands gathered for the annual demonstration.", "수천 명이 연례 시위를 위해 모였습니다.", "THOW-zunz-DEM-un-STRAY-shun", "'demonstration' → THOW-zunz-DEM-un-STRAY-shun (4음절 단어!)"], ["The policy will take effect immediately.", "이 정책은 즉시 발효됩니다.", "POL-ih-see-ih-MEE-dee-it-lee", "'immediately' → it-lee (5음절 단어!)"], ["Critics have questioned the administration's approach.", "비평가들은 행정부의 접근 방식에 의문을 제기했습니다.", "KRIT-iks-ad-min-ih-STRAY-shun", "'administration's' → STRAY-shun (5음절 단어!)"], ["The budget deficit has reached a record level.", "예산 적자가 기록적인 수준에 달했습니다.", "BUJ-it-DEF-ih-sit-REK-erd", "'deficit' → DEF-ih-sit (3음절 단어!)"], ["A ceasefire agreement was reached overnight.", "하룻밤 사이에 휴전 협정이 체결됐습니다.", "SEES-fyre-uh-GREE-munt-oh-ver-NYT", "SEES-fyre-uh-GREE-munt-oh-ver-NYT → 대문자=강세, 소문자=약하게"], ["The outbreak has spread to neighboring countries.", "발병이 이웃 국가들로 퍼졌습니다.", "OWT-brayk-NAY-ber-ing", "'NAY-ber-ing' 로 발음해요"], ["Officials confirmed at least a dozen casualties.", "관계자들은 최소 12명의 사상자를 확인했습니다.", "uh-FISH-ulz-KAZH-oo-ul-teez", "'Officials' → uh-FISH-ulz (4음절 단어!)"], ["International observers monitored the election.", "국제 참관인들이 선거를 감시했습니다.", "in-ter-NASH-un-ul-MON-ih-terd", "'International' → in-ter-NASH-un-ul 첫 음절에 강세"], ["The company faces potential bankruptcy.", "회사가 잠재적 파산 위기에 처해 있습니다.", "BANGK-rupt-see", "'potential' → BANGK-rupt-see (3음절 단어!)"], ["Residents are being evacuated from the flood zone.", "주민들이 홍수 지역에서 대피하고 있습니다.", "REZ-ih-dunts-ih-VAK-yoo-ay-tid", "'evacuated' → VAK-yoo-ay-tid (5음절 단어!)"], ["The treaty has been ratified by both nations.", "조약이 양국에 의해 비준되었습니다.", "TREE-tee-RAT-ih-fyed", "'ratified' → RAT-ih-fyed 로 발음해요"], ["A record number of voters turned out.", "기록적인 투표율을 기록했습니다.", "REK-erd-VOH-terz", "'record' → REK-erd 첫 음절에 강세"], ["The suspect pleaded not guilty.", "용의자는 무죄를 주장했습니다.", "SUS-pekt-PLEED-id-GIL-tee", "'GIL-tee' 로 발음해요"], ["Sanctions have been lifted following negotiations.", "협상 이후 제재가 해제되었습니다.", "SANGK-shunz-nih-GOH-shee-AY-shunz", "'negotiations' → SANGK-shunz-nih-GOH-shee-AY-shunz (5음절 단어!)"], ["The coalition government has collapsed.", "연립 정부가 붕괴되었습니다.", "koh-ih-LISH-un-kuh-LAPST", "'coalition' → koh-ih-LISH (4음절 단어!)"], ["Infrastructure spending will increase next year.", "인프라 지출이 내년에 증가할 것입니다.", "IN-fruh-struk-cher-SPEND-ing", "'Infrastructure' → IN-fruh-struk-cher-SPEND (4음절 단어!)"], ["The whistleblower revealed classified documents.", "내부고발자가 기밀 문서를 공개했습니다.", "WIS-ul-bloh-er-rih-VEELD", "'whistleblower' → WIS-ul-bloh-er 첫 음절에 강세"], ["Preliminary results suggest a narrow victory.", "예비 결과는 박빙의 승리를 시사합니다.", "prih-LIM-ih-ner-ee-NAR-oh-VIK-ter-ee", "'Preliminary' → prih-LIM-ih-ner (4음절 단어!)"], ["The legislation has sparked widespread debate.", "이 법안이 광범위한 논쟁을 촉발했습니다.", "lej-is-LAY-shun-dih-BAYT", "'dih-BAYT' 로 발음해요"], ["Authorities are appealing for witnesses.", "당국은 목격자들에게 제보를 호소하고 있습니다.", "uh-THOR-ih-teez-uh-PEEL-ing-WIT-nes-iz", "'uh·THOR·ih·teez·uh·PEEL·ing·WIT·nes·iz' 이어서 한 번에"], ["The investigation remains ongoing.", "조사는 계속 진행 중입니다.", "in-VES-tih-GAY-shun-ON-goh-ing", "'ON-goh-ing' 로 발음해요"], ["Tech giants face new antitrust regulations.", "기술 대기업들이 새로운 반독점 규정에 직면했습니다.", "TEK-JY-unts-an-tee-TRUST", "'an-tee-TRUST' 로 발음해요"], ["The central bank raised interest rates.", "중앙은행이 금리를 인상했습니다.", "SEN-trul-BANGK-IN-trest-RAYTS", "'central'(SEN-trul) + 'bank'(BANGK) 두 단어 모두 강하게"], ["Thousands of protesters took to the streets.", "수천 명의 시위대가 거리로 나섰습니다.", "THOW-zunz-PROH-tes-terz-STREETS", "'protesters' → PROH-tes-terz (3음절 단어!)"]]};
+var EXTRA = {"interview": [["I'm very interested in this position.", "저는 이 직책에 매우 관심이 있습니다.", "IN-ter-est-id-puh-ZI-shun", "'position' → ZI-shun (3음절 단어!)"], ["Could you tell me more about the role?", "이 역할에 대해 더 말씀해 주실 수 있나요?", "ROHL", "ROHL → 대문자=강세, 소문자=약하게"], ["I have five years of relevant experience.", "관련 경험이 5년 있습니다.", "REL-uh-vunt-ik-SPEER-ee-uns", "'relevant' → ik-SPEER-ee (3음절 단어!)"], ["What does the compensation package include?", "보상 패키지에는 무엇이 포함되나요?", "kom-pun-SAY-shun-PAK-ij", "'compensation' → pun-SAY-shun-PAK (4음절 단어!)"], ["I'd like to discuss the salary range.", "급여 범위에 대해 논의하고 싶습니다.", "SAL-uh-ree-RAYNJ", "'like' → uh-ree (3음절 단어!)"], ["Based on my experience, I was expecting around ninety thousand.", "9만 달러 정도를 기대했습니다.", "NYN-tee-THOW-zund", "'Based'(NYN-tee) + 'experience'(THOW-zund) 두 단어 모두 강하게"], ["Is there flexibility in the offer?", "제안에 유연성이 있나요?", "FLEK-sih-BIL-ih-tee", "'flexibility' → FLEK-sih-BIL-ih (5음절 단어!)"], ["What are the opportunities for advancement?", "승진 기회는 어떻게 되나요?", "op-er-TOO-nih-teez-ad-VANS-munt", "'opportunities' → er-TOO-nih-teez-ad (3음절 단어!)"], ["I'm currently earning about eighty thousand.", "현재 약 8만 달러를 받고 있습니다.", "KER-unt-lee-ER-ning", "'KER·unt·lee·ER·ning' 이어서 한 번에"], ["Could we revisit the benefits package?", "복리후생 패키지를 다시 검토할 수 있을까요?", "ree-VIZ-it-BEN-ih-fits", "'revisit' → ree-VIZ-it (3음절 단어!)"], ["What's the typical career trajectory here?", "일반적인 경력 궤적은 어떻게 되나요?", "TIP-ih-kul-truh-JEK-ter-ee", "'trajectory' → ter-ee (4음절 단어!)"], ["I'd like to counter with a higher figure.", "더 높은 금액으로 역제안하고 싶습니다.", "KOWN-ter-HY-er-FIG-yer", "'KOWN-ter' 로 발음해요"], ["Can you tell me about the team structure?", "팀 구조에 대해 말씀해 주실 수 있나요?", "TEEM-STRUK-cher", "'tell'(TEEM) + 'team'(STRUK) 두 단어 모두 강하게"], ["What are the performance review criteria?", "성과 평가 기준은 어떻게 되나요?", "per-FORM-uns-kry-TEER-ee-uh", "'performance' → FORM-uns-kry-TEER (4음절 단어!)"], ["I'm a quick learner and highly adaptable.", "배움이 빠르고 적응력이 높습니다.", "KWIK-LER-ner-uh-DAP-tuh-bul", "'adaptable' → tuh-bul (4음절 단어!)"], ["My greatest strength is problem-solving.", "제 가장 큰 강점은 문제 해결 능력입니다.", "STRENGTH-PROB-lum-SAWL-ving", "STRENGTH-PROB-lum-SAWL-ving → 대문자=강세, 소문자=약하게"], ["I work well under pressure.", "저는 압박 속에서도 잘 일합니다.", "WERK-WEL-UN-der-PRESH-er", "'pressure' → PRESH-er 로 발음해요"], ["I left to pursue a better opportunity.", "더 나은 기회를 위해 나왔습니다.", "per-SYOO-op-er-TOO-nih-tee", "'per-SYOO' 로 발음해요"], ["I'm passionate about this industry.", "저는 이 업계에 열정적입니다.", "PASH-un-it-IN-duh-stree", "'passionate' → un-it-IN-duh (3음절 단어!)"], ["Could you provide a written offer?", "서면 제안서를 제공해 주실 수 있나요?", "pruh-VYD-RIT-un-AW-fer", "'provide'(pruh-VYD-RIT) + 'written'(un-AW) 두 단어 모두 강하게"], ["I have strong interpersonal skills.", "저는 대인관계 능력이 뛰어납니다.", "IN-ter-per-sun-ul-SKILZ", "'interpersonal' → ter-per-sun-ul-SKILZ (5음절 단어!)"], ["What's the company culture like?", "회사 문화는 어떤가요?", "KUM-puh-nee-KUL-cher", "'KUL-cher' 로 발음해요"], ["I thrive in collaborative environments.", "저는 협업 환경에서 성장합니다.", "THRYV-kuh-LAB-er-uh-tiv", "'environments' → THRYV-kuh-LAB-er-uh-tiv (4음절 단어!)"], ["When can I expect to hear back from you?", "언제쯤 연락을 받을 수 있을까요?", "ik-SPEKT-HEER-BAK", "'expect'(ik-SPEKT) + 'hear'(HEER) 두 단어 모두 강하게"], ["I'd like some time to consider the offer.", "제안을 고려할 시간이 필요합니다.", "kun-SID-er-AW-fer", "'consider' → kun-SID-er-AW-fer (3음절 단어!)"], ["What's the onboarding process like?", "온보딩 프로세스는 어떻게 되나요?", "ON-bor-ding-PROH-ses", "'onboarding' → ON-bor-ding 첫 음절에 강세"], ["Can we discuss equity or stock options?", "주식 또는 스톡옵션에 대해 논의할 수 있나요?", "EK-wih-tee-STOK-OP-shunz", "'discuss' → EK-wih (3음절 단어!)"], ["I'm looking for a role with growth potential.", "성장 가능성이 있는 역할을 찾고 있습니다.", "GROHTH-puh-TEN-shul", "'potential' → GROHTH-puh-TEN-shul (3음절 단어!)"], ["That's a compelling offer, but I was hoping for more.", "매력적인 제안이지만, 더 많이 기대했습니다.", "kum-PEL-ing-AW-fer", "'offer' → fer (2음절 단어!)"], ["My long-term goal is to lead a team.", "제 장기적인 목표는 팀을 이끄는 것입니다.", "LONG-term-GOHL-LEED", "LONG-term-GOHL-LEED → 대문자=강세, 소문자=약하게"], ["I've been managing cross-functional teams.", "기능 간 팀을 관리해 왔습니다.", "MAN-ij-ing-KROSS-fungk-shun-ul", "MAN-ij-ing-KROSS-fungk-shun-ul → 대문자=강세, 소문자=약하게"], ["I can start within two weeks.", "2주 안에 시작할 수 있습니다.", "START-wih-THIN-TOO-WEEKS", "'I' → wih-THIN 로 발음해요"], ["Is the position remote or in-office?", "재택이나 사무실 근무인가요?", "puh-ZI-shun-ROH-moht", "'ROH-moht' 로 발음해요"], ["What does success look like in this role?", "이 역할에서 성공은 어떤 모습인가요?", "suk-SES-ROHL", "'success' → SES-ROHL (2음절 단어!)"], ["I'd appreciate the opportunity to demonstrate my skills.", "제 능력을 발휘할 기회에 감사드립니다.", "uh-PREE-shee-ayt-DEM-un-stray-shun", "'appreciate' → PREE-shee-ayt-DEM (4음절 단어!)"], ["Do you offer professional development?", "전문성 개발 기회를 제공하나요?", "pruh-FESH-un-ul-deh-VEL-up-munt", "'offer'(pruh-FESH) + 'professional'(un-ul-deh-VEL) 두 단어 모두 강하게"], ["I'm confident I'd be an asset to your team.", "팀에 도움이 될 것이라 자신합니다.", "KON-fih-dunt-AS-et", "'confident' → KON-fih-dunt 첫 음절에 강세"], ["Could you walk me through a typical workday?", "일반적인 근무일을 설명해 주실 수 있나요?", "TIP-ih-kul-WERK-day", "'typical' → kul-WERK (3음절 단어!)"], ["I'm currently considering multiple offers.", "현재 여러 제안을 검토 중입니다.", "KER-unt-lee-MUL-tih-pul", "'multiple' → KER-unt-lee-MUL-tih-pul (3음절 단어!)"], ["When do you need a decision by?", "언제까지 결정이 필요하신가요?", "dih-SI-zhun-BY", "'decision' → SI-zhun-BY (3음절 단어!)"], ["I bring a unique perspective to the team.", "팀에 독특한 관점을 가져옵니다.", "yoo-NEEK-per-SPEK-tiv", "'unique' → NEEK-per-SPEK (3음절 단어!)"], ["What metrics define success in this role?", "성공을 정의하는 지표는 무엇인가요?", "MET-riks-dih-FYN-suk-SES", "'metrics' → MET-riks 로 발음해요"], ["I'm proud of the results I've achieved.", "달성한 결과들이 자랑스럽습니다.", "PROWD-uh-CHEEVD", "'uh-CHEEVD' 로 발음해요"], ["I'm hoping we can find common ground.", "서로 공통점을 찾을 수 있기를 바랍니다.", "HOH-ping-KOM-un-GROWND", "'I'm'(HOH) + 'hoping'(ping-KOM) 두 단어 모두 강하게"], ["Thank you for the opportunity to interview.", "인터뷰 기회를 주셔서 감사합니다.", "op-er-TOO-nih-tee-IN-ter-vyoo", "'opportunity' → op-er-TOO-nih (4음절 단어!)"], ["I look forward to hearing your decision.", "결정을 듣기를 기대합니다.", "LUK-FOR-werd-dih-SI-zhun", "'forward' → FOR-werd 로 발음해요"], ["I was laid off due to company restructuring.", "회사 구조조정으로 인해 해고되었습니다.", "LAYD-AWF-rih-STRUK-cher-ing", "'restructuring' → ing (3음절 단어!)"], ["I'm excited about the potential to make an impact.", "영향을 미칠 잠재력에 기대가 됩니다.", "ik-SY-tid-puh-TEN-shul-IM-pakt", "'make' → pakt (2음절 단어!)"], ["I'd like to negotiate the start date as well.", "시작일도 협상하고 싶습니다.", "nih-GOH-shee-ayt-START-DAYT", "'negotiate' → ayt-START-DAYT (4음절 단어!)"], ["Can you share more about the team I'd be joining?", "합류할 팀에 대해 더 말씀해 주실 수 있나요?", "SHAIR-MOR-uh-BOWT-TEEM", "'SHAIR·MOR·uh·BOWT·TEEM' 이어서 한 번에"]], "architect": [["The design concept emphasizes passive solar.", "설계 개념은 패시브 솔라를 강조합니다.", "dih-ZYN-KON-sept-PAS-iv", "'design' → dih-ZYN 첫 음절에 강세"], ["We need to comply with local zoning regulations.", "지역 용도 지역제 규정을 준수해야 합니다.", "kum-PLY-ZOH-ning-reg-yuh-LAY-shunz", "'local' → ZOH-ning (2음절 단어!)"], ["The structural engineer reviewed the load-bearing walls.", "구조 엔지니어가 내력벽을 검토했습니다.", "STRUK-cher-ul-en-jih-NEER-LOHD-bair-ing", "'structural' → STRUK-cher-ul (3음절 단어!)"], ["We're waiting for the building permit to be approved.", "건축 허가가 승인되기를 기다리고 있습니다.", "BIL-ding-PER-mit-uh-PROOVD", "'building' → BIL-ding 첫 음절에 강세"], ["The contractor bid was significantly over budget.", "시공 견적이 예산을 크게 초과했습니다.", "KAHN-trak-ter-BID-sig-NIH-fih-kunt-lee", "'significantly' → sig-NIH-fih-kunt (5음절 단어!)"], ["The client wants to revisit the floor plan.", "클라이언트가 평면도를 다시 검토하고 싶어합니다.", "KLY-unt-ree-VIZ-it-FLOOR-PLAN", "'client'(KLY) + 'revisit'(ree-VIZ-it) 두 단어 모두 강하게"], ["We need to submit the drawings to the city.", "도면을 시청에 제출해야 합니다.", "sub-MIT-DRAW-ingz-SIT-ee", "'submit' → MIT-DRAW (2음절 단어!)"], ["Can we schedule a site visit this week?", "이번 주에 현장 방문을 일정 잡을 수 있나요?", "SKEJ-ool-SYT-VIZ-it", "SKEJ-ool 미국식"], ["The city council approved the variance request.", "시의회가 분산 요청을 승인했습니다.", "SIT-ee-KOWN-sul-VAIR-ee-uns", "'approved' → sul-VAIR-ee (3음절 단어!)"], ["We're going over the construction documents.", "건설 문서를 검토하고 있습니다.", "kahn-STRUK-shun-DOK-yuh-munts", "'over'(STRUK-shun) + 'construction'(DOK-yuh-munts) 두 단어 모두 강하게"], ["The subcontractors need to be on site by Monday.", "하도급업체들이 월요일까지 현장에 있어야 합니다.", "SUB-kahn-trak-terz-SYT", "'subcontractors' → SUB-kahn-trak-terz 첫 음절에 강세"], ["We need to address the ADA compliance issues.", "ADA 준수 문제를 해결해야 합니다.", "AY-dee-AY-kum-PLY-uns", "AY-dee-AY-kum-PLY-uns → 대문자=강세, 소문자=약하게"], ["The setback requirements limit the buildable area.", "후퇴 요건이 건설 가능 면적을 제한합니다.", "SET-bak-rih-KWYRE-munts", "'setback'(SET-bak) + 'requirements'(rih-KWYRE-munts) 두 단어 모두 강하게"], ["How much square footage are we working with?", "우리가 작업하는 면적은 얼마나 되나요?", "SKWAIR-FUT-ij", "'SKWAIR-FUT-ij' 로 발음해요"], ["The facade treatment needs to match the existing context.", "외관 처리가 기존 맥락과 일치해야 합니다.", "fuh-SAHD-TREET-munt", "'fuh-SAHD' 로 발음해요"], ["We need to get a geotechnical report first.", "먼저 지반 기술 보고서를 받아야 합니다.", "jee-oh-TEK-nih-kul", "'geotechnical' → TEK-nih-kul (3음절 단어!)"], ["We're proposing a mixed-use development.", "복합 용도 개발을 제안하고 있습니다.", "MIKSD-yoos-dih-VEL-up-munt", "'proposing' → MIKSD-yoos-dih (3음절 단어!)"], ["The egress requirements dictate the stair location.", "출구 요건이 계단 위치를 결정합니다.", "EE-gres-rih-KWYRE-munts-DIK-tayt", "'EE-gres' 로 발음해요"], ["We need a demolition permit before we can start.", "시작하기 전에 철거 허가가 필요합니다.", "dem-uh-LI-shun-PER-mit", "'before' → dem-uh-LI-shun-PER-mit (3음절 단어!)"], ["The structural system is a moment frame.", "구조 시스템은 모멘트 프레임입니다.", "STRUK-cher-ul-MOH-munt-FRAYM", "STRUK-cher-ul-MOH-munt-FRAYM → 대문자=강세, 소문자=약하게"], ["Can you provide shop drawings by Thursday?", "목요일까지 시공 도면을 제출해 주실 수 있나요?", "SHOP-DRAW-ingz-THER-zdee", "'provide'(SHOP-DRAW-ingz) + 'shop'(THER) 두 단어 모두 강하게"], ["The project is in the schematic design phase.", "프로젝트는 기본 설계 단계에 있습니다.", "skee-MAT-ik-dih-ZYN-FAYZ", "'schematic' → ik-dih-ZYN (3음절 단어!)"], ["We need to coordinate with the MEP engineers.", "MEP 엔지니어들과 조율해야 합니다.", "koh-OR-dih-nayt-MEP", "koh-OR-dih-nayt-MEP → 대문자=강세, 소문자=약하게"], ["The RFI needs a response within three days.", "RFI는 3일 안에 답변이 필요합니다.", "AR-ef-EYE-rih-SPONS", "AR-ef-EYE-rih-SPONS → 대문자=강세, 소문자=약하게"], ["The change order will increase costs significantly.", "변경 주문이 비용을 크게 증가시킬 것입니다.", "CHAYNJ-OR-der-sig-NIH-fih-kunt-lee", "'significantly' → CHAYNJ-OR-der-sig-NIH-fih-kunt-lee (5음절 단어!)"], ["We're on track for the construction start date.", "건설 시작일에 맞게 진행 중입니다.", "kahn-STRUK-shun-START-DAYT", "'kahn·STRUK·shun·START·DAYT' 이어서 한 번에"], ["The design review meeting is scheduled for Friday.", "설계 검토 회의가 금요일에 예정되어 있습니다.", "dih-ZYN-rih-VYOO-SKEJ-ooled", "'SKEJ-ooled' 로 발음해요"], ["We need to resolve the conflicts in the drawings.", "도면의 충돌을 해결해야 합니다.", "rih-ZOLV-KON-flikts", "'resolve' → rih-ZOLV-KON 첫 음절에 강세"], ["The occupancy classification is Group A-2.", "점유 분류는 그룹 A-2입니다.", "OK-yuh-pun-see-klas-ih-fih-KAY-shun", "'occupancy'(OK-yuh-pun) + 'classification'(see-klas-ih-fih-KAY) 두 단어 모두 강하게"], ["The curtain wall system needs to be detailed.", "커튼월 시스템을 상세히 설계해야 합니다.", "KER-tun-WAWL-dih-TAYLD", "'curtain'(KER-tun) + 'wall'(WAWL) 두 단어 모두 강하게"], ["We need to address the fire egress path.", "화재 출구 경로를 해결해야 합니다.", "FYR-EE-gres-PATH", "'need'(FYR) + 'address'(EE-gres) 두 단어 모두 강하게"], ["The project stakeholders need to align.", "프로젝트 이해관계자들이 일치해야 합니다.", "STAYK-hohl-derz-uh-LYN", "'stakeholders' → derz-uh-LYN (3음절 단어!)"], ["We need to stay within the FAR limits.", "FAR 한도 내에 있어야 합니다.", "ef-AY-AR-LIM-its", "ef-AY-AR-LIM-its → 대문자=강세, 소문자=약하게"], ["The foundation system is a mat slab.", "기초 시스템은 매트 슬래브입니다.", "fown-DAY-shun-MAT-SLAB", "'foundation' → fown-DAY-shun (3음절 단어!)"], ["The city required a traffic impact study.", "시에서 교통 영향 연구를 요구했습니다.", "TRAF-ik-IM-pakt-STUD-ee", "'city'(TRAF) + 'required'(ik-IM-pakt) 두 단어 모두 강하게"], ["We're looking at a LEED certification.", "LEED 인증을 검토하고 있습니다.", "LEED-ser-tih-fih-KAY-shun", "LEED-ser-tih-fih-KAY-shun → 대문자=강세, 소문자=약하게"], ["We need an as-built survey before demolition.", "철거 전에 현황 측량이 필요합니다.", "az-BILT-SER-vay", "'as-built'(BILT-SER) 강하게, 두 단어 모두 강세"], ["The historic preservation requirements are complex.", "역사 보존 요건은 복잡합니다.", "hih-STOR-ik-prez-er-VAY-shun", "'preservation' → prez-er-VAY-shun (4음절 단어!)"], ["We're presenting to the planning commission.", "도시 계획 위원회에 발표합니다.", "PREZ-en-ting-PLAN-ing-kuh-MISH-un", "'presenting' → PREZ-en-ting (3음절 단어!)"], ["The mechanical room needs to be accessible.", "기계실은 접근 가능해야 합니다.", "mih-KAN-ih-kul-ak-SES-ih-bul", "'mechanical' → mih-KAN-ih-kul (4음절 단어!)"], ["Can you expedite the permit approval?", "허가 승인을 서둘러 주실 수 있나요?", "EK-spih-dyt-PER-mit", "'EK-spih-dyt' 로 발음해요"], ["We're running over on the construction schedule.", "건설 일정이 초과되고 있습니다.", "kahn-STRUK-shun-SKEJ-ool", "'SKEJ-ool' 로 발음해요"], ["The phasing plan needs to account for occupancy.", "단계 계획은 점유를 고려해야 합니다.", "FAY-zing-PLAN-OK-yuh-pun-see", "'OK-yuh-pun-see' 로 발음해요"], ["We need to coordinate with the landscape architect.", "조경사와 조율해야 합니다.", "koh-OR-dih-nayt-LAND-skayp-ARK-ih-tekt", "'coordinate'(OR-dih-nayt-LAND) + 'landscape'(skayp-ARK-ih) 두 단어 모두 강하게"], ["The enclosure performance needs to meet energy code.", "외피 성능이 에너지 코드를 충족해야 합니다.", "en-KLOH-zher-per-FORM-uns", "'enclosure'(en-KLOH-zher-per) + 'performance'(FORM-uns) 두 단어 모두 강하게"], ["We need to finalize the finish schedule.", "마감 일정을 확정해야 합니다.", "FY-nuh-lyz-FIN-ish-SKEJ-ool", "'finalize' → FY-nuh-lyz-FIN 첫 음절에 강세"], ["The structural calculations need peer review.", "구조 계산서가 동료 검토가 필요합니다.", "STRUK-cher-ul-kal-kyuh-LAY-shunz", "'calculations' → kal-kyuh-LAY-shunz (4음절 단어!)"], ["We're redesigning the lobby entrance.", "로비 입구를 재설계하고 있습니다.", "ree-dih-ZY-ning-LOB-ee-EN-trunts", "'entrance' → ee-EN-trunts (3음절 단어!)"], ["The mechanical system requires coordination.", "기계 시스템은 조율이 필요합니다.", "mih-KAN-ih-kul-koh-OR-dih-NAY-shun", "'mechanical' → mih-KAN-ih-kul (5음절 단어!)"], ["We need to evaluate the ground lease terms.", "지상권 임대 조건을 평가해야 합니다.", "ih-VAL-yoo-ayt-GROWND-LEES", "'ih-VAL-yoo-ayt' 로 발음해요"]], "cs": [["We need to refactor this legacy code.", "이 레거시 코드를 리팩터링해야 합니다.", "REE-fak-ter-LEG-uh-see", "'refactor' → REE-fak-ter 첫 음절에 강세"], ["The API endpoint returns a JSON response.", "API 엔드포인트가 JSON 응답을 반환합니다.", "AY-PEE-EYE-END-poynt-JAY-sun", "AY-PEE-EYE-END-poynt-JAY-sun → 대문자=강세, 소문자=약하게"], ["We have a memory leak in production.", "프로덕션에 메모리 누수가 있습니다.", "MEM-uh-ree-LEEK-pruh-DUK-shun", "'production' → LEEK-pruh-DUK (3음절 단어!)"], ["The algorithm has quadratic time complexity.", "알고리즘의 시간 복잡도는 이차입니다.", "AL-guh-rih-thum-TYM-kom-PLEK-sih-tee", "'algorithm' → AL-guh-rih (4음절 단어!)"], ["We need to implement authentication middleware.", "인증 미들웨어를 구현해야 합니다.", "IM-pluh-ment-aw-then-tih-KAY-shun", "'authentication' → then-tih-KAY-shun (5음절 단어!)"], ["The pull request is ready for code review.", "풀 리퀘스트가 코드 리뷰 준비가 되었습니다.", "PUL-rih-KWEST-KOHD-rih-VYOO", "'pull'(PUL) + 'request'(rih-KWEST) 두 단어 모두 강하게"], ["We should use a more efficient data structure.", "더 효율적인 데이터 구조를 사용해야 합니다.", "ih-FISH-unt-DAY-tuh-STRUK-cher", "'efficient' → unt-DAY-tuh (3음절 단어!)"], ["The database query is causing a bottleneck.", "데이터베이스 쿼리가 병목을 유발하고 있습니다.", "DAY-tuh-bays-KWEER-ee-BOT-ul-nek", "'bottleneck' → BOT-ul-nek 로 발음해요"], ["We need to write unit tests for this function.", "단위 테스트를 작성해야 합니다.", "YOON-it-TESTS-FUNGK-shun", "'function' → FUNGK-shun 로 발음해요"], ["The deployment pipeline is failing.", "배포 파이프라인이 실패하고 있습니다.", "dih-PLOY-munt-PYP-lyne", "'deployment' → dih-PLOY-munt (3음절 단어!)"], ["Can you push this to the main branch?", "이것을 메인 브랜치에 푸시할 수 있나요?", "PUSH-MAYN-BRANCH", "'push'(PUSH) + 'main'(MAYN) 두 단어 모두 강하게"], ["The server is throwing a 500 internal error.", "서버에서 내부 오류가 발생하고 있습니다.", "SER-ver-IN-ter-nul-ER-er", "'server'(SER-ver) + 'throwing'(IN-ter) 두 단어 모두 강하게"], ["We need to optimize the SQL query.", "SQL 쿼리를 최적화해야 합니다.", "OP-tih-myz-ES-KYOO-EL", "'ES-KYOO-EL' 로 발음해요"], ["The microservices architecture is overly complex.", "마이크로서비스 아키텍처가 너무 복잡합니다.", "MY-kroh-ser-vis-iz-ARK-ih-tek-cher", "'microservices'(MY-kroh-ser-vis-iz) + 'architecture'(ARK-ih-tek-cher) 두 단어 모두 강하게"], ["We should implement proper error handling.", "적절한 오류 처리를 구현해야 합니다.", "IM-pluh-ment-PROP-er-HAN-dling", "'handling' → HAN-dling 로 발음해요"], ["The CI/CD pipeline automates our deployments.", "CI/CD 파이프라인이 배포를 자동화합니다.", "SEE-EYE-SEE-DEE-PYP-lyne", "SEE-EYE-SEE-DEE-PYP-lyne → 대문자=강세, 소문자=약하게"], ["We're migrating to a cloud-based infrastructure.", "클라우드 기반 인프라로 마이그레이션하고 있습니다.", "MY-gray-ting-KLOWD-bayst", "'migrating' → MY-gray-ting (3음절 단어!)"], ["The regression introduced a critical bug.", "회귀가 중요한 버그를 도입했습니다.", "rih-GRESH-un-KRIT-ih-kul", "'regression' → rih-GRESH-un (3음절 단어!)"], ["We need to document the API endpoints.", "API 엔드포인트를 문서화해야 합니다.", "DOK-yuh-ment-AY-PEE-EYE", "'document' → DOK-yuh-ment 첫 음절에 강세"], ["The load balancer distributes traffic evenly.", "로드 밸런서가 트래픽을 고르게 분산시킵니다.", "LOHD-BAL-un-ser-dih-STRIB-yoots", "'traffic' → LOHD-BAL-un-ser-dih-STRIB-yoots (2음절 단어!)"], ["We should cache the database results.", "데이터베이스 결과를 캐시해야 합니다.", "KASH-DAY-tuh-bays", "'KASH' 로 발음해요"], ["The user interface needs better accessibility.", "사용자 인터페이스는 더 나은 접근성이 필요합니다.", "IN-ter-faes-ak-SES-ih-BIL-ih-tee", "'accessibility' → IN-ter-faes-ak-SES-ih-BIL-ih-tee (5음절 단어!)"], ["We're implementing an event-driven architecture.", "이벤트 기반 아키텍처를 구현하고 있습니다.", "ih-VENT-driv-un-ARK-ih-tek-cher", "ih-VENT-driv-un-ARK-ih-tek-cher → 대문자=강세, 소문자=약하게"], ["The encryption algorithm is no longer secure.", "암호화 알고리즘이 더 이상 안전하지 않습니다.", "en-KRIP-shun-AL-guh-rih-thum", "'algorithm' → shun-AL-guh (3음절 단어!)"], ["We need a code freeze before the release.", "릴리스 전에 코드 동결이 필요합니다.", "KOHD-FREEZ-rih-LEES", "'need'(KOHD) + 'code'(FREEZ-rih) 두 단어 모두 강하게"], ["The containerization simplifies deployment.", "컨테이너화가 배포를 단순화합니다.", "kun-tay-ner-ih-ZAY-shun", "'containerization' → kun-tay-ner-ih-ZAY-shun (6음절 단어!)"], ["We should consider asynchronous processing.", "비동기 처리를 고려해야 합니다.", "ay-SING-kruh-nus-PROS-es-ing", "'consider' → ay-SING-kruh (4음절 단어!)"], ["Can you reproduce the bug consistently?", "버그를 일관되게 재현할 수 있나요?", "ree-pruh-DOOS-kun-SIS-tunt-lee", "'reproduce' → ree-pruh-DOOS-kun (4음절 단어!)"], ["The sprint retrospective is scheduled for Friday.", "스프린트 회고가 금요일에 예정되어 있습니다.", "SPRINT-ret-ruh-SPEK-tiv", "'retrospective' → ret-ruh-SPEK-tiv (4음절 단어!)"], ["The object-oriented paradigm promotes reuse.", "객체 지향 패러다임은 재사용을 촉진합니다.", "OB-jekt-OR-ee-en-tid-PAIR-uh-dym", "OB-jekt-OR-ee-en-tid-PAIR-uh-dym → 대문자=강세, 소문자=약하게"], ["We need to handle the edge cases carefully.", "엣지 케이스를 신중하게 처리해야 합니다.", "EJ-KAY-siz-KAIR-fuh-lee", "'need'(EJ) + 'handle'(KAY-siz) 두 단어 모두 강하게"], ["We're doing agile development with two-week sprints.", "2주 스프린트로 애자일 개발을 합니다.", "AJ-ul-dih-VEL-up-munt", "'two-week' → AJ-ul-dih-VEL-up-munt (2음절 단어!)"], ["We need to scale horizontally to handle the load.", "수평으로 확장해야 합니다.", "SKAYL-hor-ih-ZON-tuh-lee", "'horizontally' → ZON-tuh-lee (5음절 단어!)"], ["The technical debt is slowing us down.", "기술적 부채가 우리를 느리게 하고 있습니다.", "TEK-nih-kul-DET-SLOH-ing", "'debt' → 'b' 묵음, 안 읽어요! (TEK-nih-kul-DET-SLOH-ing)"], ["The recursive function is causing a stack overflow.", "재귀 함수가 스택 오버플로우를 유발하고 있습니다.", "rih-KER-siv-FUNGK-shun-STAK", "'overflow' → rih-KER-siv-FUNGK-shun-STAK (3음절 단어!)"], ["We should implement rate limiting on the API.", "API에 속도 제한을 구현해야 합니다.", "RAYT-LIM-ih-ting-AY-PEE-EYE", "'implement'(RAYT-LIM-ih) + 'rate'(ting-AY) 두 단어 모두 강하게"], ["We need to improve observability and monitoring.", "관찰 가능성과 모니터링을 개선해야 합니다.", "ob-zer-vuh-BIL-ih-tee-MON-ih-ter-ing", "'observability' → ih-tee-MON-ih-ter (5음절 단어!)"], ["We're moving to a serverless architecture.", "서버리스 아키텍처로 이동하고 있습니다.", "SER-ver-les-ARK-ih-tek-cher", "'serverless' → les-ARK-ih (3음절 단어!)"], ["The merge conflict needs to be resolved first.", "머지 충돌을 먼저 해결해야 합니다.", "MERJ-KON-flikt-rih-ZOLVD", "'merge' → MERJ-KON 첫 음절에 강세"], ["We should profile the application to find bottlenecks.", "병목을 찾기 위해 프로파일링해야 합니다.", "PROH-fyl-ap-lih-KAY-shun-BOT-ul-neks", "'application' → lih-KAY-shun-BOT (4음절 단어!)"], ["The Kubernetes cluster is down.", "쿠버네티스 클러스터가 다운되었습니다.", "kyoo-ber-NET-eez-KLUS-ter", "kyoo-ber-NET-eez"], ["We need feature flags for A/B testing.", "A/B 테스트를 위해 피처 플래그가 필요합니다.", "FEE-cher-FLAGZ-AY-BEE", "'need'(FEE) + 'feature'(cher-FLAGZ-AY) 두 단어 모두 강하게"], ["The dependency injection pattern is useful here.", "의존성 주입 패턴이 여기서 유용합니다.", "dep-EN-den-see-in-JEK-shun", "'dependency' → dep-EN-den (3음절 단어!)"], ["The GraphQL query is more efficient than REST.", "GraphQL 쿼리가 REST보다 더 효율적입니다.", "GRAF-kyool-KWEER-ee-REST", "GRAF-kyool-KWEER-ee-REST → 대문자=강세, 소문자=약하게"], ["The version control history shows the bug origin.", "버전 관리 이력이 버그 원인을 보여줍니다.", "VER-zhun-kun-TROHL-HIH-stuh-ree", "'version'(VER-zhun) + 'control'(kun-TROHL) 두 단어 모두 강하게"], ["We need to add input validation to prevent injection.", "입력 유효성 검사를 추가해야 합니다.", "IN-put-val-ih-DAY-shun-in-JEK-shun", "'injection' → IN-put-val-ih-DAY-shun-in-JEK-shun (3음절 단어!)"], ["The codebase needs major architectural refactoring.", "코드베이스는 대규모 아키텍처 리팩터링이 필요합니다.", "KOHD-bays-ARK-ih-tek-cher-ul", "'codebase'(KOHD-bays-ARK-ih) 강하게, 두 단어 모두 강세"], ["The singleton pattern ensures one instance.", "싱글톤 패턴은 하나의 인스턴스를 보장합니다.", "SING-gul-ton-PAT-ern-IN-stuns", "'singleton' → SING-gul-ton 첫 음절에 강세"], ["We're adding telemetry for better observability.", "더 나은 관찰 가능성을 위해 텔레메트리를 추가하고 있습니다.", "tuh-LEM-ih-tree-ob-zer-vuh-BIL-ih-tee", "tuh-LEM-ih-tree"], ["The integration tests are all passing now.", "통합 테스트가 모두 통과되고 있습니다.", "IN-tuh-GRAY-shun-TESTS-PAS-ing", "'integration' → IN-tuh-GRAY-shun (4음절 단어!)"]], "realestate": [["We've identified a potential acquisition target.", "잠재적인 인수 대상을 확인했습니다.", "ak-wih-ZI-shun-TAR-git", "'identified' → ZI-shun-TAR-git (4음절 단어!)"], ["The due diligence period expires in thirty days.", "실사 기간이 30일 후에 만료됩니다.", "DYOO-DIL-ih-juns-ik-SPYRZ", "'expires' → DYOO-DIL-ih-juns-ik-SPYRZ (3음절 단어!)"], ["We're looking to close by end of quarter.", "분기 말까지 클로징을 원합니다.", "KLOHZ-by-END-KWOR-ter", "'KWOR-ter' 로 발음해요"], ["The cap rate on this asset is attractive.", "이 자산의 캡 레이트가 매력적입니다.", "KAP-RAYT-AS-et-uh-TRAK-tiv", "'uh-TRAK-tiv' 로 발음해요"], ["We need to negotiate the purchase agreement.", "매매 계약을 협상해야 합니다.", "nih-GOH-shee-ayt-PER-chus", "'negotiate' → GOH-shee-ayt-PER (4음절 단어!)"], ["The site has excellent development potential.", "이 부지는 개발 잠재력이 뛰어납니다.", "dih-VEL-up-munt-puh-TEN-shul", "'site'(dih-VEL) + 'development'(TEN-shul) 두 단어 모두 강하게"], ["The entitlement process can take up to two years.", "인허가 과정은 최대 2년이 걸릴 수 있습니다.", "en-TY-tul-munt-PROH-ses", "'entitlement' → en-TY-tul-munt (3음절 단어!)"], ["We're analyzing the net operating income.", "순 영업 소득을 분석하고 있습니다.", "AN-uh-lyz-ing-NET-OP-er-ay-ting", "'NOI' 로 발음해요"], ["We're negotiating the letter of intent.", "의향서를 협상하고 있습니다.", "nih-GOH-shee-ay-ting-in-TENT", "'LOI' 로 발음해요"], ["The proforma shows strong projected returns.", "프로포마는 강한 예상 수익을 보여줍니다.", "proh-FOR-muh-pruh-JEK-tid", "'proforma' → proh-FOR-muh 로 발음해요"], ["We're under contract on the industrial parcel.", "산업용 부지에 계약 중입니다.", "in-DUS-tree-ul-PAR-sul", "'under'(in-DUS) + 'industrial'(PAR-sul) 두 단어 모두 강하게"], ["The zoning allows for mixed-use development.", "용도 지역제가 복합 용도 개발을 허용합니다.", "ZOH-ning-MIKSD-yoos", "'uh-LOWZ' 로 발음해요"], ["We need to conduct environmental assessments.", "환경 평가를 실시해야 합니다.", "in-VY-run-men-tul-uh-SES-munts", "'assessments' → in-VY-run-men-tul-uh-SES-munts (3음절 단어!)"], ["The title search revealed several encumbrances.", "소유권 조사에서 여러 부담이 발견되었습니다.", "TY-tul-SERCH-en-KUM-brun-siz", "'revealed' → en-KUM-brun (3음절 단어!)"], ["Our equity partners are interested in a joint venture.", "지분 파트너들이 조인트 벤처에 관심이 있습니다.", "EK-wih-tee-JOYNT-VEN-cher", "'equity'(EK-wih) + 'partners'(tee-JOYNT) 두 단어 모두 강하게"], ["The debt service coverage ratio meets our requirements.", "부채 상환 커버리지 비율이 요건을 충족합니다.", "DET-SER-vis-KUV-er-ij-RAY-shoh", "'DSCR' 로 발음해요"], ["We're seeking a ground lease arrangement.", "지상권 임대 계약을 모색하고 있습니다.", "GROWND-LEES-uh-RAYNJ-munt", "'arrangement' → GROWND-LEES-uh-RAYNJ-munt (3음절 단어!)"], ["The absorption rate suggests strong demand.", "흡수율이 강한 수요를 시사합니다.", "ab-SORP-shun-RAYT-dih-MAND", "'absorption' → ab-SORP-shun (3음절 단어!)"], ["We'll need a Phase One environmental report.", "Phase One 환경 보고서가 필요합니다.", "FAYZ-WUN-in-VY-run-men-tul", "'environmental' → men-tul (6음절 단어!)"], ["The comparable sales analysis supports our valuation.", "비교 판매 분석이 우리의 가치 평가를 뒷받침합니다.", "KOM-puh-ruh-bul-val-yoo-AY-shun", "'comparable' → KOM-puh-ruh-bul (4음절 단어!)"], ["We're pursuing a 1031 exchange.", "1031 교환을 추진하고 있습니다.", "per-SYOO-ing-TEN-thirty-WUN-iks-CHAYNJ", "per-SYOO-ing-TEN-thirty-WUN-iks-CHAYNJ → 대문자=강세, 소문자=약하게"], ["The vacancy rate in this submarket is low.", "이 소시장의 공실률이 낮습니다.", "VAY-kun-see-SUB-mar-kit", "'submarket' → SUB-mar-kit 로 발음해요"], ["We need to negotiate the loan covenants.", "대출 약정을 협상해야 합니다.", "nih-GOH-shee-ayt-KUV-uh-nunts", "'covenants' → nunts (3음절 단어!)"], ["Our underwriting assumes a seven percent return.", "당사의 인수 조건은 7% 수익을 가정합니다.", "UN-der-ry-ting-uh-SYOOMZ", "'Our' → UN 첫 음절에 강세"], ["The site plan approval process is underway.", "부지 계획 승인 과정이 진행 중입니다.", "SYT-PLAN-uh-PROOV-ul", "'approval' → PROOV-ul (3음절 단어!)"], ["We're looking at a sale-leaseback structure.", "판매 후 재임차 구조를 검토하고 있습니다.", "SAYL-lees-bak-STRUK-cher", "SAYL-lees-bak-STRUK-cher → 대문자=강세, 소문자=약하게"], ["The broker opinion of value came in higher.", "브로커 가치 의견이 더 높게 나왔습니다.", "BROH-ker-uh-PIN-yun", "'opinion' → uh-PIN-yun (3음절 단어!)"], ["We're targeting stabilized assets with upside.", "안정화된 자산을 목표로 합니다.", "STAB-ih-lyzd-AS-ets-UP-syd", "'stabilized' → AS-ets-UP-syd (4음절 단어!)"], ["The construction loan converts to permanent financing.", "건설 대출이 영구 금융으로 전환됩니다.", "kun-VERTS-PER-muh-nunt-FY-nun-sing", "'construction'(kun-VERTS-PER) + 'converts'(nunt-FY) 두 단어 모두 강하게"], ["The anchor tenant has signed a long-term lease.", "앵커 테넌트가 장기 임대차 계약에 서명했습니다.", "ANG-ker-TEN-unt-LONG-term-LEES", "'anchor'(ANG-ker) + 'tenant'(TEN-unt) 두 단어 모두 강하게"], ["We need to assess the flood zone classification.", "홍수 구역 분류를 평가해야 합니다.", "uh-SES-FLUD-ZOHN-klas-ih-fih-KAY-shun", "'classification' → fih-KAY-shun (5음절 단어!)"], ["The market feasibility study shows strong demand.", "시장 타당성 연구는 강한 수요를 보여줍니다.", "FEE-zuh-BIL-ih-tee-STUD-ee", "'feasibility' → BIL-ih-tee-STUD (5음절 단어!)"], ["Can you provide the rent roll for this property?", "이 부동산의 임대 목록을 제공해 주실 수 있나요?", "RENT-ROHL-PROP-er-tee", "'provide'(RENT-ROHL-PROP) 강하게, 두 단어 모두 강세"], ["We're negotiating the right of first refusal.", "최초 거절권을 협상하고 있습니다.", "RYT-uv-FERST-rih-FYOO-zul", "'of' → ROFR 로 발음해요"], ["The development agreement needs council approval.", "개발 협약에는 의회 승인이 필요합니다.", "dih-VEL-up-munt-KOWN-sul", "'development'(dih-VEL-up-munt) + 'agreement'(KOWN-sul) 두 단어 모두 강하게"], ["We're looking at brownfield redevelopment.", "브라운필드 재개발을 검토하고 있습니다.", "BROWN-feeld-ree-dih-VEL-up-munt", "'brownfield' → BROWN-feeld 로 발음해요"], ["The tax increment financing was approved.", "조세 증분 금융이 승인되었습니다.", "TAKS-IN-kruh-munt-FY-nun-sing", "'TIF' 로 발음해요"], ["The impact fees are significant.", "영향 수수료가 상당합니다.", "IM-pakt-FEEZ-sig-NIH-fih-kunt", "'significant' → sig-NIH-fih-kunt (4음절 단어!)"], ["We're projecting a twenty-year hold period.", "20년 보유 기간을 예상하고 있습니다.", "pruh-JEK-ting-HOHLD-PEER-ee-ud", "'projecting' → pruh-JEK-ting (3음절 단어!)"], ["The community benefits agreement was signed.", "커뮤니티 혜택 협약이 서명되었습니다.", "kuh-MYOO-nih-tee-BEN-ih-fits", "'community'(kuh-MYOO-nih) + 'benefits'(tee-BEN-ih) 두 단어 모두 강하게"], ["We need to address the traffic mitigation.", "교통 완화 문제를 해결해야 합니다.", "TRAF-ik-mit-ih-GAY-shun", "'mitigation' → shun (4음절 단어!)"], ["The general contractor bids are due Friday.", "종합 시공사 입찰이 금요일까지입니다.", "JEN-er-ul-KAHN-trak-ter-BIDZ", "'general'(JEN-er-ul) + 'contractor'(KAHN-trak-ter) 두 단어 모두 강하게"], ["We're exploring opportunity zone benefits.", "기회 구역 혜택을 탐색하고 있습니다.", "op-er-TOO-nih-tee-ZOHN-BEN-ih-fits", "'exploring'(op-er-TOO) + 'opportunity'(nih-tee-ZOHN-BEN) 두 단어 모두 강하게"], ["The title insurance protects against encumbrances.", "소유권 보험은 부담에 대한 보호를 제공합니다.", "TY-tul-in-SHUR-uns-en-KUM-brun-siz", "'insurance' → in-SHUR-uns-en (3음절 단어!)"], ["We need a letter of credit to close.", "클로징을 위해 신용장이 필요합니다.", "LET-ter-uv-KRED-it-KLOHZ", "LET-ter-uv-KRED-it-KLOHZ → 대문자=강세, 소문자=약하게"], ["The highest and best use study is complete.", "최고 및 최선 사용 연구가 완료되었습니다.", "HY-est-BEST-YOOS-STUD-ee", "HY-est-BEST-YOOS-STUD-ee → 대문자=강세, 소문자=약하게"], ["We're in the final stages of the entitlement.", "인허가의 최종 단계에 있습니다.", "FY-nul-STAY-jiz-en-TY-tul-munt", "'entitlement' → en-TY-tul-munt (3음절 단어!)"], ["The infrastructure deficiencies are a concern.", "인프라 결함이 우려됩니다.", "IN-fruh-struk-cher-dih-FISH-un-seez", "'deficiencies' → FISH-un-seez (4음절 단어!)"], ["We need to evaluate the ground lease terms.", "지상권 임대 조건을 평가해야 합니다.", "ih-VAL-yoo-ayt-GROWND-LEES-TERMZ", "'ih-VAL-yoo-ayt' 로 발음해요"], ["The operating expenses are higher than projected.", "운영 비용이 예상보다 높습니다.", "OP-er-ay-ting-EK-spens-iz-pruh-JEK-tid", "'expenses' → EK-spens-iz (3음절 단어!)"]], "academic": [["The data suggests a strong correlation.", "데이터는 강한 상관관계를 시사합니다.", "DAY-tuh-sug-JESTS-kaw-ruh-LAY-shun", "kaw-ruh-LAY-shun"], ["I'd like to argue that this approach is flawed.", "이 접근법에 결함이 있다고 주장합니다.", "AR-gyoo-uh-PROHCH-FLAWD", "'AR-gyoo' 로 발음해요"], ["To summarize, there are three key takeaways.", "요약하면, 세 가지 핵심 시사점이 있습니다.", "SUM-uh-ryz-THREE-KEE-TAYK-uh-wayz", "'summarize' → SUM-uh-ryz 로 발음해요"], ["Could you elaborate on that point?", "그 부분에 대해 더 설명해 주시겠어요?", "ih-LAB-uh-rayt-POYNT", "'elaborate' → ih-LAB-uh-rayt-POYNT (2음절 단어!)"], ["This finding challenges existing assumptions.", "이 발견은 기존 가정에 의문을 제기합니다.", "FYN-ding-CHAL-en-jiz-ig-ZIS-ting", "'existing' → ex 는 'ig+z' 로 발음해요 ('FYN-ding-CHAL-en-jiz-ig-ZIS-ting')"], ["In conclusion, further research is needed.", "결론적으로, 추가 연구가 필요합니다.", "kun-KLOO-zhun-FER-ther", "'further' → 유성 TH, 혀 이 사이 + 목청 진동"], ["The evidence strongly supports this hypothesis.", "증거가 이 가설을 강력히 뒷받침합니다.", "EV-ih-dens-hy-POTH-ih-sis", "'evidence' → EV-ih-dens-hy (4음절 단어!)"], ["Building on that point, I'd add that...", "그 요점을 바탕으로, 덧붙이자면...", "BIL-ding-on-POYNT-AD", "'BIL·ding·on·POYNT·AD' 이어서 한 번에"], ["This methodology has significant limitations.", "이 방법론에는 중요한 한계가 있습니다.", "meth-uh-DOL-uh-jee-sig-NIH-fih-kunt", "'methodology' → meth-uh-DOL-uh (5음절 단어!)"], ["The implications of this research are far-reaching.", "이 연구의 시사점은 매우 광범위합니다.", "im-plih-KAY-shunz-FAR-ree-ching", "'implications' → im-plih-KAY-shunz (4음절 단어!)"], ["I would like to draw your attention to figure three.", "3번 그래프를 주목해 주시기 바랍니다.", "uh-TEN-shun-FIG-yer-THREE", "'attention' → FIG-yer-THREE (3음절 단어!)"], ["This contradicts the findings of previous studies.", "이는 이전 연구 결과와 모순됩니다.", "KON-truh-dikts-PREE-vee-us", "'contradicts' → KON-truh-dikts 첫 음절에 강세"], ["Does anyone have any questions at this point?", "이 시점에서 질문 있으신 분 계신가요?", "EN-ee-wun-KWES-chunz", "'anyone' → EN-ee-wun (3음절 단어!)"], ["I'd like to propose an alternative interpretation.", "대안적 해석을 제안하고 싶습니다.", "pruh-POHZ-awl-TER-nuh-tiv-in-ter-prih-TAY-shun", "'alternative' → in-ter-prih-TAY-shun (5음절 단어!)"], ["The peer review process ensures academic integrity.", "동료 심사 과정은 학문적 무결성을 보장합니다.", "PEER-rih-VYOO-in-TEG-rih-tee", "'academic' → PEER-rih-VYOO-in-TEG-rih-tee (4음절 단어!)"], ["The sample size may limit generalizability.", "표본 크기가 일반화 가능성을 제한할 수 있습니다.", "SAM-pul-SYZ-jen-er-uh-ly-zuh-BIL-ih-tee", "SAM-pul-SYZ-jen-er-uh-ly-zuh-BIL-ih-tee → 대문자=강세, 소문자=약하게"], ["We must consider the ethical implications.", "윤리적 시사점을 고려해야 합니다.", "kun-SID-er-ETH-ih-kul-im-plih-KAY-shunz", "kun-SID-er-ETH-ih-kul-im-plih-KAY-shunz → 대문자=강세, 소문자=약하게"], ["The literature review reveals several gaps.", "문헌 검토는 여러 공백을 드러냅니다.", "LIT-er-uh-chur-rih-VYOO-GAPS", "'literature' → LIT-er-uh-chur 로 발음해요"], ["This theoretical framework guides our analysis.", "이 이론적 틀이 우리의 분석을 안내합니다.", "thee-uh-RET-ih-kul-FRAYM-werk", "'theoretical' → thee-uh-RET-ih (4음절 단어!)"], ["The quantitative results are statistically significant.", "정량적 결과가 통계적으로 유의미합니다.", "KWON-tih-tay-tiv-stuh-TIS-tih-klee", "'statistically' → klee (4음절 단어!)"], ["I'd like to challenge the prevailing assumption.", "저는 지배적인 가정에 도전하고 싶습니다.", "CHAL-enj-prih-VAY-ling-uh-SUMP-shun", "'like' → enj-prih (2음절 단어!)"], ["The causal relationship remains unclear.", "인과관계는 여전히 불명확합니다.", "KAW-zul-rih-LAY-shun-ship", "'KAW-zul' 로 발음해요"], ["Multiple variables were controlled in this study.", "이 연구에서는 여러 변수들이 통제되었습니다.", "MUL-tih-pul-VAIR-ee-uh-bulz", "'Multiple' → MUL-tih-pul (4음절 단어!)"], ["The findings corroborate earlier research.", "이 발견은 이전 연구를 뒷받침합니다.", "FYN-dingz-KOR-uh-buh-rayt", "'corroborate' → KOR-uh-buh-rayt (4음절 단어!)"], ["The dissertation was thoroughly peer-reviewed.", "이 논문은 철저히 동료 심사를 받았습니다.", "dis-er-TAY-shun-THER-uh-lee", "'dissertation' → dis-er-TAY-shun (4음절 단어!)"], ["This represents a paradigm shift in the field.", "이것은 이 분야의 패러다임 전환을 나타냅니다.", "PAIR-uh-dym-SHIFT-FEELD", "'a' → PAIR-uh-dym 로 발음해요"], ["The experimental design minimizes confounding factors.", "실험 설계는 교란 요인을 최소화합니다.", "ik-SPER-ih-men-tul-dih-ZYN-MIN-ih-myz", "'minimizes' → MIN-ih-myz (4음절 단어!)"], ["The abstract provides a concise overview.", "초록은 간결한 개요를 제공합니다.", "AB-strakt-kun-SYS-OH-ver-vyoo", "'kun-SYS' 로 발음해요"], ["Future research should address these limitations.", "향후 연구는 이러한 한계를 해결해야 합니다.", "FYOO-cher-uh-DRES-lim-ih-TAY-shunz", "'limitations' → shunz (4음절 단어!)"], ["Allow me to contextualize these findings.", "이 발견들의 맥락을 설명하겠습니다.", "kon-TEK-schoo-uh-lyz", "'contextualize' → schoo-uh-lyz (5음절 단어!)"], ["I have reservations about this methodology.", "저는 이 방법론에 의구심이 있습니다.", "rez-er-VAY-shunz-meth-uh-DOL-uh-jee", "'reservations' → rez-er-VAY-shunz (4음절 단어!)"], ["The bibliography includes over 200 citations.", "참고문헌에는 200개 이상의 인용이 포함됩니다.", "bib-lee-OG-ruh-fee-sy-TAY-shunz", "'bibliography' → bib-lee-OG (5음절 단어!)"], ["These variables are positively correlated.", "이 변수들은 양의 상관관계가 있습니다.", "VAIR-ee-uh-bulz-POZ-ih-tiv-lee-KOR-uh-lay-tid", "'variables'(VAIR-ee-uh) + 'positively'(bulz-POZ-ih-tiv) 두 단어 모두 강하게"], ["I'm drawing on constructivist theory here.", "저는 여기서 구성주의 이론을 활용하고 있습니다.", "kun-STRUK-tih-vist-THEE-uh-ree", "'constructivist' → vist-THEE-uh-ree (3음절 단어!)"], ["The null hypothesis was rejected.", "귀무가설은 기각되었습니다.", "NUL-hy-POTH-ih-sis-rih-JEK-tid", "'hypothesis' → hy-POTH-ih (4음절 단어!)"], ["The regression analysis shows a linear relationship.", "회귀 분석은 선형 관계를 보여줍니다.", "rih-GRESH-un-uh-NAL-ih-sis-LIN-ee-er", "'regression' → rih-GRESH-un (3음절 단어!)"], ["The replication crisis challenges this assumption.", "복제 위기가 이 가정에 도전합니다.", "rep-lih-KAY-shun-KRY-sis", "'replication'(rep-lih-KAY-shun) + 'crisis'(KRY-sis) 두 단어 모두 강하게"], ["We acknowledge the limitations of this study.", "우리는 이 연구의 한계를 인정합니다.", "ak-NOL-ij-lim-ih-TAY-shunz", "'ak-NOL-ij' 로 발음해요"], ["Statistical significance does not imply practical significance.", "통계적 유의성이 실용적 유의성을 의미하지는 않습니다.", "stuh-TIS-tih-kul-sig-NIH-fih-kuns", "stuh-TIS-tih-kul-sig-NIH-fih-kuns → 대문자=강세, 소문자=약하게"], ["The epistemological foundations are questionable.", "인식론적 기초가 의문스럽습니다.", "ih-pis-tuh-muh-LOJ-ih-kul", "'epistemological' → ih-pis-tuh-muh-LOJ-ih-kul (7음절 단어!)"], ["This synthesizes disparate bodies of literature.", "이것은 분산된 문헌들을 종합합니다.", "SIN-thuh-syz-DIS-puh-rit", "'disparate' → DIS-puh-rit (4음절 단어!)"], ["The discourse analysis reveals ideological bias.", "담론 분석은 이념적 편향을 드러냅니다.", "DIS-kors-id-ee-uh-LOJ-ih-kul", "'ideological' → DIS-kors-id-ee-uh-LOJ-ih-kul (5음절 단어!)"], ["Participants were recruited through purposive sampling.", "참가자들은 목적적 표본 추출을 통해 모집되었습니다.", "par-TIS-ih-punts-PER-puh-siv-SAM-pling", "'Participants'(par-TIS-ih-punts) + 'recruited'(PER-puh-siv) 두 단어 모두 강하게"], ["The grounded theory approach was employed.", "근거 이론 접근법이 사용되었습니다.", "GROWND-id-THEE-uh-ree", "'grounded'(GROWND-id) + 'theory'(THEE) 두 단어 모두 강하게"], ["The conceptual framework needs further refinement.", "개념 틀은 추가 정교화가 필요합니다.", "kun-SEP-choo-ul-FRAYM-werk-rih-FYN-munt", "'refinement' → kun-SEP-choo-ul-FRAYM-werk-rih-FYN-munt (4음절 단어!)"], ["I appreciate the insightful questions from the audience.", "청중의 날카로운 질문에 감사드립니다.", "uh-PREE-shee-ayt-IN-syt-ful-AW-dee-uns", "'appreciate' → uh-PREE-shee-ayt (4음절 단어!)"], ["The coefficient of determination is significant.", "결정 계수가 유의미합니다.", "koh-ih-FISH-unt-dih-ter-mih-NAY-shun", "'significant' → shun (4음절 단어!)"], ["This study builds on the foundational work.", "이 연구는 기초 연구를 토대로 합니다.", "BILDZ-on-fown-DAY-shun-ul", "fown-DAY-shun-ul"], ["Allow me to address that question directly.", "그 질문에 직접 답변하겠습니다.", "uh-LOW-mee-uh-DRES-KWES-chun-dih-REK-tlee", "'dih-REK-tlee' 로 발음해요"], ["The research contributes to existing scholarship.", "이 연구는 기존 학문에 기여합니다.", "REE-serch-kun-TRIB-yoots-ig-ZIS-ting", "'existing' → ZIS-ting (3음절 단어!)"]], "tax": [["We need to file an amended return.", "수정 신고서를 제출해야 합니다.", "uh-MEN-did-rih-TERN", "'file'(MEN-did) + 'amended'(rih-TERN) 두 단어 모두 강하게"], ["The depreciation schedule needs to be updated.", "감가상각 일정을 업데이트해야 합니다.", "dih-PREE-shee-AY-shun-SKEJ-ool", "'depreciation' → dih-PREE-shee-AY (5음절 단어!)"], ["Can you explain the capital gains implications?", "자본 이득의 영향에 대해 설명해 주실 수 있나요?", "KAP-ih-tul-GAYNZ-im-plih-KAY-shunz", "'implications' → KAY-shunz (4음절 단어!)"], ["The cost segregation study yielded significant savings.", "비용 분리 연구가 상당한 절감을 가져왔습니다.", "KAWST-seg-ruh-GAY-shun-STUD-ee", "'segregation' → seg-ruh-GAY-shun (4음절 단어!)"], ["We're looking at the passive activity loss rules.", "수동적 활동 손실 규칙을 검토하고 있습니다.", "PAS-iv-ak-TIV-ih-tee-LAWS", "'PAL' 로 발음해요"], ["The LLC provides liability protection.", "LLC는 책임 보호를 제공합니다.", "EL-EL-SEE-LY-uh-BIL-ih-tee", "'provides' → EL-SEE-LY (5음절 단어!)"], ["Can we defer the recognition of income?", "소득 인식을 이연할 수 있나요?", "dih-FER-rek-ug-NIH-shun", "'recognition' → rek-ug-NIH-shun (4음절 단어!)"], ["The audit revealed significant discrepancies.", "감사에서 중요한 불일치가 발견되었습니다.", "AW-dit-rih-VEELD-dis-KREP-un-seez", "'significant' → KREP-un-seez (4음절 단어!)"], ["We need to calculate the alternative minimum tax.", "대체 최저세를 계산해야 합니다.", "KAL-kyuh-layt-awl-TER-nuh-tiv-MIN-ih-mum", "'AMT' 로 발음해요"], ["The entity structure affects your tax liability.", "법인 구조가 세금 책임에 영향을 미칩니다.", "EN-tih-tee-STRUK-cher-LY-uh-BIL-ih-tee", "'structure' → tee-STRUK-cher (5음절 단어!)"], ["We're reviewing the transfer pricing methodology.", "이전 가격 방법론을 검토하고 있습니다.", "TRANS-fer-PRY-sing-meth-uh-DOL-uh-jee", "'methodology' → uh-jee (5음절 단어!)"], ["The net operating loss can be carried forward.", "순 영업 손실은 이월될 수 있습니다.", "NET-OP-er-ay-ting-LAWS-FOR-werd", "'NOL' 로 발음해요"], ["The bonus depreciation allows immediate expensing.", "보너스 감가상각은 즉각적인 비용 처리를 허용합니다.", "BOH-nus-dih-PREE-shee-AY-shun", "'bonus'(BOH-nus) + 'depreciation'(dih-PREE-shee-AY) 두 단어 모두 강하게"], ["Can we elect S corporation status?", "S 코퍼레이션 지위를 선택할 수 있나요?", "ih-LEKT-ES-kor-puh-RAY-shun", "'corporation' → kor-puh-RAY-shun (4음절 단어!)"], ["The at-risk rules limit our deductions.", "위험 부담 규칙이 공제를 제한합니다.", "AT-risk-ROOLZ-dih-DUK-shunz", "'deductions' → AT-risk-ROOLZ-dih-DUK-shunz (3음절 단어!)"], ["We need to recognize the accrued liability.", "발생 부채를 인식해야 합니다.", "REK-ug-nyz-uh-KROOD-LY-uh-BIL-ih-tee", "'uh-KROOD' 로 발음해요"], ["The tax treaty prevents double taxation.", "조세 조약이 이중 과세를 방지합니다.", "TAKS-TREE-tee-DUB-ul-tak-SAY-shun", "'treaty' → TREE-tee 로 발음해요"], ["We're maximizing the research and development credit.", "연구 개발 크레딧을 최대화하고 있습니다.", "MAK-suh-my-zing-REE-serch-KRED-it", "MAK-suh-my-zing-REE-serch-KRED-it → 대문자=강세, 소문자=약하게"], ["The qualified business income deduction applies here.", "적격 사업 소득 공제가 여기에 적용됩니다.", "KWOL-ih-fyd-BIZ-nis-IN-kum-dih-DUK-shun", "'QBI' 로 발음해요"], ["We need to document the business purpose.", "사업 목적을 문서화해야 합니다.", "DOK-yuh-ment-BIZ-nis-PER-pus", "'document' → DOK-yuh-ment 첫 음절에 강세"], ["The estimated tax payments are due quarterly.", "추정 세금 납부가 분기별로 납부됩니다.", "ES-tih-may-tid-TAKS-KWOR-ter-lee", "'KWOR-ter-lee' 로 발음해요"], ["Can we take advantage of the step-up in basis?", "기준 단계 상향 조정을 활용할 수 있나요?", "STEP-up-in-BAY-sis", "'BAY-sis' 로 발음해요"], ["The estate planning documents need to be updated.", "재산 계획 문서를 업데이트해야 합니다.", "ih-STAYT-PLAN-ing-DOK-yuh-munts", "'estate'(ih-STAYT-PLAN) + 'planning'(ing-DOK) 두 단어 모두 강하게"], ["The foreign tax credit offsets domestic liability.", "외국 세금 공제가 국내 책임을 상쇄합니다.", "FOR-un-TAKS-KRED-it-AW-fsets", "'AW-fsets' 로 발음해요"], ["We need to address the substance over form issues.", "형식보다 실질 문제를 해결해야 합니다.", "SUB-stuns-OH-ver-FORM", "SUB-stuns-OH-ver-FORM → 대문자=강세, 소문자=약하게"], ["The cost basis needs to be established.", "비용 기준을 확립해야 합니다.", "KAWST-BAY-sis-ih-STAB-lisht", "'established' → STAB-lisht (3음절 단어!)"], ["We're reviewing the intercompany transactions.", "계열사 간 거래를 검토하고 있습니다.", "in-ter-KUM-puh-nee-tran-ZAK-shunz", "'intercompany' → puh-nee-tran-ZAK (4음절 단어!)"], ["The tax provision calculation is complex.", "세금 충당금 계산이 복잡합니다.", "TAKS-pruh-VI-zhun-kal-kyuh-LAY-shun", "'provision' → pruh-VI-zhun (3음절 단어!)"], ["We need to file an extension for the return.", "신고서 연장을 신청해야 합니다.", "FYL-un-ik-STEN-shun", "'extension' → STEN-shun (3음절 단어!)"], ["The carryforward losses can offset future income.", "이월 손실이 미래 소득을 상쇄할 수 있습니다.", "KAIR-ee-for-werd-LAWS-iz-AW-fset", "KAIR-ee-for-werd-LAWS-iz-AW-fset → 대문자=강세, 소문자=약하게"], ["Can we restructure to minimize tax exposure?", "세금 노출을 최소화하기 위해 구조를 바꿀 수 있나요?", "ree-STRUK-cher-MIN-ih-myz-ik-SPOH-zher", "'restructure' → ree-STRUK-cher-MIN (2음절 단어!)"], ["The goodwill amortization is no longer allowed.", "영업권 상각이 더 이상 허용되지 않습니다.", "GUD-wil-uh-mor-tih-ZAY-shun", "'amortization' → uh-mor-tih-ZAY-shun (5음절 단어!)"], ["We need to calculate the effective tax rate.", "실효 세율을 계산해야 합니다.", "KAL-kyuh-layt-ih-FEK-tiv-TAKS-RAYT", "'calculate' → kyuh-layt-ih-FEK (3음절 단어!)"], ["The installment sale treatment is beneficial.", "할부 매매 처리가 유리합니다.", "in-STAWL-munt-SAYL-ben-ih-FISH-ul", "'installment' → in-STAWL-munt (3음절 단어!)"], ["We're analyzing the section 179 deduction.", "섹션 179 공제를 분석하고 있습니다.", "AN-uh-lyz-ing-SEK-shun-dih-DUK-shun", "'analyzing' → AN-uh-lyz (4음절 단어!)"], ["The accumulated earnings tax may apply.", "누적 수익세가 적용될 수 있습니다.", "uh-KYOO-myuh-lay-tid-ER-ningz", "'accumulated' → uh-KYOO-myuh-lay-tid (5음절 단어!)"], ["We need to document the charitable contributions.", "자선 기부를 문서화해야 합니다.", "DOK-yuh-ment-KAIR-ih-tuh-bul-kon-TRIB-yoo-shunz", "'charitable' → ih-tuh-bul-kon (4음절 단어!)"], ["The SALT deduction is now limited.", "SALT 공제가 현재 제한되어 있습니다.", "SAWLT-dih-DUK-shun", "State And Local Taxes"], ["Can we utilize a deferred compensation plan?", "이연 보상 계획을 활용할 수 있나요?", "YOO-tih-lyz-dih-FERD-kom-pen-SAY-shun", "'utilize' → YOO-tih-lyz-dih (4음절 단어!)"], ["The like-kind exchange rules have changed.", "동종 교환 규칙이 변경되었습니다.", "LYK-kynd-iks-CHAYNJ-ROOLZ", "LYK-kynd-iks-CHAYNJ-ROOLZ → 대문자=강세, 소문자=약하게"], ["The thin capitalization rules limit interest deductions.", "과소 자본화 규칙이 이자 공제를 제한합니다.", "THIN-kap-ih-tuh-lih-ZAY-shun", "'capitalization' → kap-ih-tuh-lih-ZAY-shun (5음절 단어!)"], ["We're preparing for the IRS examination.", "IRS 검토를 준비하고 있습니다.", "EYE-AR-ES-ig-ZAM-ih-NAY-shun", "'examination' → ZAM-ih-NAY-shun (5음절 단어!)"], ["The purchase price allocation affects future deductions.", "매입가 배분이 향후 공제에 영향을 미칩니다.", "PER-chus-PRYS-al-uh-KAY-shun", "'allocation' → KAY-shun (4음절 단어!)"], ["We need to prepare the financial statements.", "재무제표를 작성해야 합니다.", "fih-NAN-shul-STAYT-munts", "'prepare'(NAN-shul-STAYT) 강하게, 두 단어 모두 강세"], ["Can we offset the gain with capital losses?", "자본 손실로 이익을 상쇄할 수 있나요?", "AW-fset-GAYN-KAP-ih-tul", "'capital' → KAP-ih-tul (3음절 단어!)"], ["The fiscal year election may be advantageous.", "회계 연도 선택이 유리할 수 있습니다.", "FIS-kul-YEER-ih-LEK-shun-ad-VAN-tay-jus", "'advantageous' → ad-VAN-tay-jus (4음절 단어!)"], ["We're analyzing the passive foreign investment rules.", "수동적 외국 투자 규칙을 분석하고 있습니다.", "PAS-iv-FOR-un-IN-vest-munt-ROOLZ", "'analyzing' → PAS-iv-FOR (3음절 단어!)"], ["The section 199A deduction has specific requirements.", "섹션 199A 공제에는 특정 요건이 있습니다.", "SEK-shun-dih-DUK-shun-spuh-SIF-ik", "SEK-shun-dih-DUK-shun-spuh-SIF-ik → 대문자=강세, 소문자=약하게"], ["We need to consider the state conformity issues.", "주 적합성 문제를 고려해야 합니다.", "kun-SID-er-STAYT-kun-FOR-mih-tee", "'consider' → SID-er-STAYT (4음절 단어!)"], ["The international tax provisions are complex.", "국제 세금 조항은 복잡합니다.", "in-ter-NASH-un-ul-TAKS-pruh-VI-zhunz", "'international' → in-ter-NASH-un-ul (5음절 단어!)"], ["We're reviewing the deferred tax asset valuation.", "이연 법인세 자산 가치 평가를 검토하고 있습니다.", "dih-FERD-TAKS-AS-et-val-yoo-AY-shun", "'reviewing' → dih-FERD-TAKS (4음절 단어!)"]]};
+
+var EXTRA_CATS = ["interview","architect","cs","realestate","academic","tax"];
+EXTRA_CATS.forEach(function(id){DATA[id]=EXTRA[id];});
+
+// ─── SCORING ENGINE ──────────────────────────────────
+function normW(w){return w.toLowerCase().replace(/[^a-z]/g,'');}
+function lev(a,b){
+  var m=a.length,n=b.length,dp=[];
+  for(var i=0;i<=m;i++){dp[i]=[i];}
+  for(var j=0;j<=n;j++){dp[0][j]=j;}
+  for(var i=1;i<=m;i++)
+    for(var j=1;j<=n;j++)
+      dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+function wMatch(said,tgt){
+  if(said===tgt) return true;
+  if(tgt.startsWith(said)||said.startsWith(tgt)) return true;
+  return lev(said,tgt)<=(tgt.length<=4?1:2);
+}
+
+var TIPS={
+  the:{why:"TH→D 로 들림",tip:"혀를 이 사이에 살짝 대고 바람"},
+  this:{why:"TH→D 로 들림",tip:"혀를 이 사이에 살짝 대고 바람"},
+  that:{why:"TH→D 로 들림",tip:"혀를 이 사이에 살짝 대고 바람"},
+  they:{why:"TH→D 로 들림",tip:"혀를 이 사이에 살짝 대고 바람"},
+  there:{why:"TH→D 로 들림",tip:"혀를 이 사이에 살짝 대고 바람"},
+  three:{why:"TH→T 로 들림",tip:"혀를 이 사이에 대고 바람"},
+  think:{why:"TH→T 로 들림",tip:"혀를 이 사이에 대고 바람"},
+  with:{why:"끝 TH 탈락",tip:"끝까지 혀 이 사이 발음"},
+  very:{why:"V→B 로 들림",tip:"윗니를 아랫입술에 대고"},
+  right:{why:"R→L 로 들림",tip:"혀를 어디에도 닿지 않게"},
+  rice:{why:"R→L 로 들림",tip:"혀를 어디에도 닿지 않게"},
+  really:{why:"R/L 혼동",tip:"혀를 어디에도 닿지 않게"},
+  world:{why:"어려운 r+l 조합",tip:"worl→혀 굴리고 잇몸 닿기"},
+  comfortable:{why:"3음절로 줄여야 함",tip:"KUMF-ter-bul (3음절)"},
+  specific:{why:"강세 위치 주의",tip:"spuh-SIF-ik"},
+  schedule:{why:"ch→k 발음",tip:"미국식: SKEJ-ool"}
+};
+
+function analyze(transcript,targetSentence){
+  if(!targetSentence||!targetSentence.trim()){
+    var words=transcript.trim().split(/\s+/);
+    var issues=[];
+    words.forEach(function(w){
+      var cl=normW(w);
+      if(!cl||cl.length<3) return;
+      if(TIPS[cl]&&issues.length<3)
+        issues.push({word:cl,said:cl,issue:TIPS[cl].why,tip:TIPS[cl].tip});
+    });
+    var sc=Math.min(88,Math.max(50,78-issues.length*8));
+    return {score:sc,issues:issues,wordDisplay:null,matched:0,total:0};
+  }
+  var said=transcript.trim().split(/\s+/).map(normW).filter(Boolean);
+  var tgt=targetSentence.trim().split(/\s+/).map(normW).filter(Boolean);
+  var results=[];
+  var si=0;
+  for(var ti=0;ti<tgt.length;ti++){
+    var tw=tgt[ti];
+    if(si<said.length&&wMatch(said[si],tw)){
+      results.push({t:tw,s:said[si],ok:true});si++;
+    } else if(si+1<said.length&&wMatch(said[si+1],tw)){
+      results.push({t:tw,s:said[si+1],ok:true});si+=2;
+    } else {
+      results.push({t:tw,s:si<said.length?said[si]:null,ok:false});
+      if(si<said.length) si++;
+    }
+  }
+  var matched=results.filter(function(r){return r.ok;}).length;
+  var total=tgt.length;
+  var score=Math.min(97,Math.max(10,Math.round((matched/total)*100)));
+  var issues=[];
+  results.forEach(function(r){
+    if(!r.ok&&issues.length<4){
+      var tw=r.t;
+      var kn=TIPS[tw];
+      if(kn) issues.push({word:tw,said:r.s||"(빠짐)",issue:(r.s?'"'+r.s+'" 로 들렸어요 — ':'')+kn.why,tip:kn.tip});
+      else if(r.s){
+        var tip="";
+        if(/^th/i.test(tw)) tip="혀를 이 사이에 살짝 대고 바람 (TH)";
+        else if(/^r/i.test(tw)&&/^l/i.test(r.s||"")) tip="R: 혀를 어디에도 닿지 않게";
+        else if(lev(tw,r.s||"")<=2) tip="거의 맞아요! 강세 위치를 확인해 보세요";
+        else tip='"'+tw+'"를 천천히 발음해 보세요';
+        issues.push({word:tw,said:r.s,issue:'"'+r.s+'" 로 들렸어요',tip:tip});
+      } else {
+        issues.push({word:tw,said:"(빠짐)",issue:"이 단어가 들리지 않았어요",tip:'"'+tw+'"를 명확하게 발음해 보세요'});
+      }
+    }
+  });
+  var wordDisplay=results.map(function(r){
+    var col=r.ok?"#059669":"#DC2626";
+    var bg=r.ok?"#ECFDF5":"#FEE2E2";
+    return '<span style="display:inline-block;margin:2px 3px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;background:'+bg+';color:'+col+'">'+r.t+'</span>';
+  }).join('');
+  return {score:score,issues:issues,wordDisplay:wordDisplay,matched:matched,total:total};
+}
+
+// ─── PHONETIC DISPLAY ────────────────────────────────
+var PH={
+  "i":"eye","im":"im","id":"id","ill":"ile","ive":"ive","its":"its","it":"it",
+  "you":"yuh","your":"yer","youre":"yer","youll":"yul","youve":"yuv",
+  "he":"hee","him":"him","his":"hiz","she":"shee","her":"her",
+  "we":"wee","us":"us","our":"owr","ours":"owrz",
+  "they":"thay","them":"thum","their":"thair",
+  "who":"hoo","whom":"hoom","whose":"hooz","which":"wich","what":"WUHT","that":"that",
+  "the":"thuh","a":"uh","an":"un","this":"thiss","these":"theez","those":"thohz",
+  "some":"sum","any":"EN-ee","no":"noh","all":"awl","each":"eech","every":"EV-ree",
+  "is":"iz","are":"ar","was":"wuz","were":"wer","be":"bee","been":"bin","being":"BEE-ing",
+  "am":"am","isnt":"IZ-nt","arent":"AR-nt","wasnt":"WUZ-nt","werent":"WER-nt",
+  "have":"hav","has":"huz","had":"had","having":"HAV-ing","havent":"HAV-nt","hasnt":"HAZ-nt",
+  "do":"doo","does":"duz","did":"did","done":"dun","doing":"DOO-ing","dont":"dohnt","doesnt":"DUZ-nt","didnt":"DID-nt",
+  "can":"kun","cant":"KAANT","could":"kud","couldnt":"KUD-nt",
+  "will":"wil","wont":"WOHNT","would":"wud","wouldnt":"WUD-nt",
+  "shall":"shal","should":"shud","shouldnt":"SHUD-nt",
+  "may":"may","might":"myt","must":"must","need":"NEED",
+  "go":"GOH","going":"GOH-ing","gone":"gon","went":"went",
+  "come":"kum","coming":"KUM-ing","came":"kaym",
+  "get":"GET","getting":"GET-ing","got":"got","gotten":"GOT-un",
+  "make":"MAYK","making":"MAYK-ing","made":"mayd",
+  "take":"TAYK","taking":"TAYK-ing","took":"tuk","taken":"TAY-kun",
+  "give":"giv","giving":"GIV-ing","gave":"gayv","given":"GIV-un",
+  "know":"noh","knowing":"NOH-ing","knew":"nyoo","known":"nohn",
+  "think":"THINK","thinking":"THINK-ing","thought":"THAWT",
+  "see":"SEE","seeing":"SEE-ing","saw":"saw","seen":"seen",
+  "say":"say","saying":"SAY-ing","said":"sed",
+  "tell":"TEL","telling":"TEL-ing","told":"tohld",
+  "ask":"ask","asking":"ASK-ing","asked":"askt",
+  "want":"wont","wanting":"WON-ting","wanted":"WON-tid",
+  "look":"luk","looking":"LUK-ing","looked":"lukt",
+  "work":"WERK","working":"WERK-ing","worked":"werkt",
+  "feel":"FEEL","feeling":"FEEL-ing","felt":"felt",
+  "leave":"LEEV","leaving":"LEEV-ing","left":"LEFT",
+  "put":"put","keep":"KEEP","kept":"kept","try":"TRY","tried":"tryd",
+  "find":"FYND","found":"fownd","call":"KAWL","called":"kawld",
+  "help":"HELP","let":"let","use":"YOOZ","used":"yoozd",
+  "show":"SHOH","showed":"showd","shown":"shohn",
+  "run":"RUN","ran":"ran","move":"MOOV","moved":"moovd",
+  "live":"LIV","living":"LIV-ing","play":"PLAY","pay":"PAY","paid":"payd",
+  "hear":"HEER","heard":"herd","meet":"MEET","met":"met",
+  "turn":"TERN","start":"START","stop":"STOP","open":"OH-pun","close":"KLOHZ",
+  "write":"RYT","wrote":"roht","written":"RIT-un",
+  "read":"REED","send":"SEND","sent":"sent",
+  "check":"CHEK","sign":"SYN","wait":"WAYT","change":"CHAYNJ",
+  "in":"in","on":"on","at":"at","to":"tuh","for":"fer","of":"uv","with":"with",
+  "by":"by","from":"frum","up":"up","out":"owt","off":"awf",
+  "about":"uh-BOWT","into":"IN-tuh","through":"throo","before":"bih-FOR","after":"AF-ter",
+  "between":"bih-TWEEN","without":"with-OWT","within":"wih-THIN","under":"UN-der",
+  "over":"OH-ver","around":"uh-ROWND",
+  "and":"and","but":"but","or":"or","so":"soh","if":"if","as":"az",
+  "because":"bih-KUZ","while":"wyl","when":"wen","where":"wair","how":"HOW","why":"wy",
+  "whether":"WETH-er","unless":"un-LES","since":"sins","until":"un-TIL","though":"thoh",
+  "not":"not","yes":"yes","well":"wel","just":"just",
+  "also":"AWL-soh","very":"VER-ee","really":"REE-lee","quite":"kwyt",
+  "still":"stil","now":"now","then":"then","here":"HEER","there":"thair",
+  "too":"too","only":"OHN-lee","even":"EE-vun","already":"awl-RED-ee",
+  "always":"AWL-wayz","never":"NEV-er","often":"AW-fun","sometimes":"SUM-tymz",
+  "maybe":"MAY-bee","please":"PLEEZ","again":"uh-GEN","back":"bak","away":"uh-WAY",
+  "together":"tuh-GETH-er","probably":"PROB-uh-blee","actually":"AK-choo-uh-lee",
+  "exactly":"ig-ZAKT-lee","especially":"uh-SPESH-uh-lee","completely":"kum-PLEET-lee",
+  "absolutely":"AB-suh-loot-lee","definitely":"DEF-uh-nit-lee","seriously":"SEER-ee-us-lee",
+  "clearly":"KLEER-lee","quickly":"KWIK-lee","carefully":"KAIR-ful-ee",
+  "immediately":"ih-MEE-dee-it-lee","currently":"KER-unt-lee","honestly":"ON-ist-lee",
+  "good":"GUD","bad":"bad","great":"GRAYT","nice":"NYS","fine":"fyn",
+  "new":"noo","old":"ohld","big":"big","small":"smawl","large":"larj",
+  "long":"long","short":"short","high":"hy","low":"loh","fast":"fast","slow":"sloh",
+  "easy":"EE-zee","hard":"hard","hot":"hot","cold":"kohld","warm":"worm",
+  "right":"RYT","wrong":"rong","true":"troo",
+  "important":"im-PORT-unt","different":"DIF-rent","same":"saym","other":"UTH-er",
+  "last":"last","first":"FERST","next":"nekst","few":"fyoo","many":"MEN-ee",
+  "much":"much","more":"mor","most":"mohst","less":"les","least":"leest",
+  "better":"BET-er","best":"best","sure":"SHOR","ready":"RED-ee",
+  "possible":"POS-ih-bul","clear":"kleer","free":"free","full":"ful",
+  "early":"ER-lee","late":"layt","recent":"REE-sunt","main":"mayn","whole":"hohl",
+  "time":"TYM","day":"DAY","year":"YEER","way":"way","man":"man","woman":"WUM-un",
+  "people":"PEE-pul","thing":"THING","place":"plays","case":"kays",
+  "week":"WEEK","month":"munth","night":"nyt","home":"hohm","hand":"hand",
+  "life":"lyf","world":"WERLD","part":"part","house":"hows",
+  "room":"ROOM","money":"MUN-ee","book":"buk","water":"WAW-ter",
+  "food":"food","door":"dor","table":"TAY-bul","phone":"fohn","plan":"plan",
+  "car":"kar","bus":"BUS","train":"TRAYN","flight":"FLYT","hotel":"hoh-TEL",
+  "office":"AW-fis","school":"skool","city":"SIT-ee","country":"KUN-tree",
+  "company":"KUM-puh-nee","team":"TEEM","meeting":"MEET-ing","report":"rih-PORT",
+  "project":"PROJ-ekt","issue":"ISH-oo","point":"POYNT","question":"KWES-chun",
+  "answer":"AN-ser","problem":"PROB-lum","decision":"dih-SIH-zhun",
+  "service":"SER-vis","business":"BIZ-nis","market":"MAR-kit",
+  "credit":"KRED-it","card":"kard","rate":"rayt","price":"prys",
+  "cost":"kawst","budget":"BUJ-it","deal":"deel","offer":"AW-fer",
+  "what":"WUHT","okay":"oh-KAY","ok":"oh-KAY",
+  "thank":"THANGK","thanks":"THANGKS","sorry":"SOR-ee",
+  "let":"LET","lets":"LETS","needs":"NEEDZ",
+  "do":"doo","does":"duz","did":"did",
+  // Common content words (not in phon hints)
+  "strong":"STRAWNG","key":"KEE","three":"THREE","new":"NOO","old":"OHLD",
+  "great":"GRAYT","first":"FERST","last":"LAST","next":"NEKST","own":"OHN",
+  "long":"LONG","short":"SHORT","high":"HY","low":"LOH","open":"OH-pun",
+  "large":"LARJ","small":"SMAWL","full":"FUL","hard":"HARD","free":"FREE",
+  "simple":"SIM-pul","single":"SING-gul","common":"KOM-un","real":"REEL",
+  "able":"AY-bul","local":"LOH-kul","early":"ER-lee","certain":"SER-tun",
+  "clear":"KLEER","wrong":"RONG","true":"TROO","done":"DUN","known":"NOHN",
+  "general":"JEN-er-ul","specific":"spuh-SIF-ik","major":"MAY-jer","final":"FY-nul",
+  "total":"TOH-tul","complete":"kum-PLEET","direct":"dih-REKT","recent":"REE-sunt",
+  "further":"FER-ther","similar":"SIM-ih-ler","available":"uh-VAY-luh-bul",
+  "likely":"LYK-lee","rather":"RATH-er","provide":"pruh-VYD","include":"in-KLOOD",
+  "consider":"kun-SID-er","require":"rih-KWYR","report":"rih-PORT","support":"suh-PORT",
+  "follow":"FOL-oh","allow":"uh-LOW","create":"kree-AYT","become":"bih-KUM",
+  "show":"SHOH","move":"MOOV","play":"PLAY","live":"LIV","believe":"bih-LEEV",
+  "hold":"HOHLD","bring":"BRING","happen":"HAP-un","write":"RYT","provide":"pruh-VYD",
+  "cause":"KAWZ","pass":"PAS","set":"SET","form":"FORM","build":"BILD","stand":"STAND",
+  "fail":"FAYL","meet":"MEET","lead":"LEED","share":"SHAIR","spend":"SPEND","analysis":"uh-NAL-ih-sis","guides":"GYDZ","guide":"GYD",
+  "theory":"THEE-uh-ree","approach":"uh-PROHCH","result":"rih-ZULT",
+  "example":"ig-ZAM-pul","problem":"PROB-lum","question":"KWES-chun",
+  "answer":"AN-ser","reason":"REE-zun","level":"LEV-ul","fact":"fakt",
+  "point":"POYNT","idea":"eye-DEE-uh","context":"KON-tekst","effect":"ih-FEKT",
+  "impact":"IM-pakt","focus":"FOH-kus","issue":"ISH-oo","factor":"FAK-ter",
+  "process":"PROH-ses","method":"METH-ud","data":"DAY-tuh","research":"REE-serch",
+  "study":"STUD-ee","evidence":"EV-ih-dens","model":"MOD-ul","structure":"STRUK-cher",
+  "function":"FUNGK-shun","language":"LANG-gwij","culture":"KUL-cher",
+  "nature":"NAY-cher","feature":"FEE-cher","section":"SEK-shun","chapter":"CHAP-ter",
+  "subject":"SUB-jekt","object":"OB-jekt","task":"task","step":"step","role":"ROHL",
+  "type":"typ","kind":"kynd","form":"form","style":"styl","level":"LEV-ul",
+  "knowledge":"NOL-ij","skills":"SKILZ","approach":"uh-PROHCH","strategy":"STRAT-uh-jee",
+  "solution":"suh-LOO-shun","challenge":"CHAL-enj","goal":"GOHL","plan":"PLAN",
+  "area":"AIR-ee-uh","field":"FEELD","sector":"SEK-ter","industry":"IN-duh-stree",
+  "program":"PROH-gram","project":"PROJ-ekt","system":"SIS-tum","model":"MOD-ul",
+  "design":"dih-ZYN","concept":"KON-sept","analysis":"uh-NAL-ih-sis",
+  "limitations":"lim-ih-TAY-shunz","limitation":"lim-ih-TAY-shun",
+  "assumptions":"uh-SUMP-shunz","assumption":"uh-SUMP-shun",
+  "implications":"im-plih-KAY-shunz","implication":"im-plih-KAY-shun",
+  "correlation":"kaw-ruh-LAY-shun","correlations":"kaw-ruh-LAY-shunz",
+  "hypothesis":"hy-POTH-ih-sis","hypotheses":"hy-POTH-ih-seez",
+  "methodology":"meth-uh-DOL-uh-jee","methodologies":"meth-uh-DOL-uh-jeez",
+  "theoretical":"thee-uh-RET-ih-kul","theoretically":"thee-uh-RET-ih-klee",
+  "significant":"sig-NIH-fih-kunt","significantly":"sig-NIH-fih-kunt-lee",
+  "framework":"FRAYM-werk","frameworks":"FRAYM-werks",
+  "conclusion":"kun-KLOO-zhun","conclusions":"kun-KLOO-zhunz",
+  "relationship":"rih-LAY-shun-ship","relationships":"rih-LAY-shun-ships",
+  "challenges":"CHAL-en-jiz","challenge":"CHAL-enj",
+  "findings":"FYN-dingz","finding":"FYN-ding",
+  "existing":"ig-ZIS-ting","literature":"LIT-er-uh-chur",
+  "variables":"VAIR-ee-uh-bulz","variable":"VAIR-ee-uh-bul",
+  "participants":"par-TIS-ih-punts","participant":"par-TIS-ih-punt",
+  "intervention":"in-ter-VEN-shun","interpretation":"in-ter-prih-TAY-shun",
+  "investigation":"in-VES-tih-GAY-shun","implications":"im-plih-KAY-shunz",
+  "effectiveness":"ih-FEK-tiv-nis","significant":"sig-NIH-fih-kunt",
+  "performance":"per-FORM-uns","management":"MAN-ij-munt",
+  "development":"dih-VEL-up-munt","organization":"or-gun-ih-ZAY-shun",
+  "communication":"kuh-myoo-nih-KAY-shun","opportunity":"op-er-TOO-nih-tee",
+  "responsibility":"rih-spon-sih-BIL-ih-tee","requirement":"rih-KWYR-munt",
+  "requirements":"rih-KWYR-munts","recommendation":"rek-uh-men-DAY-shun",
+  "implementation":"im-pluh-men-TAY-shun","acquisition":"ak-wih-ZI-shun",
+  "authorization":"aw-thor-ih-ZAY-shun","documentation":"dok-yuh-men-TAY-shun",
+  "negotiation":"nih-goh-shee-AY-shun","negotiations":"nih-goh-shee-AY-shunz",
+  "consideration":"kun-sid-er-AY-shun","considerations":"kun-sid-er-AY-shunz",
+  "approximately":"uh-PROK-sih-mit-lee","particularly":"per-TIK-yuh-ler-lee",
+  "comprehensive":"kom-prih-HEN-siv","representative":"rep-rih-ZEN-tuh-tiv",
+  "infrastructure":"IN-fruh-struk-cher","architecture":"ARK-ih-tek-cher",
+  "demonstrate":"DEM-un-strayt","demonstrates":"DEM-un-strayts",
+  "indicates":"IN-dih-kayts","indicate":"IN-dih-kayt",
+  "suggests":"sug-JESTS","suggest":"sug-JEST",
+  "provides":"pruh-VYDZ","provide":"pruh-VYD",
+  "requires":"rih-KWYRZ","require":"rih-KWYR",
+  "includes":"in-KLOODZ","include":"in-KLOOD","included":"in-KLOOD-id",
+  "identifies":"eye-DEN-tih-fyz","identify":"eye-DEN-tih-fy",
+  "understand":"un-der-STAND","understanding":"un-der-STAND-ing",
+  "determine":"dih-TER-min","determined":"dih-TERMD",
+  "establish":"ih-STAB-lish","established":"ih-STAB-lisht",
+  "evaluate":"ih-VAL-yoo-ayt","evaluation":"ih-val-yoo-AY-shun",
+  "experience":"ik-SPEER-ee-uns","experienced":"ik-SPEER-ee-unst",
+  "situation":"sich-yoo-AY-shun","situations":"sich-yoo-AY-shunz",
+  "environment":"in-VY-run-munt","environments":"in-VY-run-munts",
+  "organization":"or-gun-ih-ZAY-shun","organizations":"or-gun-ih-ZAY-shunz",
+  "cards":"KARDZ","card":"KARD","show":"SHOH","shows":"SHOHZ",
+  "like":"LYK","likes":"LYKS","liked":"LYKT",
+  "take":"TAYK","takes":"TAYKS","make":"MAYK","makes":"MAYKS",
+  "shes":"SHEEZ","hes":"HEEZ","theyre":"THAIR","weve":"WEEV",
+  "theyve":"THAYV","wouldnt":"WUD-nt","couldnt":"KUD-nt",
+  "didnt":"DID-nt","doesnt":"DUZ-nt","isnt":"IZ-nt","arent":"AR-nt",
+  "cant":"KAANT","wont":"WOHNT","dont":"DOHNT","lets":"LETS",
+  "lets":"LETS","thats":"thats","hows":"HOWZ","whats":"WUTS",
+  "time":"TYM","times":"TYMZ","day":"DAY","days":"DAYZ",
+  "way":"WAY","ways":"WAYZ","rate":"RAYT","rates":"RAYTS",
+  "room":"ROOM","rooms":"ROOMZ","show":"SHOH","shows":"SHOHZ",
+  "point":"POYNT","points":"POYNTS","work":"WERK","works":"WERKS",
+  "place":"PLAYS","places":"PLAY-siz","type":"TYP","types":"TYPS",
+  "year":"YEER","years":"YEERZ","week":"WEEK","weeks":"WEEKS",
+  "people":"PEE-pul","person":"PER-sun","thing":"THING","things":"THINGZ",
+  "world":"WERLD","life":"LYF","lives":"LYVZ","hand":"HAND","hands":"HANDZ",
+  "case":"KAYS","cases":"KAY-siz","part":"PART","parts":"PARTS",
+  "home":"HOHM","right":"RYT","rights":"RYTS","left":"LEFT",
+  "money":"MUN-ee","line":"LYN","lines":"LYNZ","plan":"PLAN","plans":"PLANZ",
+  "next":"NEKST","last":"LAST","back":"BAK","let":"LET","got":"GOT",
+  "get":"GET","got":"GOT","let":"LET","say":"SAY","says":"SEZ",
+  "theoretical":"thee-uh-RET-ih-kul","methodology":"meth-uh-DOL-uh-jee",
+  "raise":"RAYZ"
+};
+
+function wordPhon(w){
+  var cl=w.toLowerCase().replace(/[^a-z]/g,'');
+  return PH[cl]||null;
+}
+
+function wordByWordHTML(eng,phon){
+  var words=eng.trim().split(/\s+/);
+  var chunks=phon?phon.split('-'):[];
+  
+  function norm(w){return w.toLowerCase().replace(/[^a-z]/g,'');}
+  
+  // Function/grammar words: never in phon hints, use PH dict only
+  var GRAMMAR={
+    the:1,a:1,an:1,i:1,id:1,ill:1,ive:1,im:1,
+    you:1,he:1,she:1,it:1,we:1,they:1,
+    me:1,him:1,her:1,us:1,them:1,
+    my:1,your:1,his:1,its:1,our:1,their:1,
+    this:1,that:1,these:1,those:1,who:1,what:1,which:1,whose:1,
+    in:1,on:1,at:1,to:1,for:1,of:1,with:1,by:1,from:1,up:1,out:1,
+    about:1,into:1,through:1,before:1,after:1,between:1,
+    without:1,within:1,under:1,over:1,around:1,off:1,
+    and:1,but:1,or:1,so:1,if:1,as:1,because:1,while:1,
+    when:1,where:1,how:1,why:1,whether:1,unless:1,since:1,until:1,though:1,
+    is:1,are:1,was:1,were:1,be:1,been:1,being:1,am:1,
+    have:1,has:1,had:1,do:1,does:1,did:1,done:1,
+    can:1,could:1,will:1,would:1,shall:1,should:1,may:1,might:1,must:1,
+    not:1,no:1,yes:1,very:1,really:1,just:1,also:1,too:1,only:1,
+    even:1,already:1,still:1,now:1,then:1,here:1,there:1,
+    more:1,most:1,less:1,least:1,much:1,many:1,some:1,any:1,all:1,both:1,
+    well:1,quite:1,back:1,away:1,again:1,please:1,thank:1,sorry:1,
+    id:1,ive:1,im:1,ill:1
+  };
+  
+  // Count syllables by vowel groups
+  function sylCount(word){
+    var w=norm(word);
+    if(!w) return 1;
+    var n=0,inV=false;
+    for(var i=0;i<w.length;i++){
+      var isV='aeiou'.indexOf(w[i])>=0||(w[i]==='y'&&i>0&&i===w.length-1);
+      if(isV&&!inV){n++;inV=true;}
+      else if(!isV){inV=false;}
+    }
+    if(w.length>2&&w[w.length-1]==='e'&&'aeiou'.indexOf(w[w.length-2])<0&&n>1) n--;
+    return Math.max(1,n);
+  }
+  
+  // Check if a phon chunk likely corresponds to a word
+  function chunkMatchesWord(chunk,word){
+    var c=chunk.toLowerCase().replace(/[^a-z]/g,'');
+    var w=norm(word);
+    if(!c||!w) return false;
+    var c0=c[0], w0=w[0];
+    if(c0===w0) return true;
+    // Both start with vowel sound (schwa 'uh'/'ih' matches any vowel start)
+    if('aeiou'.indexOf(c0)>=0 && 'aeiou'.indexOf(w0)>=0) return true;
+    // c/k equivalence
+    if((c0==='k'&&w0==='c')||(c0==='c'&&w0==='k')) return true;
+    // j/y equivalence
+    if((c0==='j'&&(w0==='y'||w0==='j'))||(c0==='y'&&w0==='j')) return true;
+    // f/ph equivalence
+    if(c0==='f'&&w0==='p'&&w[1]==='h') return true;
+    return false;
+  }
+  
+  var wordPhons=new Array(words.length).fill('');
+  var ci=0;
+  
+  words.forEach(function(word,wi){
+    var k=norm(word);
+    
+    if(GRAMMAR[k]){
+      // Grammar word: PH dict only, don't consume phon chunks
+      wordPhons[wi]=wordPhon(k)||k;
+    } else {
+      // Content word: check if phon chunk matches this word
+      if(ci<chunks.length && chunkMatchesWord(chunks[ci],word)){
+        var sc=sylCount(word);
+        var group=chunks.slice(ci,Math.min(ci+sc,chunks.length));
+        wordPhons[wi]=group.join('-');
+        ci+=group.length;
+      } else {
+        // Not covered by phon: use PH dict or fallback
+        var ph=wordPhon(k);
+        if(ph){
+          wordPhons[wi]=ph;
+        } else {
+          // Simple English phonetic rule fallback
+          var fb=k
+            .replace(/tion$/,'shun').replace(/tions$/,'shunz')
+            .replace(/sion$/,'zhun').replace(/ous$/,'us')
+            .replace(/ness$/,'nis').replace(/ment$/,'munt')
+            .replace(/able$/,'uh-bul').replace(/ible$/,'ih-bul')
+            .replace(/ical$/,'ih-kul').replace(/ize$/,'yz')
+            .replace(/ful$/,'ful').replace(/less$/,'lis')
+            .replace(/ing$/,'ing').replace(/ings$/,'ingz')
+            .replace(/al$/,'ul').replace(/ly$/,'lee')
+            .replace(/gy$/,'jee').replace(/ty$/,'tee')
+            .replace(/ed$/,'d').replace(/er$/,'er')
+            .replace(/^kn/,'n').replace(/^wr/,'r')
+            .replace(/ght$/,'t').replace(/gh/,'');
+          if(fb) wordPhons[wi]=fb.charAt(0).toUpperCase()+fb.slice(1);
+        }
+      }
+    }
+  });
+  
+  // ── Render word cards ──
+  var html='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
+  words.forEach(function(word,i){
+    var ph=wordPhons[i]||'';
+    var hasStress=ph&&/[A-Z]{2,}/.test(ph);
+    var phDisp='';
+    if(ph){
+      phDisp=ph.split('-').map(function(syl,j){
+        var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
+        return (j>0?'<span style="opacity:.25;font-size:9px">·</span>':'')
+          +(st
+            ?'<b style="color:#111;font-size:12px;font-family:monospace">'+syl+'</b>'
+            :'<span style="color:#555;font-size:11px;font-family:monospace">'+syl+'</span>');
+      }).join('');
+    }
+    html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px;">'
+      +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'+word+'</span>'
+      +(phDisp
+        ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.5">'+phDisp+'</div>'
+        :'<div style="height:20px;"></div>')
+      +'</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+// ─── SAVE / FAVORITES ─────────────────────────────
+function getSaved(){try{return JSON.parse(localStorage.getItem('phonix_saved')||'[]');}catch(e){return[];}}
+function saveSent(){
+  var sents=DATA[S.cat]||[];
+  var s=sents[S.idx]; if(!s) return;
+  var saved=getSaved();
+  var key=S.cat+':'+S.idx;
+  var exists=saved.some(function(x){return x.key===key;});
+  if(exists){
+    saved=saved.filter(function(x){return x.key!==key;});
+    localStorage.setItem('phonix_saved',JSON.stringify(saved));
+    S.savedMsg='삭제됨'; render(); setTimeout(function(){S.savedMsg='';render();},1200);
+  } else {
+    saved.push({key:key,cat:S.cat,idx:S.idx,eng:s[0],kor:s[1],phon:s[2],tip:s[3]});
+    localStorage.setItem('phonix_saved',JSON.stringify(saved));
+    S.savedMsg='저장됨 ✓'; render(); setTimeout(function(){S.savedMsg='';render();},1200);
+  }
+}
+function isSaved(){
+  var key=S.cat+':'+S.idx;
+  return getSaved().some(function(x){return x.key===key;});
+}
+function goSaved(){stopAll();set({screen:'saved'});}
+function playSavedIdx(ii){var saved=getSaved();if(saved[ii]) speakEng(saved[ii].eng);}
+function deleteSavedIdx(ii){
+  var saved=getSaved();
+  if(saved[ii]){
+    saved.splice(ii,1);
+    localStorage.setItem('phonix_saved',JSON.stringify(saved));
+    render();
+  }
+}
+
+// ─── STATE ──────────────────────────────────────────
+var S={
+  screen:'home',cat:null,idx:0,
+  rec:false,live:'',result:null,err:'',analyzing:false,recRef:null,speaking:false,
+  cRec:false,cLive:'',cResult:null,cErr:'',cAnalyzing:false,cRef:null,
+  savedMsg:''
+};
+function set(patch){Object.assign(S,patch);render();}
+
+// ─── MIC (cross-platform: Android + iOS) ────────────
+function errFor(code){
+  return {
+    'not-allowed':'주소창 🔒 → 마이크 허용 후 다시 시도해 주세요',
+    'permission-denied':'주소창 🔒 → 마이크 허용 후 다시 시도해 주세요',
+    'no-speech':'음성이 감지되지 않았어요. 더 크게 말해보세요',
+    'network':'네트워크 오류입니다',
+    'audio-capture':'마이크가 감지되지 않습니다'
+  }[code]||'오류: '+code;
+}
+
+function startMic(onInterim,onFinal,onErr){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){onErr('Chrome 또는 Edge 브라우저를 사용해 주세요');return null;}
+  
+  var finalText='',interimText='';
+  var silTimer=null,stopped=false,r=null;
+  
+  function clearSil(){clearTimeout(silTimer);silTimer=null;}
+  function stop(){
+    if(stopped) return; stopped=true; clearSil();
+    try{r.abort();}catch(e){}
+    var t=(finalText+' '+interimText).trim();
+    if(t) onFinal(t);
+  }
+  function setSil(){
+    clearSil();
+    if(finalText.trim()) silTimer=setTimeout(stop,4000);
+  }
+  
+  function mkR(){
+    var nr=new SR();
+    nr.lang='en-US'; nr.interimResults=true;
+    nr.continuous=false; // false = more stable on Android
+    nr.maxAlternatives=1;
+    nr.onresult=function(e){
+      if(stopped) return;
+      var fin='',itr='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        var t=e.results[i][0].transcript;
+        if(e.results[i].isFinal) fin+=t+' '; else itr=t;
+      }
+      if(fin) finalText+=fin;
+      interimText=itr;
+      onInterim((finalText+interimText).trim());
+      setSil();
+    };
+    nr.onerror=function(e){
+      if(stopped) return;
+      if(e.error==='no-speech'||e.error==='aborted') return;
+      stopped=true; clearSil(); onErr(errFor(e.error));
+    };
+    nr.onend=function(){
+      if(stopped) return;
+      // Restart to keep recording (simulates continuous mode)
+      try{r=mkR();r.start();}catch(ex){
+        // Browser blocked restart — use silence timer
+        setSil();
+      }
+    };
+    return nr;
+  }
+  
+  r=mkR();
+  try{r.start();}catch(e){onErr('마이크를 시작할 수 없습니다');return null;}
+  return {stop:stop};
+}
+
+function stopMic(ref){if(ref){try{ref.stop();}catch(e){}}return null;}
+
+// ─── TTS ────────────────────────────────────────────
+function speakEng(txt){
+  if(!window.speechSynthesis||!txt) return;
+  speechSynthesis.cancel();
+
+  function doSpeak(){
+    var voices=speechSynthesis.getVoices();
+
+    // Best natural English voices by priority
+    // iOS: Samantha (enhanced), Aaron, Nicky
+    // Android: English (US) Google, or local en-US
+    // Windows: Zira, David, Mark
+    var PREF=[
+      'Samantha','com.apple.ttsbundle.Samantha-premium',
+      'com.apple.ttsbundle.Samantha-compact',
+      'com.apple.voice.enhanced.en-US.Nicky',
+      'com.apple.ttsbundle.Daniel-premium',
+      'Aaron','Nicky','Martha','Alex',
+      'Google US English','Microsoft Zira','Microsoft David',
+      'Karen','Daniel','Moira','Rishi'
+    ];
+
+    var v=null;
+
+    // 1. Try by exact name
+    for(var i=0;i<PREF.length&&!v;i++){
+      for(var j=0;j<voices.length;j++){
+        if(voices[j].name===PREF[i]){v=voices[j];break;}
+      }
+    }
+
+    // 2. Any en-US voice that looks premium/enhanced
+    if(!v){
+      for(var j=0;j<voices.length;j++){
+        var vn=voices[j].name.toLowerCase();
+        var vl=voices[j].lang;
+        if(vl==='en-US'&&(vn.indexOf('premium')>=0||vn.indexOf('enhanced')>=0)){
+          v=voices[j];break;
+        }
+      }
+    }
+
+    // 3. Any en-US local (better quality than network)
+    if(!v){
+      for(var j=0;j<voices.length;j++){
+        if(voices[j].lang==='en-US'&&voices[j].localService){v=voices[j];break;}
+      }
+    }
+
+    // 4. Any en-US
+    if(!v){
+      for(var j=0;j<voices.length;j++){
+        if(voices[j].lang==='en-US'){v=voices[j];break;}
+      }
+    }
+
+    // 5. Any English
+    if(!v){
+      for(var j=0;j<voices.length;j++){
+        if(voices[j].lang.startsWith('en')){v=voices[j];break;}
+      }
+    }
+
+    // Build utterance — split at natural pause points for better prosody
+    // Commas and mid-sentence pauses make TTS sound much more natural
+    var u=new SpeechSynthesisUtterance(txt);
+    if(v) u.voice=v;
+    u.lang='en-US';
+
+    // Tune rate/pitch per sentence type
+    var isQuestion=txt.trim().endsWith('?');
+    var isExclamation=txt.trim().endsWith('!');
+    var wordCount=txt.trim().split(/\s+/).length;
+
+    // Slightly slower for longer sentences, question rises naturally
+    u.rate = wordCount<=5 ? 0.82 : wordCount<=9 ? 0.85 : 0.88;
+    u.pitch = isQuestion ? 1.05 : isExclamation ? 1.02 : 1.0;
+    u.volume=1;
+
+    u.onstart=function(){S.speaking=true;render();};
+    u.onend=function(){S.speaking=false;render();};
+    u.onerror=function(){S.speaking=false;render();};
+
+    speechSynthesis.speak(u);
+    if(speechSynthesis.paused) speechSynthesis.resume();
+  }
+
+  // iOS Safari: voices load async — retry a couple times if empty
+  var voices=speechSynthesis.getVoices();
+  if(voices.length>0){
+    setTimeout(doSpeak,120);
+  } else {
+    var tries=0;
+    var poll=setInterval(function(){
+      if(speechSynthesis.getVoices().length>0||tries>10){
+        clearInterval(poll);
+        setTimeout(doSpeak,120);
+      }
+      tries++;
+    },200);
+  }
+}
+
+function speakIt(){
+  var s=(DATA[S.cat]||[])[S.idx];
+  if(s) speakEng(s[0]);
+}
+
+function stopAll(){
+  stopMic(S.cRef); S.cRef=null;
+  stopMic(S.recRef); S.recRef=null;
+  try{if(window.speechSynthesis) speechSynthesis.cancel();}catch(e){}
+  S.cRec=false; S.rec=false; S.speaking=false;
+}
+
+// ─── ANALYSIS RESULT HTML ────────────────────────────
+function analHTML(res,loading){
+  if(loading) return '<div style="display:flex;align-items:center;gap:10px;color:#888;font-size:13px;padding:14px 0"><div class="sp"></div>분석 중...</div>';
+  if(!res) return '';
+  var sc=Math.max(0,Math.min(100,res.score||70));
+  var col=sc>=80?'#059669':sc>=55?'#D97706':'#DC2626';
+  var wd=res.wordDisplay?
+    '<div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 8px rgba(0,0,0,.05)">'
+    +'<div style="font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;font-weight:700">단어별 결과 <span style="color:#059669">■ 맞음</span> <span style="color:#DC2626;margin-left:6px">■ 틀림</span></div>'
+    +'<div style="line-height:2.2">'+res.wordDisplay+'</div>'
+    +'<div style="font-size:11px;color:#888;margin-top:5px">'+res.matched+'/'+res.total+' 단어 정확</div>'
+    +'</div>':'';
+  var issH='';
+  if(res.issues&&res.issues.length>0){
+    var rows=res.issues.map(function(iss,i){
+      return '<div style="display:flex;gap:9px;'+(i<res.issues.length-1?'padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid #f3f4f6':'')+'">'
+        +'<div style="width:20px;height:20px;border-radius:50%;background:#FEE2E2;color:#DC2626;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div>'
+        +'<div><div style="font-size:12px;color:#D97706;font-weight:700;margin-bottom:3px">"'+iss.word+'" → '+iss.said+'</div>'
+        +'<div style="font-size:11px;color:#555;margin-bottom:3px">'+iss.issue+'</div>'
+        +'<div style="font-size:11px;color:#2563EB">💡 '+iss.tip+'</div></div></div>';
+    }).join('');
+    issH='<div style="background:#fff;border-radius:12px;padding:13px;margin-bottom:10px;box-shadow:0 1px 8px rgba(0,0,0,.05)">'+rows+'</div>';
+  } else {
+    issH='<div style="background:#ECFDF5;border-radius:12px;padding:10px;font-size:12px;color:#059669;font-weight:600;text-align:center;margin-bottom:10px">모든 단어가 정확하게 들렸어요 🎉</div>';
+  }
+  var bar='<div style="background:#fff;border-radius:12px;padding:11px 14px;box-shadow:0 1px 8px rgba(0,0,0,.05)">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="font-size:11px;color:#999">정확도</span>'
+    +'<div style="flex:1;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden">'
+    +'<div style="height:100%;width:'+sc+'%;background:'+col+';border-radius:4px;transition:width .9s ease"></div></div>'
+    +'<span style="font-weight:800;font-size:16px;color:'+col+';min-width:40px">'+sc+'%</span></div></div>';
+  return wd+issH+bar;
+}
+
+// ─── NAVIGATION ─────────────────────────────────────
+function goHome(){
+  stopAll();
+  set({screen:'home',result:null,live:'',err:'',cResult:null,cLive:'',cErr:'',savedMsg:'',analyzing:false,cAnalyzing:false});
+}
+function goChecker(){
+  stopAll();
+  set({screen:'checker',cResult:null,cLive:'',cErr:'',cRec:false,cAnalyzing:false});
+}
+function goPCats(){
+  stopAll();
+  set({screen:'cats'});
+}
+function startDrill(id){
+  stopAll();
+  set({screen:'drill',cat:id,idx:0,result:null,live:'',err:'',rec:false,analyzing:false,speaking:false,savedMsg:''});
+}
+function prevS(){
+  if(S.idx>0){
+    stopMic(S.recRef); S.recRef=null;
+    set({idx:S.idx-1,result:null,live:'',err:'',rec:false,analyzing:false});
+  }
+}
+function nextS(){
+  var sents=DATA[S.cat]||[];
+  stopMic(S.recRef); S.recRef=null;
+  var n=S.idx<sents.length-1?S.idx+1:0;
+  set({idx:n,result:null,live:'',err:'',rec:false,analyzing:false});
+}
+
+// ─── MIC TOGGLES ────────────────────────────────────
+function toggleCRec(){
+  if(S.cRec){stopMic(S.cRef);S.cRef=null;set({cRec:false});return;}
+  set({cRec:true,cErr:'',cResult:null,cLive:'',cAnalyzing:false});
+  var ref=startMic(
+    function(t){if(S.cRec) set({cLive:t});},
+    function(t){S.cRef=null;set({cRec:false});if(t.trim()) runAnalyze(t,'',false);},
+    function(msg){S.cRef=null;set({cRec:false,cErr:msg});}
+  );
+  S.cRef=ref; render();
+}
+function togglePRec(){
+  if(S.rec){stopMic(S.recRef);S.recRef=null;set({rec:false});return;}
+  set({rec:true,err:'',result:null,live:'',analyzing:false});
+  var target=((DATA[S.cat]||[])[S.idx]||[])[0]||'';
+  var ref=startMic(
+    function(t){if(S.rec) set({live:t});},
+    function(t){S.recRef=null;set({rec:false});if(t.trim()) runAnalyze(t,target,true);},
+    function(msg){S.recRef=null;set({rec:false,err:msg});}
+  );
+  S.recRef=ref; render();
+}
+function runAnalyze(txt,target,isPractice){
+  if(isPractice) set({analyzing:true,result:null});
+  else set({cAnalyzing:true,cResult:null});
+  setTimeout(function(){
+    var r=analyze(txt.trim(),target);
+    if(isPractice) set({analyzing:false,result:r});
+    else set({cAnalyzing:false,cResult:r});
+  },400);
+}
+
+// ─── RENDER ─────────────────────────────────────────
+function render(){
+  var app=document.getElementById('app');
+  if(!app) return;
+
+  // HOME
+  if(S.screen==='home'){
+    var chips=CATS.map(function(c){
+      return '<div onclick="startDrill(\''+c.id+'\')" style="background:'+c.bg+';border-radius:15px;padding:12px;cursor:pointer;border:1.5px solid '+c.color+'22;display:flex;align-items:center;gap:9px">'
+        +'<div style="width:30px;height:30px;border-radius:9px;background:'+c.color+';display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:800;font-size:9px">'+c.id.slice(0,2).toUpperCase()+'</div>'
+        +'<div><div style="font-weight:700;font-size:12px;color:#1a1a1a;line-height:1.2">'+c.name+'</div><div style="font-size:10px;color:#888">'+c.desc+'</div></div>'
+        +'</div>';
+    }).join('');
+    app.innerHTML='<div style="background:#f5f0eb;min-height:100vh;padding-bottom:40px">'
+      +'<div style="background:#1a1a1a;padding:32px 22px 24px">'
+      +'<div style="font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">English Pronunciation</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+      +'<div style="font-family:Georgia,serif;font-size:30px;font-weight:700;color:#fff">Phonix<span style="color:#FF6B35">Coach</span></div>'
+      +'<button onclick="goSaved()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:12px">🔖 저장목록</button>'
+      +'</div>'
+      +'<div style="font-size:13px;color:#aaa">원어민처럼 발음하기 위한 코치</div>'
+      +'</div>'
+      +'<div style="padding:20px 18px 0">'
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">모드 선택</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">'
+      +'<div onclick="goChecker()" style="background:#FF6B35;border-radius:20px;padding:22px 18px;cursor:pointer;position:relative;overflow:hidden">'
+      +'<div style="font-size:28px;margin-bottom:10px">🎙</div>'
+      +'<div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:4px">Pronunciation Checker</div>'
+      +'<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.5">원어민 귀에 어떻게 들리는지</div>'
+      +'</div>'
+      +'<div onclick="goPCats()" style="background:#2563EB;border-radius:20px;padding:22px 18px;cursor:pointer;position:relative;overflow:hidden">'
+      +'<div style="font-size:28px;margin-bottom:10px">📖</div>'
+      +'<div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:4px">Practice Course</div>'
+      +'<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.5">발음 표기·강세·억양·채점</div>'
+      +'</div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">카테고리 바로가기</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+chips+'</div>'
+      +'</div></div>';
+    return;
+  }
+
+  // CHECKER
+  if(S.screen==='checker'){
+    app.innerHTML='<div style="background:#f5f0eb;min-height:100vh">'
+      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
+      +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
+      +'<span style="font-weight:700;font-size:15px;color:#fff">Pronunciation Checker</span>'
+      +'</div>'
+      +'<div style="padding:0 18px;display:flex;flex-direction:column;gap:14px">'
+      +'<div style="background:#fff;border-radius:22px;padding:28px 18px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.06)">'
+      +'<button onclick="toggleCRec()" style="width:84px;height:84px;border-radius:50%;background:'+(S.cRec?'#FEE2E2':'#1a1a1a')+';border:3px solid '+(S.cRec?'#DC2626':'#1a1a1a')+';font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;'+(S.cRec?'animation:pulse 1.4s ease infinite':'')+'">'+(S.cRec?'⏹':'🎙')+'</button>'
+      +'<div style="font-weight:700;font-size:15px;margin-bottom:5px;color:'+(S.cRec?'#DC2626':'#1a1a1a')+'">'+(S.cRec?'🔴 듣고 있어요... 영어로 말하세요':'클릭해서 말해보세요')+'</div>'
+      +'<div style="font-size:13px;color:#888">'+(S.cRec?'4초 침묵 시 자동 분석':'자유롭게 영어로 말해보세요')+'</div>'
+      +(S.cLive?'<div style="margin-top:12px;padding:9px 13px;background:#EFF6FF;border-radius:11px;font-weight:600;font-size:14px;color:#2563EB;text-align:left">&ldquo;'+S.cLive+'&rdquo;</div>':'')
+      +(S.cErr?'<div style="margin-top:9px;padding:9px 13px;background:#FEE2E2;border-radius:9px;font-size:12px;color:#DC2626">'+S.cErr+'</div>':'')
+      +'</div>'
+      +analHTML(S.cResult,S.cAnalyzing)
+      +(!S.cResult&&!S.cAnalyzing?'<div style="background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.04)">'
+        +'<div style="font-size:11px;color:#aaa;margin-bottom:8px;font-weight:600;letter-spacing:1px">HOW IT WORKS</div>'
+        +'<div style="font-size:13px;color:#888;line-height:1.7">1. 마이크 버튼을 누르고 영어로 말하세요<br>2. 4초 침묵 시 자동으로 분석됩니다<br>3. 원어민 귀에 어떻게 들리는지 확인하세요</div>'
+        +'</div>':'')
+      +'</div></div>';
+    return;
+  }
+
+  // CAT SELECT
+  if(S.screen==='cats'){
+    var cards=CATS.map(function(c){
+      return '<div onclick="startDrill(\''+c.id+'\')" style="background:'+c.bg+';border-radius:20px;padding:20px 16px;cursor:pointer;border:2px solid '+c.color+'20;active:transform:scale(.98)">'
+        +'<div style="width:42px;height:42px;border-radius:13px;background:'+c.color+';display:flex;align-items:center;justify-content:center;margin-bottom:11px;color:#fff;font-weight:800;font-size:12px">'+c.id.slice(0,2).toUpperCase()+'</div>'
+        +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:3px">'+c.name+'</div>'
+        +'<div style="font-size:11px;color:#888">'+c.desc+'</div>'
+        +'</div>';
+    }).join('');
+    app.innerHTML='<div style="background:#f5f0eb;min-height:100vh">'
+      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
+      +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
+      +'<span style="font-weight:700;font-size:15px;color:#fff">Practice Course</span>'
+      +'</div>'
+      +'<div style="padding:0 18px">'
+      +'<div style="font-weight:700;font-size:18px;margin-bottom:5px">카테고리 선택</div>'
+      +'<div style="font-size:13px;color:#888;margin-bottom:20px">카테고리별 50개 예문 · 단어별 발음 표기 · 채점</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">'+cards+'</div>'
+      +'</div></div>';
+    return;
+  }
+
+  // SAVED
+  if(S.screen==='saved'){
+    var saved=getSaved();
+    var rows=saved.length===0
+      ?'<div style="text-align:center;color:#bbb;padding:40px 0"><div style="font-size:36px;margin-bottom:10px">🔖</div><div style="font-size:14px;line-height:1.7">아직 저장된 문장이 없어요.<br>연습 중 🔖 버튼을 눌러 저장해 보세요!</div></div>'
+      :saved.map(function(item,ii){
+        return '<div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
+          +'<div style="font-size:15px;font-weight:700;color:#1a1a1a;flex:1;line-height:1.4;margin-right:10px">'+item.eng+'</div>'
+          +'<div style="display:flex;gap:7px;flex-shrink:0">'
+          +'<button onclick="playSavedIdx('+ii+')" style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:13px">▶</button>'
+          +'<button onclick="deleteSavedIdx('+ii+')" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:13px">✕</button>'
+          +'</div></div>'
+          +'<div style="font-size:12px;color:#888;margin-bottom:6px">'+item.kor+'</div>'
+          +'<div style="font-size:11px;color:#92400E;background:#FFFBEB;border-radius:7px;padding:4px 9px;font-family:monospace;display:inline-block">'+item.phon+'</div>'
+          +'</div>';
+      }).join('');
+    app.innerHTML='<div style="background:#f5f0eb;min-height:100vh">'
+      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
+      +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
+      +'<span style="font-weight:700;font-size:15px;color:#fff">🔖 저장된 문장</span>'
+      +'<span style="margin-left:auto;background:rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:3px 10px;font-size:12px">'+saved.length+'개</span>'
+      +'</div>'
+      +'<div style="padding:0 18px 40px">'+rows+'</div>'
+      +'</div>';
+    return;
+  }
+
+  // DRILL
+  if(S.screen==='drill'){
+    var cat=CATS.find(function(c){return c.id===S.cat;})||CATS[0];
+    var sents=DATA[S.cat]||[];
+    var s=sents[S.idx];
+    if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
+    var eng=s[0],kor=s[1],phon=s[2],tip=s[3];
+    var saved=isSaved();
+    var intoQ=eng.trim().endsWith('?');
+    var into=intoQ?'↗ 상승 Rising':'↘ 하강 Falling';
+    var intoCol=intoQ?'#2563EB':'#D97706';
+    var intoBg=intoQ?'#EFF6FF':'#FFFBEB';
+
+    var leftPanel='<div style="width:50%;overflow-y:auto;padding:16px 14px;border-right:1px solid #e8e8e8">'
+      +'<div style="font-family:monospace;font-size:10px;color:#ccc;text-transform:uppercase;margin-bottom:9px">문장 #'+(S.idx+1)+'</div>'
+      +'<div style="font-size:18px;font-weight:800;line-height:1.4;margin-bottom:5px">'+eng+'</div>'
+      +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
+      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">단어별 발음</div>'
+      +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,phon)+'</div>'
+      
+      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
+      +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
+      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">발음 팁</div>'
+      +'<div style="font-size:12px;padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid '+cat.color+';color:#555;line-height:1.6;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'+tip+'</div>'
+      +'<button onclick="speakIt()" style="background:'+(S.speaking?'#059669':'#1a1a1a')+';color:#fff;border:none;border-radius:11px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">'+(S.speaking?'▶ 재생 중...':'▶ 원어민 발음 듣기')+'</button>'
+      +'</div>';
+
+    var rightPanel='<div style="flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:10px">'
+      +'<div style="background:#fff;border-radius:18px;padding:20px 14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
+      +'<button onclick="togglePRec()" style="width:68px;height:68px;border-radius:50%;background:'+(S.rec?'#FEE2E2':'#1a1a1a')+';border:3px solid '+(S.rec?'#DC2626':'#1a1a1a')+';font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;'+(S.rec?'animation:pulse 1.4s ease infinite':'')+'">'+(S.rec?'⏹':'🎙')+'</button>'
+      +'<div style="font-weight:700;font-size:12px;margin-bottom:3px;color:'+(S.rec?'#DC2626':'#1a1a1a')+'">'+(S.rec?'🔴 듣고 있어요...':'마이크 버튼')+'</div>'
+      +'<div style="font-size:11px;color:#888">'+(S.rec?'4초 침묵 시 자동 분석':'왼쪽 문장을 읽어보세요')+'</div>'
+      +(S.live?'<div style="margin-top:9px;padding:6px 10px;background:#EFF6FF;border-radius:9px;font-weight:600;font-size:13px;color:#2563EB">&ldquo;'+S.live+'&rdquo;</div>':'')
+      +(S.err?'<div style="margin-top:7px;padding:6px 10px;background:#FEE2E2;border-radius:8px;font-size:11px;color:#DC2626">'+S.err+'</div>':'')
+      +'</div>'
+      +analHTML(S.result,S.analyzing)
+      +(!S.result&&!S.analyzing&&!S.live?'<div style="text-align:center;color:#bbb;padding:18px 0"><div style="font-size:28px;margin-bottom:7px">👂</div><div style="font-size:12px;line-height:1.6">녹음하면 단어별로<br>얼마나 정확한지 채점해 드립니다</div></div>':'')
+      +'</div>';
+
+    app.innerHTML='<div style="background:#f5f0eb;min-height:100vh;display:flex;flex-direction:column">'
+      +'<div style="background:#1a1a1a;padding:11px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0">'
+      +'<button onclick="goPCats()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:5px 10px;cursor:pointer;font-size:11px">← 카테고리</button>'
+      +'<div style="font-weight:700;font-size:13px;color:'+cat.color+'">'+cat.name+'</div>'
+      +'<div style="margin-left:auto;display:flex;align-items:center;gap:8px">'
+      +'<span style="font-family:monospace;font-size:11px;color:#888">'+(S.idx+1)+'/'+sents.length+'</span>'
+      +'<button onclick="saveSent()" title="저장" style="background:'+(saved?'#FF6B35':'rgba(255,255,255,.12)')+';border:none;color:#fff;border-radius:8px;padding:4px 9px;cursor:pointer;font-size:14px;line-height:1">🔖</button>'
+      +(S.savedMsg?'<span style="font-size:11px;color:#4ade80;font-weight:700">'+S.savedMsg+'</span>':'')
+      +'</div></div>'
+      +'<div style="background:#fff;padding:5px 14px;display:flex;gap:12px;flex-shrink:0;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa">'
+      +'<span><b style="color:#1a1a1a">대문자</b>=강세</span><span style="color:#888">소문자=약함</span><span>·=음절구분</span>'
+      +'</div>'
+      +'<div style="flex:1;display:flex;overflow:hidden;min-height:0">'
+      +leftPanel+rightPanel
+      +'</div>'
+      +'<div style="padding:11px 14px;display:flex;gap:9px;background:#fff;border-top:1px solid #f0f0f0;flex-shrink:0">'
+      +'<button onclick="prevS()" '+(S.idx===0?'disabled':'')+' style="flex:1;padding:11px;background:#f5f5f5;border:none;border-radius:13px;font-size:13px;font-weight:700;color:'+(S.idx===0?'#ccc':'#1a1a1a')+';cursor:'+(S.idx===0?'not-allowed':'pointer')+'">← 이전</button>'
+      +'<button onclick="nextS()" style="flex:1;padding:11px;background:'+cat.color+';border:none;border-radius:13px;font-size:13px;font-weight:800;color:#fff;cursor:pointer">다음 →</button>'
+      +'</div></div>';
+  }
+}
+
+// Preload voices for iOS Safari
+if(window.speechSynthesis){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged=function(){speechSynthesis.getVoices();};
+}
+render();
+</script>
+</body>
+</html>
