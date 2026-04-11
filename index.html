@@ -373,7 +373,61 @@ var PH={
 
 function wordPhon(w){
   var cl=w.toLowerCase().replace(/[^a-z]/g,'');
-  return PH[cl]||null;
+  return PH[cl]||PHON_CACHE[cl]||null;
+}
+
+// ── Free Dictionary API: IPA → kum-PLEET-lee format ──
+var PHON_CACHE={};
+
+function ipaConvert(s){
+  return s
+    .replace(/ɑː/g,'aa').replace(/ɑ/g,'ah').replace(/æ/g,'a')
+    .replace(/eɪ/g,'ay').replace(/ɪər/g,'eer').replace(/ɛər/g,'air').replace(/eər/g,'air')
+    .replace(/iː/g,'ee').replace(/ɪ/g,'ih').replace(/i/g,'ee')
+    .replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/ɔɪ/g,'oy').replace(/ɔː/g,'aw').replace(/ɔ/g,'aw')
+    .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'uh').replace(/u/g,'oo')
+    .replace(/ʌ/g,'uh').replace(/ɜː/g,'er').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
+    .replace(/aɪ/g,'eye').replace(/aʊ/g,'ow')
+    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh').replace(/tʃ/g,'ch').replace(/dʒ/g,'j')
+    .replace(/θ/g,'th').replace(/ð/g,'th').replace(/ŋ/g,'ng').replace(/j/g,'y')
+    .replace(/[ˈˌːˑ()]/g,'');
+}
+
+function ipaToPhon(ipa){
+  var s=(ipa||'').replace(/^[\/\[]|[\/\]]$/g,'').replace(/ˌ/g,'').trim();
+  if(!s) return '';
+  if(s.includes('.')){
+    return s.split('.').map(function(syl){
+      var st=syl.includes('ˈ');
+      var c=ipaConvert(syl.replace(/ˈ/g,''));
+      return st?c.toUpperCase():c;
+    }).filter(Boolean).join('-');
+  }
+  var idx=s.indexOf('ˈ');
+  if(idx<0) return ipaConvert(s).toUpperCase();
+  var before=ipaConvert(s.slice(0,idx));
+  var after=ipaConvert(s.slice(idx+1));
+  return (before?before+'-':'')+after.toUpperCase();
+}
+
+function fetchPhonForWords(words){
+  var toFetch=words.filter(function(w){return w&&w.length>1&&!PH[w]&&PHON_CACHE[w]===undefined;});
+  if(!toFetch.length) return Promise.resolve();
+  var promises=toFetch.map(function(w){
+    return fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w))
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(data){
+        if(data&&data[0]&&data[0].phonetics){
+          var ph=data[0].phonetics.find(function(p){return p.text&&p.text.length>2;});
+          var result=ph?ipaToPhon(ph.text):'';
+          PHON_CACHE[w]=result||phonetize(w);
+        } else {
+          PHON_CACHE[w]=phonetize(w);
+        }
+      })
+      .catch(function(){PHON_CACHE[w]=phonetize(w);});
+  });
+  return Promise.all(promises);
 }
 
 // ── Phonetic rules fallback for words not in PH dict ──
@@ -954,22 +1008,27 @@ function runAIAnalysis(txt){
   if(!txt) return;
   var key=getGeminiKey();
   set({aiLoading:true,aiEng:txt,aiInput:txt,aiKor:'',aiGrammar:[],aiError:''});
-  if(key){
-    // Gemini: richer Korean grammar tips
-    callGemini(txt,key)
-      .then(function(d){set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[]});})
-      .catch(function(e){
-        // Gemini failed → fall back to free APIs
-        Promise.all([translateFree(txt),checkGrammarFree(txt)])
-          .then(function(res){set({aiLoading:false,aiKor:res[0],aiGrammar:res[1]});})
-          .catch(function(){set({aiLoading:false,aiError:'번역 오류. 네트워크를 확인해주세요.'});});
-      });
-  } else {
-    // No key: use free APIs
-    Promise.all([translateFree(txt),checkGrammarFree(txt)])
-      .then(function(res){set({aiLoading:false,aiKor:res[0],aiGrammar:res[1]});})
-      .catch(function(){set({aiLoading:false,aiError:'번역 오류. 네트워크를 확인해주세요.'});});
-  }
+
+  // Extract unique words to pre-fetch phonetics from dictionary API
+  var allWords=txt.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/)
+    .map(function(w){return w.replace(/[^a-z]/g,'');})
+    .filter(function(w,i,arr){return w.length>1&&arr.indexOf(w)===i;});
+
+  var analysisPromise=key
+    ? callGemini(txt,key)
+        .catch(function(){
+          return Promise.all([translateFree(txt),checkGrammarFree(txt)])
+            .then(function(r){return {translation:r[0],grammar:r[1]};});
+        })
+    : Promise.all([translateFree(txt),checkGrammarFree(txt)])
+        .then(function(r){return {translation:r[0],grammar:r[1]};});
+
+  Promise.all([analysisPromise, fetchPhonForWords(allWords)])
+    .then(function(results){
+      var d=results[0];
+      set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[]});
+    })
+    .catch(function(){set({aiLoading:false,aiError:'오류. 네트워크를 확인해주세요.'});});
 }
 
 function ocrImage(input){
@@ -1138,7 +1197,7 @@ function render(){
         ?'<div style="background:#fff;border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
           +'<div style="font-size:36px;margin-bottom:12px">🔍</div>'
           +'<div style="font-weight:700;font-size:15px;color:#1a1a1a;margin-bottom:10px">내 문장 분석</div>'
-          +'<div style="font-size:13px;color:#888;line-height:1.9">영어 문장을 입력하거나<br>📷 사진으로 텍스트를 스캔하면<br><b style="color:#059669">번역 · 발음 · 문법 포인트</b>를<br>Gemini AI가 분석해드려요</div>'
+          +'<div style="font-size:13px;color:#888;line-height:1.9">영어 문장을 입력하거나<br>📷 사진으로 텍스트를 스캔하면<br><b style="color:#059669">번역 · 발음 · 문법 포인트</b>를 알려드려요</div>'
           +'</div>':''
       )
       +'</div></div>';
