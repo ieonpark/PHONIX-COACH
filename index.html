@@ -368,7 +368,25 @@ var PH={
   "door":"DOR","wall":"WAWL","floor":"FLOR","window":"WIN-doh",
   "light":"LYT","lights":"LYTS","shadow":"SHA-doh","shadows":"SHA-dohz",
   "word":"WERD","words":"WERDZ","song":"SONG","songs":"SONGZ",
-  "name":"NAYM","names":"NAYMZ","place":"PLAYS","places":"PLAY-siz"
+  "name":"NAYM","names":"NAYMZ","place":"PLAYS","places":"PLAY-siz",
+  // Business / finance words
+  "schedule":"SKEJ-ul","scheduled":"SKEJ-uld","scheduling":"SKEJ-ul-ing",
+  "updated":"up-DAY-tid","update":"up-DAYT","updates":"up-DAYTS","updating":"up-DAY-ting",
+  "depreciation":"dih-PREE-shee-AY-shun","appreciation":"uh-PREE-shee-AY-shun",
+  "negotiation":"nuh-GOH-shee-AY-shun","evaluation":"ih-VAL-yoo-AY-shun",
+  "situation":"SICH-oo-AY-shun","communication":"kuh-MYOO-nih-KAY-shun",
+  "organization":"or-guh-nih-ZAY-shun","information":"in-fer-MAY-shun",
+  "presentation":"preh-zen-TAY-shun","implementation":"im-pluh-men-TAY-shun",
+  "management":"MAN-ij-munt","department":"dih-PART-munt","requirement":"rih-KWY-er-munt",
+  "performance":"per-FOR-munss","investment":"in-VEST-munt","development":"dih-VEL-up-munt",
+  "opportunity":"op-er-TOO-nih-tee","responsibility":"rih-spon-suh-BIL-ih-tee",
+  "experience":"ik-SPEER-ee-unss","professional":"pruh-FESH-uh-nul","available":"uh-VAY-luh-bul",
+  "important":"im-POR-tunt","different":"DIF-er-unt","together":"tuh-GETH-er",
+  "between":"bih-TWEEN","because":"bih-KUZ","without":"with-OWT","during":"DYUR-ing",
+  "through":"THROO","throughout":"throo-OWT","following":"FOL-oh-ing","against":"uh-GENST",
+  "themselves":"them-SELVZ","ourselves":"owr-SELVZ","yourself":"yer-SELF","myself":"my-SELF",
+  "already":"awl-RED-ee","always":"AWL-wayz","usually":"YOO-zhoo-uh-lee","actually":"AK-choo-uh-lee",
+  "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee"
 };
 
 function wordPhon(w){
@@ -383,13 +401,15 @@ function ipaConvert(s){
   return s
     .replace(/ɑː/g,'aa').replace(/ɑ/g,'ah').replace(/æ/g,'a')
     .replace(/eɪ/g,'ay').replace(/ɪər/g,'eer').replace(/ɛər/g,'air').replace(/eər/g,'air')
-    .replace(/iː/g,'ee').replace(/ɪ/g,'i').replace(/i/g,'ee')
+    .replace(/iː/g,'ee').replace(/ɪ/g,'i')
     .replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/ɔɪ/g,'oy').replace(/ɔː/g,'aw').replace(/ɔ/g,'aw')
-    .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'u').replace(/u/g,'oo')
+    .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'u')
     .replace(/ʌ/g,'uh').replace(/ɜː/g,'er').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
     .replace(/aɪ/g,'eye').replace(/aʊ/g,'ow')
-    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh').replace(/tʃ/g,'ch').replace(/dʒ/g,'j')
+    .replace(/ɛ/g,'e')
+    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh').replace(/tʃ/g,'ch')
     .replace(/θ/g,'th').replace(/ð/g,'th').replace(/ŋ/g,'ng').replace(/j/g,'y')
+    .replace(/dʒ/g,'j')
     .replace(/[ˈˌːˑ()]/g,'');
 }
 
@@ -501,11 +521,16 @@ function wordByWordHTML(eng,phon){
   function sylCount(word){
     var w=norm(word);
     if(!w) return 1;
-    var n=0,inV=false;
+    var n=0,inV=false,prev='';
+    // These adjacent vowel pairs almost always represent 2 separate syllables in English
+    var SPLIT={'ia':1,'ua':1,'iu':1,'uo':1,'ae':1,'oe':1};
     for(var i=0;i<w.length;i++){
-      var isV='aeiou'.indexOf(w[i])>=0||(w[i]==='y'&&i>0&&i===w.length-1);
+      var ch=w[i];
+      var isV='aeiou'.indexOf(ch)>=0||(ch==='y'&&i>0&&i===w.length-1);
       if(isV&&!inV){n++;inV=true;}
+      else if(isV&&inV&&SPLIT[prev+ch]){n++;}  // split pair = new syllable
       else if(!isV){inV=false;}
+      prev=ch;
     }
     if(w.length>2&&w[w.length-1]==='e'&&'aeiou'.indexOf(w[w.length-2])<0&&n>1) n--;
     return Math.max(1,n);
