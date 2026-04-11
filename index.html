@@ -11,6 +11,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,50,50,.4)}70%{box-shadow:0 0 0 14px rgba(220,50,50,0)}100%{box-shadow:0 0 0 0 rgba(220,50,50,0)}}
 .sp{width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:#FF6B35;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:inline-block}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" async></script>
 </head>
 <body>
 <div id="app"></div>
@@ -481,7 +482,7 @@ var S={
   rec:false,live:'',result:null,err:'',analyzing:false,recRef:null,speaking:false,
   cRec:false,cLive:'',cResult:null,cErr:'',cAnalyzing:false,cRef:null,
   savedMsg:'',
-  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiLoading:false,aiImgLoading:false,aiError:''
+  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiLoading:false,aiImgLoading:false,aiError:'',aiKey:''
 };
 function set(patch){Object.assign(S,patch);render();}
 
@@ -767,140 +768,82 @@ function runAnalyze(txt,target,isPractice){
 }
 
 // ─── ANALYZE MY SENTENCE ─────────────────────────────
+function getGeminiKey(){return localStorage.getItem('phonix_gemini_key')||'';}
+function saveGeminiKey(){
+  var el=document.getElementById('geminiKeyInput');
+  if(!el) return;
+  var k=el.value.trim();
+  if(!k) return;
+  localStorage.setItem('phonix_gemini_key',k);
+  set({aiKey:k,aiError:''});
+}
+function clearGeminiKey(){localStorage.removeItem('phonix_gemini_key');set({aiKey:'',aiEng:'',aiKor:'',aiGrammar:[]});}
+
 function goAnalyze(){
   stopAll();
-  set({screen:'analyze',aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiLoading:false,aiImgLoading:false,aiError:''});
+  set({screen:'analyze',aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],
+    aiLoading:false,aiImgLoading:false,aiError:'',aiKey:getGeminiKey()});
 }
 function speakAI(){speakEng(S.aiEng);}
 
-function getGrammarTips(sentence){
-  var tips=[];
-  var s=sentence.toLowerCase().replace(/[''']/g,"'");
-  var words=s.replace(/[^a-z '\-]/g,'').split(/\s+/).filter(Boolean);
-  var first=words[0]||'';
-  var WH=['what','where','when','who','why','how','which','whose','whom'];
-  var WHMAP={what:'무엇',where:'어디',when:'언제',who:'누구',why:'왜',how:'어떻게',which:'어느',whose:'누구의',whom:'누구에게'};
-  var AUX=['is','are','was','were','do','does','did','have','has','had','can','could','will','would','should','may','might','shall'];
-  // 1. Question
-  if(sentence.trim().endsWith('?')){
-    if(WH.indexOf(first)>=0)
-      tips.push({icon:'❓',label:'WH 의문문',col:'#2563EB',detail:'"'+first+'" ('+WHMAP[first]+')으로 시작해요. 끝 억양은 보통 하강(↘)해요.'});
-    else
-      tips.push({icon:'❓',label:'Yes/No 의문문',col:'#2563EB',detail:'조동사/be동사로 시작하는 질문이에요. 끝 억양은 상승(↗)해요.'});
-  }
-  // 2. Passive
-  if(/\b(am|is|are|was|were|been|being)\s+\w+(ed|en)\b/i.test(sentence))
-    tips.push({icon:'🔄',label:'수동태',col:'#0891B2',detail:'be동사 + 과거분사 = 수동태. 행동을 당하는 대상이 주어가 돼요.'});
-  // 3. Perfect
-  if(/\b(have|has)\s+\w+(ed|en)\b/i.test(sentence))
-    tips.push({icon:'⏱',label:'현재완료',col:'#D97706',detail:"'have/has + 과거분사': 과거의 경험이나 현재까지 영향을 미치는 상황을 나타내요."});
-  else if(/\bhad\s+\w+(ed|en)\b/i.test(sentence))
-    tips.push({icon:'⏱',label:'과거완료',col:'#D97706',detail:"'had + 과거분사': 과거의 특정 시점 이전에 완료된 일을 나타내요."});
-  // 4. Modals
-  var MODALS={
-    'can':{m:'능력·가능',d:"지금 할 수 있는 능력이나 가능성을 나타내요."},
-    'could':{m:'공손한 요청·가능성',d:"정중한 요청이나 부드러운 제안을 할 때 써요."},
-    'would':{m:'공손한 요청·가정',d:"정중한 요청이나 가상의 상황을 나타내요."},
-    'should':{m:'조언·당위',d:"'~해야 한다'는 조언이나 권유를 할 때 써요."},
-    'must':{m:'강한 의무·확신',d:"강한 의무 또는 '틀림없다'는 강한 추측을 나타내요."},
-    'might':{m:'낮은 가능성',d:"불확실하거나 낮은 가능성을 나타낼 때 써요."},
-    'may':{m:'허락·가능성',d:"허락을 구하거나 일이 일어날 가능성을 표현해요."}
-  };
-  for(var m in MODALS){
-    if(new RegExp('\\b'+m+'\\b','i').test(sentence)){
-      var mi=MODALS[m];
-      tips.push({icon:'🔧',label:'조동사 '+m.toUpperCase()+' ('+mi.m+')',col:'#7C3AED',detail:'"'+m+'" — '+mi.d});
-      break;
-    }
-  }
-  // 5. Conditional
-  if(/\bif\b/i.test(sentence)){
-    if(/\bwould\b|\bcould\b|\bmight\b/i.test(sentence))
-      tips.push({icon:'💭',label:'가정법',col:'#059669',detail:"'If + 과거동사, would/could + 동사원형' — 현실과 다른 가상의 상황이에요."});
-    else
-      tips.push({icon:'📋',label:'조건문 (if절)',col:'#059669',detail:"'If + 조건, 결과' 구조예요. 조건이 충족되면 어떤 일이 일어나는지 표현해요."});
-  }
-  // 6. Phrasal verbs
-  var PHRASAL={
-    'give up':'포기하다','look up':'찾아보다','look forward to':'기대하다',
-    'come up with':'생각해내다','run out of':'소진하다','catch up':'따라잡다',
-    'show up':'나타나다','put off':'미루다','pick up':'집어들다/이해하다',
-    'turn down':'거절하다','bring up':'언급하다','figure out':'이해하다',
-    'carry on':'계속하다','go on':'계속하다','take care of':'돌보다',
-    'get along':'잘 지내다','make up':'화해하다/꾸미다','break down':'고장나다',
-    'hang out':'어울려 놀다','check out':'확인하다','work out':'운동하다/잘 되다',
-    'find out':'알아내다','set up':'설정하다','run into':'우연히 만나다'
-  };
-  for(var pv in PHRASAL){
-    if(s.indexOf(pv)>=0){
-      tips.push({icon:'🔗',label:'구동사 "'+pv+'"',col:'#EC4899',detail:'"'+pv+'" = '+PHRASAL[pv]+'. 동사+전치사가 하나의 새로운 의미를 만들어요.'});
-      break;
-    }
-  }
-  // 7. Contractions
-  var CONTR={"don't":"do not","doesn't":"does not","didn't":"did not","won't":"will not",
-    "can't":"cannot","isn't":"is not","aren't":"are not","wasn't":"was not",
-    "weren't":"were not","haven't":"have not","hasn't":"has not","hadn't":"had not",
-    "couldn't":"could not","wouldn't":"would not","shouldn't":"should not","i'm":"I am",
-    "i've":"I have","i'll":"I will","i'd":"I would","it's":"it is","that's":"that is",
-    "there's":"there is","they're":"they are","we're":"we are","you're":"you are"};
-  for(var c in CONTR){
-    if(s.indexOf(c)>=0){
-      tips.push({icon:'✂️',label:'단축형',col:'#DC2626',detail:'"'+c+'" = "'+CONTR[c]+'". 구어체에서 자주 쓰는 단축 표현이에요.'});
-      break;
-    }
-  }
-  // 8. Imperative
-  var IMP=['stop','try','let','be','get','go','come','look','listen','remember',
-    'take','give','tell','show','keep','hold','wait','check','make','feel','use','ask'];
-  if(!sentence.trim().endsWith('?')&&IMP.indexOf(first)>=0)
-    tips.push({icon:'📢',label:'명령문',col:'#D97706',detail:'동사원형으로 시작하는 명령문이에요. 주어 없이 행동을 직접 지시하거나 요청해요.'});
-  // Default
-  if(tips.length===0)
-    tips.push({icon:'📝',label:words.length<=6?'간결한 평서문':'평서문',col:'#666',detail:'핵심 명사와 동사에 강세를 줘서 말해보세요. 중요한 정보를 담은 단어를 강하게 발음해요.'});
-  return tips.slice(0,4);
+function splitSentences(text){
+  var parts=text.match(/[^.!?]+[.!?]+/g)||[];
+  var rem=text.replace(/[^.!?]+[.!?]+/g,'').trim();
+  if(rem) parts.push(rem);
+  return parts.map(function(s){return s.trim();}).filter(Boolean);
+}
+
+function callGemini(text,apiKey){
+  var prompt='다음 영어 텍스트를 분석해줘. 마크다운 없이 순수 JSON만 반환해:\n'
+    +'{\n  "translation": "전체 한국어 번역",\n'
+    +'  "grammar": [\n'
+    +'    {"icon":"이모지","label":"문법/표현 이름","color":"#hex","detail":"한국어 설명 2-3문장"}\n'
+    +'  ]\n}\n'
+    +'color는 반드시 이 중 하나: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2, #EC4899\n'
+    +'grammar는 최대 5개. 학습에 유용한 문법·표현 포인트를 골라줘.\n\n'
+    +'영어 텍스트:\n'+text;
+  return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+apiKey,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1024}})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error) throw new Error(d.error.message||'API 오류');
+    var t=d.candidates[0].content.parts[0].text;
+    t=t.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    return JSON.parse(t);
+  });
 }
 
 function runAIAnalysis(txt){
   txt=(txt||'').trim();
   if(!txt) return;
+  var key=getGeminiKey();
+  if(!key){set({aiError:'Gemini API 키를 먼저 설정해주세요.',aiLoading:false});return;}
   set({aiLoading:true,aiEng:txt,aiInput:txt,aiKor:'',aiGrammar:[],aiError:''});
-  var url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(txt)+'&langpair=en|ko';
-  fetch(url)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      var kor=(d.responseData&&d.responseData.translatedText)||'번역을 가져오지 못했어요';
-      if(kor===txt||kor.toLowerCase()===txt.toLowerCase()) kor='번역 서비스 연결 오류예요';
-      set({aiLoading:false,aiKor:kor,aiGrammar:getGrammarTips(txt)});
-    })
-    .catch(function(){
-      set({aiLoading:false,aiKor:'번역 서버에 연결할 수 없어요',aiGrammar:getGrammarTips(txt)});
-    });
+  callGemini(txt,key)
+    .then(function(d){set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[]});})
+    .catch(function(e){set({aiLoading:false,aiError:'오류: '+(e.message||'API 키를 확인해주세요.')});});
 }
 
 function ocrImage(input){
   var file=input.files[0];
   if(!file) return;
-  set({aiImgLoading:true,aiError:'',aiEng:'',aiKor:'',aiGrammar:[]});
-  var fd=new FormData();
-  fd.append('base64Image','');
-  fd.append('language','eng');
-  fd.append('apikey','helloworld');
-  fd.append('file',file);
-  fetch('https://api.ocr.space/parse/image',{method:'POST',body:fd})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      var txt='';
-      if(d.ParsedResults&&d.ParsedResults[0]) txt=d.ParsedResults[0].ParsedText.trim().replace(/\r?\n/g,' ').replace(/\s+/g,' ');
+  if(!window.Tesseract){
+    set({aiError:'OCR 라이브러리 로딩 중이에요. 잠시 후 다시 시도해주세요.'});
+    return;
+  }
+  set({aiImgLoading:true,aiError:''});
+  Tesseract.recognize(file,'eng',{logger:function(){}})
+    .then(function(result){
+      var txt=(result.data.text||'').trim().replace(/\r?\n+/g,' ').replace(/\s+/g,' ');
       if(!txt){set({aiImgLoading:false,aiError:'텍스트를 찾을 수 없어요. 더 선명한 사진을 사용해보세요.'});return;}
       var el=document.getElementById('aiInputField');
       if(el) el.value=txt;
       set({aiImgLoading:false,aiInput:txt});
-      runAIAnalysis(txt);
     })
-    .catch(function(){
-      set({aiImgLoading:false,aiError:'이미지 분석에 실패했어요. 텍스트를 직접 입력해보세요.'});
-    });
+    .catch(function(){set({aiImgLoading:false,aiError:'이미지 분석 실패. 텍스트를 직접 입력해보세요.'});});
 }
 
 // ─── RENDER ─────────────────────────────────────────
@@ -953,63 +896,103 @@ function render(){
 
   // ANALYZE MY SENTENCE
   if(S.screen==='analyze'){
-    var gramCards='';
-    if(S.aiGrammar&&S.aiGrammar.length){
-      gramCards=S.aiGrammar.map(function(g){
-        return '<div style="background:#fafafa;border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:3px solid '+g.col+';box-shadow:0 1px 4px rgba(0,0,0,.04)">'
-          +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
-          +'<span style="font-size:15px">'+g.icon+'</span>'
-          +'<span style="font-weight:700;font-size:12px;color:'+g.col+'">'+g.label+'</span>'
-          +'</div>'
-          +'<div style="font-size:12px;color:#555;line-height:1.7">'+g.detail+'</div>'
-          +'</div>';
-      }).join('');
+    // API key section
+    var keySection='';
+    if(!S.aiKey){
+      keySection='<div style="background:#FFFBEB;border-radius:16px;padding:16px;margin-bottom:14px;border:1.5px solid #FCD34D">'
+        +'<div style="font-weight:700;font-size:13px;color:#92400E;margin-bottom:6px">Gemini AI 연결 필요</div>'
+        +'<div style="font-size:12px;color:#78350F;line-height:1.7;margin-bottom:10px">'
+        +'무료 Gemini AI로 번역과 문법 분석을 해요.<br>'
+        +'<b><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#2563EB">aistudio.google.com</a></b>에서 무료 API 키를 받으세요.</div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<input id="geminiKeyInput" placeholder="AIza..." style="flex:1;border:1.5px solid #e8e8e8;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;min-width:0">'
+        +'<button onclick="saveGeminiKey()" style="background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">저장</button>'
+        +'</div></div>';
+    } else {
+      keySection='<div style="text-align:right;margin-bottom:8px">'
+        +'<button onclick="clearGeminiKey()" style="background:none;border:none;font-size:11px;color:#bbb;cursor:pointer;padding:4px">API 키 변경</button>'
+        +'</div>';
     }
+
+    // Results
     var aiResult='';
     if(S.aiLoading){
-      aiResult='<div style="display:flex;align-items:center;gap:10px;color:#888;font-size:13px;padding:20px;justify-content:center;background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.05)"><div class="sp"></div>번역 중...</div>';
+      aiResult='<div style="background:#fff;border-radius:18px;padding:28px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:12px">'
+        +'<div class="sp" style="margin:0 auto 14px"></div>'
+        +'<div style="font-size:14px;color:#888;font-weight:600">Gemini AI 분석 중...</div>'
+        +'<div style="font-size:12px;color:#bbb;margin-top:4px">번역·발음·문법 포인트를 생성하고 있어요</div>'
+        +'</div>';
     } else if(S.aiEng){
-      aiResult=
-        '<div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
+      // Translation card
+      var transCard='<div style="background:#fff;border-radius:18px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
+        +'<div style="padding:14px 18px 12px;border-bottom:1px solid #f3f4f6">'
         +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">영어 원문</div>'
-        +'<div style="font-size:17px;font-weight:800;color:#1a1a1a;line-height:1.5;margin-bottom:12px">'+S.aiEng+'</div>'
-        +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">한국어 번역</div>'
-        +'<div style="font-size:14px;color:#444;line-height:1.6">'+S.aiKor+'</div>'
+        +'<div style="font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.7">'+S.aiEng+'</div>'
         +'</div>'
-        +'<div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
-        +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">발음 가이드</div>'
-        +wordByWordHTML(S.aiEng,'')
-        +'<div style="font-size:10px;color:#aaa;margin-top:8px;display:flex;gap:12px"><span><b style="color:#1a1a1a">ˈ</b>=강세 음절</span><span>·=음절구분</span></div>'
-        +'</div>'
-        +(gramCards
-          ?'<div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
-            +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">문법 포인트</div>'
-            +gramCards+'</div>'
-          :'')
-        +'<button onclick="speakAI()" style="width:100%;background:'+(S.speaking?'#059669':'#1a1a1a')+';color:#fff;border:none;border-radius:13px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:16px">'+(S.speaking?'▶ 재생 중...':'▶ 원어민 발음 듣기')+'</button>';
+        +'<div style="padding:14px 18px">'
+        +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">한국어 번역</div>'
+        +'<div style="font-size:14px;color:#444;line-height:1.8">'+S.aiKor+'</div>'
+        +'</div></div>';
+
+      // Pronunciation — sentence by sentence
+      var sentences=splitSentences(S.aiEng);
+      var pronCard='<div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
+        +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px">발음 가이드</div>';
+      sentences.forEach(function(sent,i){
+        pronCard+='<div style="'+(i>0?'margin-top:20px;padding-top:20px;border-top:1px solid #f3f4f6':'')+'">';
+        pronCard+='<div style="font-size:14px;font-weight:700;color:#333;line-height:1.6;margin-bottom:10px">'+sent+'</div>';
+        pronCard+=wordByWordHTML(sent,'');
+        pronCard+='</div>';
+      });
+      pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px"><span><b style="color:#1a1a1a">ˈ</b>=강세</span><span>·=음절구분</span></div>';
+      pronCard+='</div>';
+
+      // Grammar cards
+      var gramCard='';
+      if(S.aiGrammar&&S.aiGrammar.length){
+        gramCard='<div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
+          +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">문법 포인트</div>'
+          +S.aiGrammar.map(function(g){
+            var col=g.color||g.col||'#666';
+            return '<div style="border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.07)">'
+              +'<div style="background:'+col+';padding:11px 14px;display:flex;align-items:center;gap:9px">'
+              +'<span style="font-size:18px;line-height:1">'+g.icon+'</span>'
+              +'<span style="font-weight:700;font-size:13px;color:#fff">'+g.label+'</span>'
+              +'</div>'
+              +'<div style="background:#fff;padding:12px 14px;font-size:13px;color:#444;line-height:1.75">'+g.detail+'</div>'
+              +'</div>';
+          }).join('')
+          +'</div>';
+      }
+
+      aiResult=transCard+pronCard+gramCard
+        +'<button onclick="speakAI()" style="width:100%;background:'+(S.speaking?'#059669':'#1a1a1a')+';color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px">'
+        +(S.speaking?'재생 중...':'▶ 원어민 발음 듣기')+'</button>';
     }
+
     app.innerHTML='<div style="background:#f5f0eb;min-height:100vh">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">내 문장 분석</span>'
       +'</div>'
       +'<div style="padding:0 18px 40px">'
-      +'<div style="background:#fff;border-radius:20px;padding:18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
-      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">영어 문장 입력</div>'
-      +'<textarea id="aiInputField" placeholder="분석할 영어 문장을 입력하세요..." style="width:100%;min-height:72px;border:1.5px solid #e8e8e8;border-radius:12px;padding:11px 13px;font-size:14px;line-height:1.6;resize:none;outline:none;font-family:inherit;box-sizing:border-box">'+S.aiInput+'</textarea>'
+      +keySection
+      +'<div style="background:#fff;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      +'<textarea id="aiInputField" placeholder="분석할 영어 문장이나 단락을 입력하세요..." style="width:100%;min-height:90px;border:1.5px solid #eee;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.7;resize:none;outline:none;font-family:inherit;box-sizing:border-box;color:#1a1a1a">'+S.aiInput+'</textarea>'
       +'<div style="display:flex;gap:9px;margin-top:10px">'
-      +'<label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#f5f5f5;border:1.5px dashed #ccc;border-radius:11px;padding:10px;cursor:pointer;font-size:12px;color:#666;font-weight:600">'
-      +(S.aiImgLoading?'<div class="sp" style="width:14px;height:14px;border-width:2px"></div> 추출 중...':'📷 사진에서 텍스트 추출')
+      +'<label style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f5f5f5;border:1.5px dashed #ccc;border-radius:11px;padding:10px 14px;cursor:pointer;font-size:12px;color:#555;font-weight:600;white-space:nowrap">'
+      +(S.aiImgLoading?'<div class="sp" style="width:13px;height:13px;border-width:2px"></div> 스캔 중...':'📷 사진 스캔')
       +'<input type="file" accept="image/*" onchange="ocrImage(this)" style="display:none"></label>'
-      +'<button onclick="(function(){var el=document.getElementById(\'aiInputField\');if(el&&el.value.trim())runAIAnalysis(el.value);})()" style="flex:1;background:#059669;color:#fff;border:none;border-radius:11px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">분석하기</button>'
+      +'<button onclick="(function(){var el=document.getElementById(\'aiInputField\');if(el&&el.value.trim())runAIAnalysis(el.value);})()" style="flex:1;background:linear-gradient(135deg,#059669,#0891B2);color:#fff;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">분석하기</button>'
       +'</div>'
-      +(S.aiError?'<div style="margin-top:9px;padding:8px 12px;background:#FEE2E2;border-radius:9px;font-size:12px;color:#DC2626">'+S.aiError+'</div>':'')
+      +(S.aiError?'<div style="margin-top:10px;padding:10px 12px;background:#FEE2E2;border-radius:10px;font-size:12px;color:#DC2626;line-height:1.6">'+S.aiError+'</div>':'')
       +'</div>'
       +aiResult
       +(!S.aiEng&&!S.aiLoading
-        ?'<div style="background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.04)">'
-          +'<div style="font-size:11px;color:#aaa;margin-bottom:8px;font-weight:600;letter-spacing:1px">HOW IT WORKS</div>'
-          +'<div style="font-size:13px;color:#888;line-height:1.8">1. 영어 문장을 타이핑하거나<br>2. 📷 버튼으로 사진에서 텍스트를 추출하고<br>3. 분석하기를 누르면<br><b style="color:#059669">발음·번역·문법 포인트</b>를 한번에 확인해요!</div>'
+        ?'<div style="background:#fff;border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
+          +'<div style="font-size:36px;margin-bottom:12px">🔍</div>'
+          +'<div style="font-weight:700;font-size:15px;color:#1a1a1a;margin-bottom:10px">내 문장 분석</div>'
+          +'<div style="font-size:13px;color:#888;line-height:1.9">영어 문장을 입력하거나<br>📷 사진으로 텍스트를 스캔하면<br><b style="color:#059669">번역 · 발음 · 문법 포인트</b>를<br>Gemini AI가 분석해드려요</div>'
           +'</div>':''
       )
       +'</div></div>';
