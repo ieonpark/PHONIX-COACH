@@ -336,31 +336,9 @@ function wordPhon(w){
 function wordByWordHTML(eng,phon){
   var words=eng.trim().split(/\s+/);
   var chunks=phon?phon.split('-'):[];
-  
+
   function norm(w){return w.toLowerCase().replace(/[^a-z]/g,'');}
-  
-  // Function/grammar words: never in phon hints, use PH dict only
-  var GRAMMAR={
-    the:1,a:1,an:1,i:1,id:1,ill:1,ive:1,im:1,
-    you:1,he:1,she:1,it:1,we:1,they:1,
-    me:1,him:1,her:1,us:1,them:1,
-    my:1,your:1,his:1,its:1,our:1,their:1,
-    this:1,that:1,these:1,those:1,who:1,what:1,which:1,whose:1,
-    in:1,on:1,at:1,to:1,for:1,of:1,with:1,by:1,from:1,up:1,out:1,
-    about:1,into:1,through:1,before:1,after:1,between:1,
-    without:1,within:1,under:1,over:1,around:1,off:1,
-    and:1,but:1,or:1,so:1,if:1,as:1,because:1,while:1,
-    when:1,where:1,how:1,why:1,whether:1,unless:1,since:1,until:1,though:1,
-    is:1,are:1,was:1,were:1,be:1,been:1,being:1,am:1,
-    have:1,has:1,had:1,do:1,does:1,did:1,done:1,
-    can:1,could:1,will:1,would:1,shall:1,should:1,may:1,might:1,must:1,
-    not:1,no:1,yes:1,very:1,really:1,just:1,also:1,too:1,only:1,
-    even:1,already:1,still:1,now:1,then:1,here:1,there:1,
-    more:1,most:1,less:1,least:1,much:1,many:1,some:1,any:1,all:1,both:1,
-    well:1,quite:1,back:1,away:1,again:1,please:1,thank:1,sorry:1,
-    id:1,ive:1,im:1,ill:1
-  };
-  
+
   // Count syllables by vowel groups
   function sylCount(word){
     var w=norm(word);
@@ -374,86 +352,89 @@ function wordByWordHTML(eng,phon){
     if(w.length>2&&w[w.length-1]==='e'&&'aeiou'.indexOf(w[w.length-2])<0&&n>1) n--;
     return Math.max(1,n);
   }
-  
-  // Check if a phon chunk likely corresponds to a word
+
+  // Check if a phon chunk likely corresponds to a word (first-letter matching)
   function chunkMatchesWord(chunk,word){
     var c=chunk.toLowerCase().replace(/[^a-z]/g,'');
     var w=norm(word);
     if(!c||!w) return false;
     var c0=c[0], w0=w[0];
     if(c0===w0) return true;
-    // Both start with vowel sound (schwa 'uh'/'ih' matches any vowel start)
     if('aeiou'.indexOf(c0)>=0 && 'aeiou'.indexOf(w0)>=0) return true;
-    // c/k equivalence
     if((c0==='k'&&w0==='c')||(c0==='c'&&w0==='k')) return true;
-    // j/y equivalence
     if((c0==='j'&&(w0==='y'||w0==='j'))||(c0==='y'&&w0==='j')) return true;
-    // f/ph equivalence
     if(c0==='f'&&w0==='p'&&w[1]==='h') return true;
     return false;
   }
-  
+
   var wordPhons=new Array(words.length).fill('');
   var ci=0;
-  
+
+  // Process ALL words uniformly: try chunk match first, then PH dict, then rules
   words.forEach(function(word,wi){
     var k=norm(word);
-    
-    if(GRAMMAR[k]){
-      // Grammar word: PH dict only, don't consume phon chunks
-      wordPhons[wi]=wordPhon(k)||k;
+    if(ci<chunks.length && chunkMatchesWord(chunks[ci],word)){
+      var sc=sylCount(word);
+      var group=chunks.slice(ci,Math.min(ci+sc,chunks.length));
+      wordPhons[wi]=group.join('-');
+      ci+=group.length;
     } else {
-      // Content word: check if phon chunk matches this word
-      if(ci<chunks.length && chunkMatchesWord(chunks[ci],word)){
-        var sc=sylCount(word);
-        var group=chunks.slice(ci,Math.min(ci+sc,chunks.length));
-        wordPhons[wi]=group.join('-');
-        ci+=group.length;
+      var ph=wordPhon(k);
+      if(ph){
+        wordPhons[wi]=ph;
       } else {
-        // Not covered by phon: use PH dict or fallback
-        var ph=wordPhon(k);
-        if(ph){
-          wordPhons[wi]=ph;
-        } else {
-          // Simple English phonetic rule fallback
-          var fb=k
-            .replace(/tion$/,'shun').replace(/tions$/,'shunz')
-            .replace(/sion$/,'zhun').replace(/ous$/,'us')
-            .replace(/ness$/,'nis').replace(/ment$/,'munt')
-            .replace(/able$/,'uh-bul').replace(/ible$/,'ih-bul')
-            .replace(/ical$/,'ih-kul').replace(/ize$/,'yz')
-            .replace(/ful$/,'ful').replace(/less$/,'lis')
-            .replace(/ing$/,'ing').replace(/ings$/,'ingz')
-            .replace(/al$/,'ul').replace(/ly$/,'lee')
-            .replace(/gy$/,'jee').replace(/ty$/,'tee')
-            .replace(/ed$/,'d').replace(/er$/,'er')
-            .replace(/^kn/,'n').replace(/^wr/,'r')
-            .replace(/ght$/,'t').replace(/gh/,'');
-          if(fb) wordPhons[wi]=fb.charAt(0).toUpperCase()+fb.slice(1);
-        }
+        var fb=k
+          .replace(/tion$/,'shun').replace(/tions$/,'shunz')
+          .replace(/sion$/,'zhun').replace(/ous$/,'us')
+          .replace(/ness$/,'nis').replace(/ment$/,'munt')
+          .replace(/able$/,'uh-bul').replace(/ible$/,'ih-bul')
+          .replace(/ical$/,'ih-kul').replace(/ize$/,'yz')
+          .replace(/ful$/,'ful').replace(/less$/,'lis')
+          .replace(/ing$/,'ing').replace(/ings$/,'ingz')
+          .replace(/al$/,'ul').replace(/ly$/,'lee')
+          .replace(/gy$/,'jee').replace(/ty$/,'tee')
+          .replace(/ed$/,'d').replace(/er$/,'er')
+          .replace(/^kn/,'n').replace(/^wr/,'r')
+          .replace(/ght$/,'t').replace(/gh/,'');
+        if(fb) wordPhons[wi]=fb.charAt(0).toUpperCase()+fb.slice(1);
       }
     }
   });
-  
-  // ── Render word cards ──
-  var html='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
+
+  // ── Render stressed syllable helper ──
+  function sylHTML(syl,showDot){
+    var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
+    var dot=showDot?'<span style="color:#ccc;font-size:9px;font-family:monospace"> · </span>':'';
+    return dot+(st
+      ?'<b style="color:#1a1a1a;font-size:13px;font-family:monospace">ˈ'+syl+'</b>'
+      :'<span style="color:#666;font-size:11px;font-family:monospace">'+syl+'</span>');
+  }
+
+  // ── Full sentence pronunciation bar ──
+  var sentParts=wordPhons.map(function(ph){
+    if(!ph) return '';
+    return ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
+  });
+
+  var html='<div style="background:#f8f8f8;border-radius:10px;padding:10px 14px;margin-bottom:14px">'
+    +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">전체 문장 발음</div>'
+    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;line-height:2.2">';
+  sentParts.forEach(function(part){if(part) html+='<span>'+part+'</span>';});
+  html+='</div></div>';
+
+  // ── Word cards ──
+  html+='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
     var phDisp='';
     if(ph){
-      phDisp=ph.split('-').map(function(syl,j){
-        var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
-        return (j>0?'<span style="opacity:.25;font-size:9px">·</span>':'')
-          +(st
-            ?'<b style="color:#111;font-size:12px;font-family:monospace">'+syl+'</b>'
-            :'<span style="color:#555;font-size:11px;font-family:monospace">'+syl+'</span>');
-      }).join('');
+      phDisp=ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
     }
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px;">'
       +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'+word+'</span>'
       +(phDisp
-        ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.5">'+phDisp+'</div>'
+        ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phDisp+'</div>'
         :'<div style="height:20px;"></div>')
       +'</div>';
   });
@@ -917,7 +898,7 @@ function render(){
       +'<div style="font-family:monospace;font-size:10px;color:#ccc;text-transform:uppercase;margin-bottom:9px">문장 #'+(S.idx+1)+'</div>'
       +'<div style="font-size:18px;font-weight:800;line-height:1.4;margin-bottom:5px">'+eng+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
-      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">단어별 발음</div>'
+      +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">발음 가이드</div>'
       +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,phon)+'</div>'
       
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
@@ -949,7 +930,7 @@ function render(){
       +(S.savedMsg?'<span style="font-size:11px;color:#4ade80;font-weight:700">'+S.savedMsg+'</span>':'')
       +'</div></div>'
       +'<div style="background:#fff;padding:5px 14px;display:flex;gap:12px;flex-shrink:0;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa">'
-      +'<span><b style="color:#1a1a1a">대문자</b>=강세</span><span style="color:#888">소문자=약함</span><span>·=음절구분</span>'
+      +'<span><b style="color:#1a1a1a">ˈ</b>=강세 음절</span><span style="color:#888">소문자=약함</span><span>·=음절구분</span>'
       +'</div>'
       +'<div style="flex:1;display:flex;overflow:hidden;min-height:0">'
       +leftPanel+rightPanel
