@@ -402,19 +402,58 @@ function wordByWordHTML(eng,phon){
     }
   });
 
-  // ── Render stressed syllable helper ──
-  function sylHTML(syl,showDot){
-    var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
-    var dot=showDot?'<span style="color:#ccc;font-size:9px;font-family:monospace"> · </span>':'';
-    return dot+(st
-      ?'<b style="color:#1a1a1a;font-size:13px;font-family:monospace">ˈ'+syl+'</b>'
-      :'<span style="color:#666;font-size:11px;font-family:monospace">'+syl+'</span>');
+  // ── Split English word into n syllables using suffix/prefix rules ──
+  function engSplit(word,n){
+    var w=word.replace(/[^a-zA-Z]/g,'');
+    var wl=w.toLowerCase();
+    if(!w) return [word||''];
+    if(n<=1||w.length<=3) return [w];
+    var SUFFS=['ation','ness','ment','ical','able','ible','ous','ful',
+               'less','ize','ing','tion','sion','ly','er','est','al','ty'];
+    var PREFS=['under','inter','super','extra','over','semi','anti',
+               'pre','dis','mis','non','out','un','re','de'];
+    var prefLen=0,suffLen=0;
+    for(var pi=0;pi<PREFS.length;pi++){
+      if(wl.startsWith(PREFS[pi])&&wl.length>PREFS[pi].length+2){prefLen=PREFS[pi].length;break;}
+    }
+    var wlR=wl.slice(prefLen);
+    for(var si=0;si<SUFFS.length;si++){
+      if(wlR.length>SUFFS[si].length+2&&wlR.endsWith(SUFFS[si])){suffLen=SUFFS[si].length;break;}
+    }
+    var parts=[];
+    if(prefLen) parts.push(w.slice(0,prefLen));
+    parts.push(suffLen?w.slice(prefLen,w.length-suffLen):w.slice(prefLen));
+    if(suffLen) parts.push(w.slice(w.length-suffLen));
+    parts=parts.filter(function(p){return p.length>0;});
+    while(parts.length<n){
+      var mx=0;
+      for(var k=1;k<parts.length;k++) if(parts[k].length>parts[mx].length) mx=k;
+      var t=parts[mx],mid=Math.ceil(t.length/2);
+      parts.splice(mx,1,t.slice(0,mid),t.slice(mid));
+    }
+    while(parts.length>n&&parts.length>1){
+      parts.splice(parts.length-2,2,parts[parts.length-2]+parts[parts.length-1]);
+    }
+    return parts;
+  }
+
+  // ── Render English syllable with stress ──
+  function engSylHTML(syl,stressed,showDot){
+    var dot=showDot?'<span style="color:#ccc;font-size:9px"> · </span>':'';
+    return dot+(stressed
+      ?'<b style="color:#1a1a1a;font-size:14px">'+syl+'</b>'
+      :'<span style="color:#888;font-size:12px">'+syl+'</span>');
   }
 
   // ── Full sentence pronunciation bar ──
-  var sentParts=wordPhons.map(function(ph){
-    if(!ph) return '';
-    return ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
+  var sentParts=wordPhons.map(function(ph,wi){
+    var word=words[wi];
+    if(!ph) return '<span style="color:#bbb;font-size:13px">'+word+'</span>';
+    var pSyls=ph.split('-');
+    var sIdx=-1;
+    pSyls.forEach(function(s,i){if(/[A-Z]/.test(s)&&s!==s.toLowerCase()) sIdx=i;});
+    var eSyls=engSplit(word,pSyls.length);
+    return eSyls.map(function(s,j){return engSylHTML(s,j===sIdx,j>0);}).join('');
   });
 
   var html='<div style="background:#f8f8f8;border-radius:10px;padding:10px 14px;margin-bottom:14px">'
@@ -427,10 +466,14 @@ function wordByWordHTML(eng,phon){
   html+='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
-    var hasStress=ph&&/[A-Z]{2,}/.test(ph);
+    var pSyls=ph?ph.split('-'):[];
+    var sIdx=-1;
+    pSyls.forEach(function(s,j){if(/[A-Z]/.test(s)&&s!==s.toLowerCase()) sIdx=j;});
+    var hasStress=sIdx>=0;
     var phDisp='';
     if(ph){
-      phDisp=ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
+      var eSyls=engSplit(word,pSyls.length);
+      phDisp=eSyls.map(function(s,j){return engSylHTML(s,j===sIdx,j>0);}).join('');
     }
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px;">'
       +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'+word+'</span>'
@@ -944,7 +987,7 @@ function render(){
         pronCard+=wordByWordHTML(sent,'');
         pronCard+='</div>';
       });
-      pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px"><span><b style="color:#1a1a1a">ˈ</b>=강세</span><span>·=음절구분</span></div>';
+      pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px"><span><b style="color:#1a1a1a">굵게</b>=강세 음절</span><span>·=음절 구분</span></div>';
       pronCard+='</div>';
 
       // Grammar cards
@@ -1122,7 +1165,7 @@ function render(){
       +(S.savedMsg?'<span style="font-size:11px;color:#4ade80;font-weight:700">'+S.savedMsg+'</span>':'')
       +'</div></div>'
       +'<div style="background:#fff;padding:5px 14px;display:flex;gap:12px;flex-shrink:0;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa">'
-      +'<span><b style="color:#1a1a1a">ˈ</b>=강세 음절</span><span style="color:#888">소문자=약함</span><span>·=음절구분</span>'
+      +'<span><b style="color:#1a1a1a">굵게</b>=강세 음절</span><span>·=음절 구분</span>'
       +'</div>'
       +'<div style="flex:1;display:flex;overflow:hidden;min-height:0">'
       +leftPanel+rightPanel
