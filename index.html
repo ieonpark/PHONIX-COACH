@@ -977,10 +977,15 @@ function callGemini(text,apiKey){
   var prompt='다음 영어 텍스트를 분석해줘. 마크다운 없이 순수 JSON만 반환해:\n'
     +'{\n  "translation": "전체 한국어 번역",\n'
     +'  "grammar": [\n'
-    +'    {"icon":"이모지","label":"문법/표현 이름","color":"#hex","detail":"한국어 설명 2-3문장"}\n'
+    +'    {"icon":"이모지","label":"표현 이름 (영어)","color":"#hex","detail":"한국어 설명"}\n'
     +'  ]\n}\n'
-    +'color는 반드시 이 중 하나: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2, #EC4899\n'
-    +'grammar는 최대 5개. 학습에 유용한 문법·표현 포인트를 골라줘.\n\n'
+    +'중요: grammar는 이 텍스트에 실제로 등장하는 표현만 골라줘. 아래 우선순위로 최대 4개:\n'
+    +'1순위: 구동사(phrasal verb) — "give up", "take back", "lay on", "close off" 같은 동사+전치사 조합\n'
+    +'2순위: 관용표현/숙어 — "make amends", "as if", "break the ice" 같은 고정 표현\n'
+    +'3순위: 특이한 문법 구조 — 가정법, 현재완료, 도치 등 한국어와 다른 구조\n'
+    +'절대 금지: 너무 기본적인 것(소유격, 현재진행형, be동사 등)은 넣지 마.\n'
+    +'detail은 이 텍스트에서 해당 표현이 어떻게 쓰였는지 구체적으로 설명해.\n'
+    +'color는 반드시 이 중 하나: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2, #EC4899\n\n'
     +'영어 텍스트:\n'+text;
   return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+apiKey,{
     method:'POST',
