@@ -326,12 +326,115 @@ var PH={
   "next":"NEKST","last":"LAST","back":"BAK","let":"LET","got":"GOT",
   "get":"GET","got":"GOT","let":"LET","say":"SAY","says":"SEZ",
   "theoretical":"thee-uh-RET-ih-kul","methodology":"meth-uh-DOL-uh-jee",
-  "raise":"RAYZ"
+  "raise":"RAYZ",
+  // ── Everyday / Nature words (commonly missing) ──
+  "sun":"SUN","moon":"MOON","star":"STAR","stars":"STARZ","sky":"SKY",
+  "snow":"SNOH","rain":"RAYN","wind":"WIND","fire":"FY-er","cloud":"KLOWD","clouds":"KLOWDZ",
+  "sea":"SEE","ocean":"OH-shun","river":"RIV-er","tree":"TREE","trees":"TREEZ",
+  "earth":"ERTH","ground":"GROWND","road":"ROHD","path":"PATH","bridge":"BRIJ",
+  "father":"FAH-ther","mother":"MUH-ther","brother":"BRUH-ther","sister":"SIS-ter",
+  "son":"SUN","daughter":"DAW-ter","friend":"FREND","friends":"FRENZ",
+  "love":"LUV","loved":"LUVD","loving":"LUV-ing",
+  "heart":"HART","soul":"SOHL","mind":"MYND","body":"BAH-dee","breath":"BRETH",
+  "voice":"VOYS","eyes":"EYZ","eye":"EY","face":"FAYS","head":"HED",
+  "mouth":"MOWTH","ear":"EER","nose":"NOHZ","arm":"ARM","leg":"LEG",
+  "foot":"FUT","feet":"FEET","lap":"LAP","hand":"HAND",
+  "white":"WYT","black":"BLAK","blue":"BLOO","green":"GREEN",
+  "red":"RED","gold":"GOHLD","silver":"SIL-ver","brown":"BROWN","gray":"GRAY","pink":"PINK",
+  "bright":"BRYT","dark":"DARK","light":"LYT","deep":"DEEP","still":"STIL",
+  "soft":"SAWFT","rough":"RUF","smooth":"SMOOTH","sweet":"SWEET",
+  "clean":"KLEEN","fresh":"FRESH","warm":"WORM","cool":"KOOL","quiet":"KWY-et",
+  "alone":"uh-LOHN","silent":"SY-lunt","loud":"LOWD","heavy":"HEV-ee",
+  "happy":"HAP-ee","sad":"SAD","afraid":"uh-FRAYD","brave":"BRAYV",
+  "smile":"SMYL","smiling":"SMY-ling","laugh":"LAF","laughing":"LAF-ing",
+  "cry":"KRY","crying":"KRY-ing","sing":"SING","singing":"SING-ing",
+  "dance":"DANS","dancing":"DAN-sing","walk":"WOK","walking":"WOK-ing",
+  "fly":"FLY","flying":"FLY-ing","swim":"SWIM","fall":"FAWL","falling":"FAWL-ing",
+  "rise":"RYZ","rising":"RY-zing","wake":"WAYK","sleep":"SLEEP","sleeping":"SLEEP-ing",
+  "lay":"LAY","lays":"LAYZ","laid":"LAYD","lying":"LY-ing",
+  "close":"KLOHZ","closing":"KLOH-zing","closed":"KLOHZD",
+  "shade":"SHAYD","shades":"SHAYDZ","claim":"KLAYM","claims":"KLAYMZ",
+  "against":"uh-GENST","beyond":"bee-OND","across":"uh-KROS","beside":"bih-SYD",
+  "above":"uh-BUV","below":"bih-LOH","behind":"bih-HYND","along":"uh-LONG",
+  "muzzle":"MUZ-ul","amends":"uh-MENDZ","mend":"MEND",
+  "melodic":"muh-LAH-dik","tuneless":"TYOON-lis","landscape":"LAND-skayp",
+  "hill":"HIL","hills":"HILZ","line":"LYN","lines":"LYNZ",
+  "flat":"FLAT","moving":"MOOV-ing","taking":"TAYK-ing",
+  "beautiful":"BYOO-tih-ful","wonderful":"WUN-der-ful","amazing":"uh-MAY-zing",
+  "moment":"MOH-munt","moments":"MOH-munts","memory":"MEM-oh-ree",
+  "dream":"DREEM","dreams":"DREEMZ","hope":"HOHP","pain":"PAYN",
+  "peace":"PEES","joy":"JOY","fear":"FEER","anger":"ANG-ger",
+  "truth":"TROOTH","lie":"LY","lies":"LYZ","story":"STOR-ee",
+  "door":"DOR","wall":"WAWL","floor":"FLOR","window":"WIN-doh",
+  "light":"LYT","lights":"LYTS","shadow":"SHA-doh","shadows":"SHA-dohz",
+  "word":"WERD","words":"WERDZ","song":"SONG","songs":"SONGZ",
+  "name":"NAYM","names":"NAYMZ","place":"PLAYS","places":"PLAY-siz"
 };
 
 function wordPhon(w){
   var cl=w.toLowerCase().replace(/[^a-z]/g,'');
   return PH[cl]||null;
+}
+
+// ── Phonetic rules fallback for words not in PH dict ──
+function phonetize(w){
+  if(!w) return '';
+  var p=w;
+  // Multi-char digraph patterns (order: longest first)
+  p=p.replace(/tion/g,'shun');
+  p=p.replace(/sion/g,'zhun');
+  p=p.replace(/ture/g,'cher');
+  p=p.replace(/through/g,'throo');
+  p=p.replace(/though/g,'thoh');
+  p=p.replace(/enough/g,'ih-NUF');
+  p=p.replace(/cough/g,'kawf');
+  p=p.replace(/rough/g,'ruf');
+  p=p.replace(/tough/g,'tuf');
+  p=p.replace(/aught/g,'awt');
+  p=p.replace(/ought/g,'awt');
+  p=p.replace(/ight/g,'ite');
+  p=p.replace(/igh/g,'eye');
+  p=p.replace(/eigh/g,'ay');
+  p=p.replace(/ough/g,'oh');
+  // Vowel digraphs
+  p=p.replace(/oo/g,'oo');
+  p=p.replace(/ee/g,'ee');
+  p=p.replace(/ea/g,'ee');
+  p=p.replace(/ai/g,'ay');
+  p=p.replace(/ay/g,'ay');
+  p=p.replace(/oa/g,'oh');
+  p=p.replace(/oe/g,'oh');
+  p=p.replace(/oi/g,'oy');
+  p=p.replace(/oy/g,'oy');
+  p=p.replace(/ow/g,'oh');
+  p=p.replace(/ou/g,'ow');
+  p=p.replace(/ew/g,'yoo');
+  p=p.replace(/aw/g,'aw');
+  p=p.replace(/au/g,'aw');
+  p=p.replace(/ue/g,'oo');
+  p=p.replace(/ui/g,'oo');
+  p=p.replace(/ie/g,'ee');
+  p=p.replace(/ei/g,'ay');
+  // Consonant patterns
+  p=p.replace(/tch/g,'ch');
+  p=p.replace(/ck/g,'k');
+  p=p.replace(/ph/g,'f');
+  p=p.replace(/gh/g,'');
+  p=p.replace(/kn/g,'n');
+  p=p.replace(/wr/g,'r');
+  p=p.replace(/qu/g,'kw');
+  p=p.replace(/wh/g,'w');
+  p=p.replace(/mb$/,'m');
+  p=p.replace(/c([ei])/g,'s$1');
+  p=p.replace(/c/g,'k');
+  p=p.replace(/g([ei])/g,'j$1');
+  p=p.replace(/x/g,'ks');
+  // Silent final e (magic e: consonant + e at end)
+  if(p.length>2&&/[^aeiou]e$/.test(p)) p=p.slice(0,-1);
+  // Final -s/-es → z if after vowel/voiced consonant
+  p=p.replace(/([aeioulmnr])s$/,'$1z');
+  // Uppercase whole thing (single stressed syllable for most short unknown words)
+  return p.toUpperCase();
 }
 
 function wordByWordHTML(eng,phon){
@@ -384,20 +487,7 @@ function wordByWordHTML(eng,phon){
       if(ph){
         wordPhons[wi]=ph;
       } else {
-        var fb=k
-          .replace(/tion$/,'shun').replace(/tions$/,'shunz')
-          .replace(/sion$/,'zhun').replace(/ous$/,'us')
-          .replace(/ness$/,'nis').replace(/ment$/,'munt')
-          .replace(/able$/,'uh-bul').replace(/ible$/,'ih-bul')
-          .replace(/ical$/,'ih-kul').replace(/ize$/,'yz')
-          .replace(/ful$/,'ful').replace(/less$/,'lis')
-          .replace(/ing$/,'ing').replace(/ings$/,'ingz')
-          .replace(/al$/,'ul').replace(/ly$/,'lee')
-          .replace(/gy$/,'jee').replace(/ty$/,'tee')
-          .replace(/ed$/,'d').replace(/er$/,'er')
-          .replace(/^kn/,'n').replace(/^wr/,'r')
-          .replace(/ght$/,'t').replace(/gh/,'');
-        if(fb) wordPhons[wi]=fb.charAt(0).toUpperCase()+fb.slice(1);
+        wordPhons[wi]=phonetize(k);
       }
     }
   });
@@ -804,29 +894,35 @@ function translateFree(text){
     });
 }
 
-// ── Free grammar check via LanguageTool (no key) ──
+// ── Local grammar/phrase analyzer (no API needed) ──
 function checkGrammarFree(text){
-  var COLORS=['#2563EB','#7C3AED','#D97706','#DC2626','#0891B2','#059669','#EC4899'];
-  return fetch('https://api.languagetool.org/v2/check',{
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:'text='+encodeURIComponent(text)+'&language=en-US'
-  })
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(!d.matches||!d.matches.length){
-      return [{icon:'✅',label:'No grammar issues',color:'#059669',detail:'문법적으로 올바른 문장이에요. 잘 쓴 문장입니다!'}];
-    }
-    return d.matches.slice(0,5).map(function(m,i){
-      var reps=m.replacements.slice(0,3).map(function(r){return '"'+r.value+'"';}).join(', ');
-      return {
-        icon:'✏️',
-        label:m.rule.description,
-        color:COLORS[i%COLORS.length],
-        detail:m.message+(reps?' → '+reps:'')
-      };
-    });
-  });
+  var t=text.toLowerCase();
+  var tips=[];
+  var PHRASAL=[
+    {re:/\bgive[s]?\s+up\b|giving\s+up\b|gave\s+up\b|given\s+up\b/,icon:'🙅',label:'give up — 포기하다',color:'#2563EB',detail:'"give up"은 "포기하다, 그만두다"라는 뜻의 구동사예요. "I have given up" = 나는 포기해버린 상태야. "Don\'t give up!" = 포기하지 마!'},
+    {re:/\btake[s]?\s+back\b|took\s+back\b|taken\s+back\b/,icon:'↩️',label:'take back — 되찾다/취소하다',color:'#7C3AED',detail:'"take back"은 물건을 되찾거나 한 말/행동을 취소할 때 써요. "I take back what I said" = 내가 한 말 취소할게.'},
+    {re:/\bmake[s]?\s+amends\b|making\s+amends\b/,icon:'🤝',label:'make amends — 잘못을 보상하다',color:'#D97706',detail:'"make amends"는 과거의 잘못이나 실수에 대해 사과하거나 보상한다는 관용 표현이에요. "as if to make amends" = 마치 보상을 하려는 것처럼.'},
+    {re:/\bgive[s]?\s+in\b|giving\s+in\b|gave\s+in\b/,icon:'🏳️',label:'give in — 굴복하다/항복하다',color:'#DC2626',detail:'"give in"은 압박이나 요청에 굴복하다, 마지못해 동의하다는 뜻이에요. "Don\'t give in to pressure" = 압박에 굴복하지 마.'},
+    {re:/\blay[s]?\s+(its|his|her|their|my|your|our)\b|\blaying\s+(its|his|her)/,icon:'😴',label:'lay on/against — 기대다/올려놓다',color:'#0891B2',detail:'"lay ... on"은 ~위에 올려놓다, 기대다는 표현이에요. "lay its muzzle on my lap" = 주둥이를 내 무릎 위에 올려놓다.'},
+    {re:/\blook[s]?\s+(up|into|for|after|out|over|back)\b/,icon:'🔍',label:'look + 전치사 — 구동사',color:'#059669',detail:'"look up"=찾아보다, "look for"=찾다, "look after"=돌보다, "look into"=조사하다, "look out"=조심하다. 전치사에 따라 의미가 달라지는 구동사예요.'},
+    {re:/\bset[s]?\s+(up|off|out|back|aside)\b/,icon:'⚙️',label:'set + 전치사 — 구동사',color:'#EC4899',detail:'"set up"=설치하다/준비하다, "set off"=출발하다/유발하다, "set out"=나서다, "set back"=지연시키다, "set aside"=따로 두다.'},
+    {re:/\brun[s]?\s+(out|into|away|over|through)\b/,icon:'🏃',label:'run + 전치사 — 구동사',color:'#2563EB',detail:'"run out"=다 떨어지다, "run into"=우연히 만나다, "run away"=도망가다, "run over"=치다/검토하다, "run through"=훑어보다.'},
+    {re:/\bcome[s]?\s+(up|across|out|back|over|along)\b/,icon:'👋',label:'come + 전치사 — 구동사',color:'#7C3AED',detail:'"come up"=나타나다/제기되다, "come across"=우연히 발견하다, "come out"=나오다/밝혀지다, "come back"=돌아오다, "come over"=들르다.'},
+    {re:/\bbreak[s]?\s+(down|up|out|into|through)\b/,icon:'💥',label:'break + 전치사 — 구동사',color:'#D97706',detail:'"break down"=고장나다/무너지다, "break up"=헤어지다/해체하다, "break out"=발생하다, "break into"=침입하다, "break through"=돌파하다.'},
+  ];
+  var STRUCT=[
+    {re:/\b(have|has)\s+\w+(ed|en|t)\b|\bhave\s+(given|taken|made|done|been|gone|come|known|seen|said|felt|left|kept|found|told|brought|thought|become)\b/,icon:'⏱️',label:'현재완료 (have/has + 과거분사)',color:'#2563EB',detail:'"have/has + 과거분사"는 현재완료 시제로 과거에 일어난 일이 현재와 연결될 때 써요. "I have given up" = 포기해버린 상태야. 경험·완료·지속·결과를 나타낼 수 있어요.'},
+    {re:/\bas\s+if\b|\bas\s+though\b/,icon:'🎭',label:'as if/as though — 마치 ~처럼',color:'#7C3AED',detail:'"as if"는 마치 ~인 것처럼이라는 비유·가정 표현이에요. 뒤에 가정법을 쓰기도 해요. "as if to make amends" = 마치 보상을 하려는 것처럼.'},
+    {re:/\b(am|is|are|was|were)\s+\w+ing\b/,icon:'🔄',label:'진행형 (be + -ing)',color:'#059669',detail:'"be동사 + 동사-ing"는 진행 중인 동작을 나타내요. "is closing" = 닫히고 있는 중, "was moving" = 움직이고 있었다.'},
+    {re:/\b(will|would|could|should|might|must)\s+\w+\b/,icon:'🔮',label:'조동사 (Modal Verb)',color:'#D97706',detail:'조동사는 동사 앞에서 가능·추측·의지·의무 등을 나타내요. "would" = ~일 것이다/~하곤 했다, "could" = ~할 수 있었다, "should" = ~해야 한다.'},
+    {re:/\bto\s+[a-z]+\b.*\bto\s+[a-z]+\b|\bto\s+(make|take|give|find|keep|bring|show|create|build|leave|move)\b/,icon:'🔀',label:'to부정사 (to + 동사원형)',color:'#0891B2',detail:'"to + 동사원형"은 목적·의도·결과를 나타내요. "as if to make amends" = 보상을 하려는 것처럼. "to find peace" = 평화를 찾기 위해.'},
+    {re:/\b\w+ing\b.*\b\w+ing\b/,icon:'⚡',label:'동명사/-ing 형태',color:'#EC4899',detail:'"-ing"형은 동사를 명사처럼 쓰거나(동명사) 진행형·형용사로 활용해요. "closing my shades" = 내 커튼을 닫으면서, "moving to a flat landscape" = 평평한 풍경으로 이동하면서.'},
+    {re:/\b(my|your|his|her|its|our|their)\s+\w+\b/,icon:'👤',label:'소유격 + 명사',color:'#059669',detail:'소유격(my/your/his/her/its/our/their)은 명사 앞에 써서 누구의 것인지 나타내요. "its warm muzzle" = 그것의 따뜻한 주둥이, "my lap" = 내 무릎.'},
+  ];
+  PHRASAL.forEach(function(p){if(p.re.test(t)&&tips.length<5) tips.push({icon:p.icon,label:p.label,color:p.color,detail:p.detail});});
+  STRUCT.forEach(function(s){if(s.re.test(t)&&tips.length<5) tips.push({icon:s.icon,label:s.label,color:s.color,detail:s.detail});});
+  if(!tips.length) tips.push({icon:'✅',label:'깔끔한 문장',color:'#059669',detail:'특별히 짚을 구문이나 표현 포인트가 없는 잘 쓴 문장이에요!'});
+  return Promise.resolve(tips);
 }
 
 // ── Gemini (optional upgrade, richer Korean grammar tips) ──
