@@ -1206,8 +1206,8 @@ function _calTap(i){
 function _navLyric(dir){
   var song=MUSIC_DATA[S.musicSongIdx||0];
   var total=(song.lyrics||[]).length;
-  var next=(_lastLyricIdx<0?0:_lastLyricIdx)+dir;
-  next=Math.max(0,Math.min(total-1,next));
+  var curr=_lastLyricIdx<0?0:_lastLyricIdx;
+  var next=Math.max(0,Math.min(total-1,curr+dir));
   _setLyricDisplay(next);
 }
 
@@ -1504,17 +1504,18 @@ function render(){
       +'</div>'
       +'</div>'
       // Single lyric display box
-      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:200px;transition:opacity .12s ease,transform .12s ease">'
-      +'<div style="display:flex;align-items:center;justify-content:center;height:140px;color:#ccc;font-size:13px">▶ 재생 버튼을 눌러 시작하세요</div>'
-      +'</div>'
+      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:200px;transition:opacity .12s ease,transform .12s ease"></div>'
       // Manual prev/next navigation
       +'<div style="display:flex;gap:10px;margin-top:10px">'
       +'<button onclick="_navLyric(-1)" style="flex:1;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;font-size:13px;color:#555;cursor:pointer;font-weight:600">← 이전</button>'
       +'<button onclick="_navLyric(1)" style="flex:1;background:#1a1a1a;border:none;border-radius:12px;padding:12px;font-size:13px;color:#fff;cursor:pointer;font-weight:600">다음 →</button>'
       +'</div>'
       +'</div></div>';
-    // Mount Spotify player after DOM is ready
-    setTimeout(_initSpotifyPlayer, 100);
+    // Show first lyric immediately, then mount Spotify player
+    setTimeout(function(){
+      _setLyricDisplay(0);
+      _initSpotifyPlayer();
+    }, 100);
     return;
   }
 
