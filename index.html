@@ -1135,34 +1135,48 @@ var MUSIC_DATA=[
     badge:'CONTRACTIONS · RHYTHM',
     intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 쓰는 축약(Contraction)과 약화(Reduction) 패턴을 귀로 체득할 수 있어요.',
     lyrics:[
-      {t:1.8,
-       group:["It's new, the shape of your body","It's blue, the feeling I've got"],
+      {t:0.3,
        eng:"It's new, the shape of your body",
-       note:"<b>It's</b> = it is 축약, <b>I've</b> = I have 축약. <b>your</b>→yer로 약화해서 빠르게",
-       highlights:["It's","I've"]},
-      {t:5.5,
-       group:["And it's ooh, whoa-oh","It's a cruel summer"],
+       note:"<b>It's</b> = it is 축약. <b>your</b>→yer로 빠르게 약화",
+       highlights:["It's"]},
+      {t:3.1,
+       eng:"It's blue, the feeling I've got",
+       note:"<b>I've</b> = I have 축약. <b>feeling</b>→FEEL-ing 강세 주의",
+       highlights:["I've"]},
+      {t:5.8,
+       eng:"And it's ooh, whoa-oh",
+       note:"감탄사 표현. 멜로디에 실어 감정을 담아 노래해요",
+       highlights:[]},
+      {t:8.5,
        eng:"It's a cruel summer",
-       note:"감탄사 → 코러스 진입. <b>cruel</b>→KRU-el (2음절). 멜로디에 실어 자연스럽게",
+       note:"<b>cruel</b>→KRU-el (2음절). <b>It's</b> = it is 축약",
        highlights:["It's"]},
       {t:11,
-       group:['"It\'s cool," that\'s what I tell \'em',"No rules in breakable heaven"],
-       eng:"It's cool, that's what I tell 'em",
-       note:"<b>tell 'em</b> = tell them — <b>'em</b>은 them의 축약. <b>that's</b> = that is 축약",
+       eng:"\"It's cool,\" that's what I tell 'em",
+       note:"<b>that's</b> = that is 축약. <b>tell 'em</b> = tell them — <b>'em</b>은 them의 축약",
        highlights:["that's","'em"]},
+      {t:13.8,
+       eng:"No rules in breakable heaven",
+       note:"<b>in</b>→약하게. <b>breakable</b>→BRAY-kuh-bul (3음절) 강세 주의",
+       highlights:[]},
       {t:16.5,
-       group:["But ooh, whoa-oh","It's a cruel summer with you"],
+       eng:"But ooh, whoa-oh",
+       note:"감탄사 반복 → 코러스 마무리",
+       highlights:[]},
+      {t:19.2,
        eng:"It's a cruel summer with you",
-       note:"코러스 반복! <b>with you</b> — with는 약하게, <b>YOU</b>에만 강세. 약강 리듬",
+       note:"<b>with you</b> — <b>with</b>는 약하게, <b>YOU</b>에만 강세. 약강 리듬",
        highlights:["It's"]},
       {t:22,
-       group:["I'm drunk in the back of the car","And I cried like a baby coming home from the bar (oh)"],
        eng:"I'm drunk in the back of the car",
        note:"<b>I'm</b> = I am 축약. <b>in the</b>→in-thuh, <b>of the</b>→uv-thuh 기능어 약화",
        highlights:["I'm"]},
+      {t:24.7,
+       eng:"And I cried like a baby coming home from the bar (oh)",
+       note:"<b>like a</b>→ligh-kuh 연음. <b>coming home</b>→KUM-ing-HOME 강세",
+       highlights:[]},
       {t:27.5,
-       group:['Said, "I\'m fine," but it wasn\'t true'],
-       eng:"Said I'm fine but it wasn't true",
+       eng:"Said, \"I'm fine,\" but it wasn't true",
        note:"<b>I'm</b> = I am, <b>wasn't</b> = was not 축약. <b>Said</b>→SEHD 과거형 발음에 주의",
        highlights:["I'm","wasn't"]}
     ],
@@ -1471,22 +1485,15 @@ function render(){
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
     var lyricHtml=(song.lyrics||[]).map(function(line,i){
-      var groupLines=line.group||[line.eng];
-      var textHtml=groupLines.map(function(l,li){
-        var disp=l;
-        (line.highlights||[]).forEach(function(h){
-          disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
-            '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
-        });
-        return '<div style="'+(li>0?'margin-top:2px':'')+'">'+disp+'</div>';
-      }).join('');
-      var phonHtml=groupLines.map(function(l,li){
-        return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:4px"></div>':'')+musicWordPhon(l);
-      }).join('');
+      var disp=line.eng;
+      (line.highlights||[]).forEach(function(h){
+        disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/['"]/g,'[\\\'"]?')+'(\\b|$)','gi'),
+          '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
+      });
       return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s">'
-        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6">'+textHtml+'</div>'
+        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6">'+disp+'</div>'
         +'<div class="lc-phon" style="display:none;margin-top:12px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px 12px">'
-        +phonHtml
+        +musicWordPhon(line.eng)
         +'<div style="font-size:11px;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
         +'</div>'
         +'</div>';
