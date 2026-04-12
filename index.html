@@ -12,6 +12,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sp{width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:#FF6B35;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:inline-block}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" async></script>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </head>
 <body>
 <div id="app"></div>
@@ -1112,19 +1113,31 @@ var MUSIC_DATA=[
     spotifyId:'1BxfuPKGuaTgP7aM0Bbdwr',
     badge:'CONTRACTIONS · RHYTHM',
     intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 쓰는 축약(Contraction)과 약화(Reduction) 패턴을 귀로 체득할 수 있어요.',
-    lines:[
-      {eng:"It's a cruel summer",
-       note:"<b>It's</b> = <b>It is</b> 의 축약 — 영어에서 's는 is를 줄인 것",
+    lyrics:[
+      {t:0,   eng:"It's a cruel summer",
+       note:"<b>It's</b> = <b>It is</b> 축약 — 영어에서 's는 is를 줄인 것. 빠르게 이어서 발음해요",
        highlights:["It's"]},
-      {eng:"Fever dream high in the quiet of the night",
-       note:"<b>in the</b> → <b>in-thuh</b>, <b>of the</b> → <b>uv-thuh</b> — 기능어는 빠르게 약화됩니다",
+      {t:3,   eng:"With you",
+       note:"약강 리듬 — <b>with</b>는 짧고 약하게, <b>YOU</b>에 강세. 영어 기본 리듬 패턴",
        highlights:[]},
-      {eng:"What doesn't kill me makes me want you more",
-       note:"<b>doesn't</b> = <b>does not</b> 의 축약 — n't는 not을 줄인 것",
-       highlights:["doesn't"]},
-      {eng:"I don't wanna keep secrets just to keep you",
-       note:"<b>don't</b> = <b>do not</b> 축약, <b>wanna</b> = <b>want to</b> 의 구어체 축약",
-       highlights:["don't","wanna"]}
+      {t:6,   eng:"Fever dream high in the quiet of the night",
+       note:"<b>in the</b>→in-thuh, <b>of the</b>→uv-thuh — 기능어는 약화되어 빠르게 발음합니다",
+       highlights:[]},
+      {t:10.5,eng:"You know that I caught it",
+       note:"'caught it'→이어서 <b>CAW-dit</b> 연음. 두 단어가 자연스럽게 붙어요",
+       highlights:[]},
+      {t:13.5,eng:"Bad, bad boy, shiny toy with a price",
+       note:"<b>bad bad</b> 반복 강조 — 강세 있는 단어만 뚜렷하게, 나머지는 빠르게",
+       highlights:[]},
+      {t:18,  eng:"You know that I bought it",
+       note:"'bought it'→이어서 <b>BAW-dit</b> 연음. caught it과 같은 패턴",
+       highlights:[]},
+      {t:21,  eng:"Killing me slow, out the window",
+       note:"<b>slow</b>에 강세 — 감정 강조 시 중요 단어를 느리게 길게 늘려요",
+       highlights:[]},
+      {t:24,  eng:"I'm always waiting for you to be waiting below",
+       note:"<b>I'm</b> = <b>I am</b> 축약 — 'm은 am을 줄인 것. 원어민은 항상 이렇게 말해요",
+       highlights:["I'm"]}
     ],
     contractions:[
       {s:"I'm",   f:"I am",       ph:"AHM"},
@@ -1144,79 +1157,64 @@ var MUSIC_DATA=[
 ];
 
 var _musicAudio=null;
+var _spotifyApi=null;
+var _spotifyController=null;
+window.onSpotifyIframeApiReady=function(IFrameAPI){
+  _spotifyApi=IFrameAPI;
+  if(S.screen==='music') _initSpotifyPlayer();
+};
 
 function goMusic(){
   stopAll();
+  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
 }
 
-// JSONP loader — bypasses CORS entirely (script tag injection)
-function _jsonpItunes(q,cb){
-  var id='_itunes'+Date.now();
-  var timer=setTimeout(function(){
-    cleanup();cb(null);
-  },8000);
-  function cleanup(){
-    try{delete window[id];}catch(e){}
-    var el=document.getElementById(id);
-    if(el){try{document.head.removeChild(el);}catch(e){}}
-  }
-  window[id]=function(data){
-    clearTimeout(timer);cleanup();
-    var item=(data.results||[]).find(function(r){return r.previewUrl;});
-    cb(item?item.previewUrl:null);
-  };
-  var s=document.createElement('script');
-  s.id=id;
-  s.onerror=function(){clearTimeout(timer);cleanup();cb(null);};
-  s.src='https://itunes.apple.com/search?term='+encodeURIComponent(q)
-    +'&media=music&entity=song&limit=10&callback='+id;
-  document.head.appendChild(s);
-}
-
-function loadMusicPreview(){
-  if(S.musicLoading) return;
+function _initSpotifyPlayer(){
+  var container=document.getElementById('music-player-container');
+  if(!container||!_spotifyApi) return;
+  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   var song=MUSIC_DATA[S.musicSongIdx||0];
-  set({musicLoading:true,musicPreviewUrl:''});
-  _jsonpItunes(song.searchQ,function(url){
-    if(url){set({musicLoading:false,musicPreviewUrl:url});return;}
-    // Fallback: allOrigins proxy for iTunes
-    var itunesUrl='https://itunes.apple.com/search?term='+encodeURIComponent(song.searchQ)+'&media=music&entity=song&limit=5';
-    fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(itunesUrl))
-      .then(function(r){return r.json();})
-      .then(function(d){
-        var item=(d.results||[]).find(function(x){return x.previewUrl;});
-        set({musicLoading:false,musicPreviewUrl:item?item.previewUrl:'__error__'});
-      })
-      .catch(function(){set({musicLoading:false,musicPreviewUrl:'__error__'});});
+  var opts={uri:'spotify:track:'+song.spotifyId,width:'100%',height:80};
+  _spotifyApi.createController(container,opts,function(ctrl){
+    _spotifyController=ctrl;
+    ctrl.addListener('playback_update',function(e){
+      if(e.data&&typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
+    });
   });
 }
 
-function playMusicPreview(url){
-  if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
-  _musicAudio=new Audio(url);
-  _musicAudio.onended=function(){_musicAudio=null;set({musicPlaying:false});};
-  _musicAudio.onerror=function(){_musicAudio=null;set({musicPlaying:false,musicPreviewUrl:'__error__'});};
-  var p=_musicAudio.play();
-  if(p&&p.catch) p.catch(function(){if(_musicAudio){_musicAudio=null;}set({musicPlaying:false,musicPreviewUrl:'__error__'});});
-  set({musicPlaying:true});
-}
-
-function toggleMusicPlay(){
-  if(S.musicPlaying){
-    if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
-    set({musicPlaying:false});
-    return;
+function _updateLyricHighlight(pos){
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  var lyrics=song.lyrics||[];
+  var activeIdx=-1;
+  for(var i=lyrics.length-1;i>=0;i--){if(pos>=lyrics[i].t){activeIdx=i;break;}}
+  var lines=document.querySelectorAll('.lyric-line');
+  for(var j=0;j<lines.length;j++){
+    var el=lines[j];
+    var ph=el.querySelector('.lyric-phonetics');
+    var engEl=el.querySelector('.lyric-eng');
+    var hls=el.querySelectorAll('.lyric-hl');
+    if(j===activeIdx){
+      el.style.opacity='1';
+      el.style.background='#1a1a1a';
+      el.style.borderColor='#1a1a1a';
+      el.style.transform='scale(1.02)';
+      if(engEl) engEl.style.color='#fff';
+      for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
+      if(ph) ph.style.display='block';
+      el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }else{
+      el.style.opacity=j<activeIdx?'0.35':'0.75';
+      el.style.background='#fff';
+      el.style.borderColor='#ebebeb';
+      el.style.transform='scale(1)';
+      if(engEl) engEl.style.color='#1a1a1a';
+      for(var k=0;k<hls.length;k++){hls[k].style.background='#1a1a1a';hls[k].style.color='#fff';}
+      if(ph) ph.style.display='none';
+    }
   }
-  if(S.musicLoading) return;
-  if(!S.musicPreviewUrl||S.musicPreviewUrl==='__error__'){
-    // Step 1: load URL (async — can't play yet)
-    loadMusicPreview();
-    return;
-  }
-  // Step 2: URL ready — play directly in gesture handler (works on iOS)
-  playMusicPreview(S.musicPreviewUrl);
 }
 
 function splitSentences(text){
@@ -1422,20 +1420,22 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
-    // Build line cards
-    var lineCards=song.lines.map(function(line){
+    // Build karaoke lyric lines
+    var lyricLines=(song.lyrics||[]).map(function(line,i){
       var engDisp=line.eng;
       (line.highlights||[]).forEach(function(h){
         engDisp=engDisp.replace(new RegExp('\\b'+h.replace(/'/g,"'?")+'\\b','i'),
-          '<b style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">$&</b>');
+          '<span class="lyric-hl" style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">$&</span>');
       });
-      return '<div style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid #ebebeb">'
-        +'<div style="font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.6;margin-bottom:10px">'+engDisp+'</div>'
+      return '<div class="lyric-line" data-idx="'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:all .25s ease;opacity:0.75">'
+        +'<div class="lyric-eng" style="font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.5">'+engDisp+'</div>'
+        +'<div class="lyric-phonetics" style="display:none;margin-top:10px;background:#fff;border-radius:10px">'
         +wordByWordHTML(line.eng,'')
-        +'<div style="font-size:11px;color:#555;background:#f8f8f8;border-left:3px solid #1a1a1a;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:4px;line-height:1.7">'+line.note+'</div>'
+        +'<div style="font-size:11px;color:#555;background:#f4f4f4;border-left:3px solid #FF6B35;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:6px;line-height:1.7">'+line.note+'</div>'
+        +'</div>'
         +'</div>';
     }).join('');
-    // Contraction table
+    // Contraction reference table
     var ctable='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
       +song.contractions.map(function(c){
         return '<div style="background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:9px 12px">'
@@ -1448,41 +1448,34 @@ function render(){
           +'</div>';
       }).join('')
       +'</div>';
-    // Spotify iframe embed — no API, no CORS, 30s preview plays in-app
-    var spotifyEmbed='<iframe '
-      +'src="https://open.spotify.com/embed/track/'+song.spotifyId+'?utm_source=generator&theme=0" '
-      +'width="100%" height="80" frameborder="0" '
-      +'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '
-      +'style="border-radius:12px;display:block"></iframe>';
-    var fallbackQ=encodeURIComponent(song.title+' '+song.artist);
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
       +'<div style="padding:0 18px">'
-      // Song card with Spotify embed
+      // Song card — Spotify Embed API player (no login, 30s preview)
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
       +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">'+song.badge+'</div>'
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
-      +spotifyEmbed
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">'
-      +'<span style="font-size:10px;color:#bbb">Spotify 계정 없이 30초 미리듣기</span>'
-      +'<a href="https://music.youtube.com/search?q='+fallbackQ+'" target="_blank" rel="noopener" style="font-size:10px;color:#bbb;text-decoration:none">YouTube ↗</a>'
-      +'</div>'
+      // Spotify Embed API mounts here
+      +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
+      +'<div style="font-size:10px;color:#bbb;margin-top:8px;line-height:1.5">▶ 재생 버튼을 누르면 노래와 함께 아래 가사가 자동으로 따라가요</div>'
       +'<div style="font-size:11px;color:#aaa;line-height:1.7;border-top:1px solid #f5f5f5;padding-top:10px;margin-top:10px">'+song.intro+'</div>'
       +'</div>'
-      // Lyric analysis
-      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">가사 분석 — 리듬 &amp; 축약</div>'
-      +lineCards
-      // Contraction table
-      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;margin-top:6px">축약 패턴 정리</div>'
+      // Karaoke lyric lines
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">🎤 가사 · 따라가기</div>'
+      +lyricLines
+      // Contraction reference
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;margin-top:18px">축약 패턴 정리</div>'
       +ctable
       +'<div style="margin-top:14px;padding:14px 16px;background:#fff;border-radius:14px;border:1px solid #ebebeb;font-size:12px;color:#aaa;text-align:center;line-height:1.7">'
       +'곧 더 많은 곡이 추가될 예정이에요<br><span style="font-size:11px">♩ Shake It Off · Blinding Lights · Shape of You ...</span>'
       +'</div>'
       +'</div></div>';
+    // Mount Spotify player after DOM is ready
+    setTimeout(_initSpotifyPlayer, 100);
     return;
   }
 
