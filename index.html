@@ -1131,7 +1131,6 @@ var MUSIC_DATA=[
   {
     title:'Cruel Summer',artist:'Taylor Swift',
     searchQ:'cruel summer taylor swift',
-    // Spotify track ID (30s preview, no login needed via embed)
     spotifyId:'1BxfuPKGuaTgP7aM0Bbdwr',
     badge:'CONTRACTIONS · RHYTHM',
     intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 쓰는 축약(Contraction)과 약화(Reduction) 패턴을 귀로 체득할 수 있어요.',
@@ -1243,47 +1242,312 @@ var MUSIC_DATA=[
       {s:"we'll",  f:"we will",    ph:"WEEL"}
     ]
   },
+  // ── Coldplay ──────────────────────────────────────────
   {
-    title:'As It Was',artist:'Harry Styles',
-    searchQ:'as it was harry styles',
-    spotifyId:'4LRPiXqCikLlN15c3yImP7',
-    badge:'REDUCTIONS · -ING',
-    intro:'노래를 들으면서 아래 가사 분석을 읽으세요. -ing 끝 소리가 -in\'으로 약화되는 패턴과 연음을 귀로 체득할 수 있어요.',
+    title:'Clocks',artist:'Coldplay',
+    searchQ:'clocks coldplay',
+    spotifyId:'78QpQVB14ViCAckdKacsKh',
+    badge:'RHYTHM · FLAP-T',
+    intro:'노래를 들으면서 가사 분석을 읽으세요. 강세와 리듬, Flap-T(d처럼 들리는 t) 패턴을 익혀보세요.',
     lyrics:[
-      {t:8.0,
-       eng:"Holdin' me back",
-       note:"<b>Holdin'</b> = holding — <b>-ing</b>→<b>-in'</b> 구어 약화. 원어민은 일상 대화에서 자주 사용",
-       highlights:["Holdin'"]},
-      {t:11.0,
-       eng:"Gravity's holdin' me back",
-       note:"<b>Gravity's</b> = Gravity is 축약. <b>holdin'</b> -ing 약화 반복",
-       highlights:["Gravity's","holdin'"]},
-      {t:17.5,
-       eng:"From you",
-       note:"<b>From</b>→fruhm 약화. 기능어는 강세 없이 빠르게 발음",
-       highlights:[]},
-      {t:20.0,
-       eng:"Fallin' like that",
-       note:"<b>Fallin'</b> = falling — <b>-ing</b>→<b>-in'</b> 약화. <b>like that</b>→laik-THAT 강세",
-       highlights:["Fallin'"]},
-      {t:25.0,
-       eng:"Go home, get ahead, light speed internet",
-       note:"<b>get ahead</b>→get-uh-HED 연음. <b>light speed</b> 복합명사: 앞 단어에 강세",
-       highlights:[]},
-      {t:28.5,
-       eng:"I don't wanna talk about the way it was",
-       note:"<b>don't</b> = do not. <b>wanna</b> = want to 구어 축약. <b>about the</b>→uh-BOUT-thuh 약화",
-       highlights:["don't","wanna"]}
+      {t:1.0,eng:"The lights go out and I can't be saved",
+       note:"<b>can't</b>=cannot 축약. <b>go out</b>→goh-OWT 연음. <b>saved</b>에 강세",highlights:["can't"]},
+      {t:5.0,eng:"Tides that I tried to swim against",
+       note:"<b>tried to</b>→tried-tuh 연음. <b>against</b>→uh-GENST 강세",highlights:[]},
+      {t:9.0,eng:"You've come to take me away",
+       note:"<b>You've</b>=You have 축약. <b>come to</b>→kum-tuh 약화",highlights:["You've"]},
+      {t:13.0,eng:"Am I a part of the cure",
+       note:"<b>a part of the</b>→uh-PART-uv-thuh 연속 약화. 기능어는 전부 약하게",highlights:[]},
+      {t:17.0,eng:"Or am I part of the disease",
+       note:"<b>or am I</b>→or-um-AH 연음. <b>disease</b>→dih-ZEEZ 강세 2음절",highlights:[]}
     ],
     contractions:[
-      {s:"Holdin'", f:"Holding",   ph:"HOL-din"},
-      {s:"Fallin'", f:"Falling",   ph:"FAW-lin"},
-      {s:"Gravity's",f:"Gravity is",ph:"GRAV-ih-teez"},
-      {s:"don't",  f:"do not",     ph:"DOHNT"},
-      {s:"wanna",  f:"want to",    ph:"WON-uh"},
+      {s:"can't",  f:"cannot",    ph:"KANT"},
+      {s:"You've", f:"You have",  ph:"YOOV"},
+      {s:"I've",   f:"I have",    ph:"AHV"},
+      {s:"it's",   f:"it is",     ph:"ITS"},
+      {s:"I'm",    f:"I am",      ph:"AHM"}
+    ]
+  },
+  {
+    title:'Viva La Vida',artist:'Coldplay',
+    searchQ:'viva la vida coldplay',
+    spotifyId:'4Lqt3OFx7yvApf32wNoJHI',
+    badge:'PAST TENSE · STORYTELLING',
+    intro:'과거형 동사 발음과 리듬감 있는 스토리텔링을 귀로 익혀보세요.',
+    lyrics:[
+      {t:1.0,eng:"I used to rule the world",
+       note:"<b>used to</b>→YOOZ-tuh 연음. 과거 습관 표현. <b>rule</b>에 강세",highlights:[]},
+      {t:4.5,eng:"Seas would rise when I gave the word",
+       note:"<b>would rise</b>→wud-RAHYZ 약화+연음. <b>gave</b>→GAYV 과거형",highlights:[]},
+      {t:8.0,eng:"Now in the morning I sleep alone",
+       note:"<b>in the</b>→in-thuh 약화. <b>morning</b>→MOR-ning 강세",highlights:[]},
+      {t:11.5,eng:"Sweep the streets I used to own",
+       note:"<b>used to</b>→YOOZ-tuh 다시 등장. <b>streets</b>→STREETS 강세",highlights:[]},
+      {t:15.0,eng:"I used to roll the dice",
+       note:"<b>roll the</b>→rohl-thuh 연음. <b>dice</b>→DAHYS 강세",highlights:[]}
+    ],
+    contractions:[
+      {s:"used to",f:"(과거 습관)",ph:"YOOZ-tuh"},
+      {s:"would",  f:"(조동사)",   ph:"wud"},
+      {s:"I'd",    f:"I would",    ph:"AHD"},
+      {s:"they'd", f:"they would", ph:"THAYD"}
+    ]
+  },
+  {
+    title:'Adventure of a Lifetime',artist:'Coldplay',
+    searchQ:'adventure of a lifetime coldplay',
+    spotifyId:'2SSpWHvmm9NN86Ui2SULWG',
+    badge:'REDUCTIONS · RHYTHM',
+    intro:'신나는 리듬 속 약화(Reduction) 패턴을 집중적으로 익혀보세요.',
+    lyrics:[
+      {t:1.0,eng:"Turn your magic on",
+       note:"<b>Turn your</b>→TURN-yer 연음. <b>magic</b>→MAH-jik 강세",highlights:[]},
+      {t:4.0,eng:"To me she'd say",
+       note:"<b>she'd</b>=she would 축약. <b>to me</b>→tuh-MEE 약화",highlights:["she'd"]},
+      {t:7.0,eng:"Everything you want's a dream away",
+       note:"<b>want's</b>=want is 구어 축약. <b>dream away</b>→dream-uh-WAY 연음",highlights:["want's"]},
+      {t:11.0,eng:"We are diamonds taking shape",
+       note:"<b>We are</b>→wee-ur 연음. <b>taking</b>→TAY-king 강세",highlights:[]},
+      {t:15.0,eng:"Come alive",
+       note:"<b>Come alive</b>→kum-uh-LAHYV 연음. 짧은 구절에 감정 실기",highlights:[]}
+    ],
+    contractions:[
+      {s:"she'd",  f:"she would",  ph:"SHEED"},
+      {s:"we're",  f:"we are",     ph:"WEER"},
+      {s:"you're", f:"you are",    ph:"YER"},
+      {s:"want's", f:"want is",    ph:"WONTS"}
+    ]
+  },
+  {
+    title:'A Sky Full of Stars',artist:'Coldplay',
+    searchQ:'a sky full of stars coldplay',
+    spotifyId:'4JIck9yO3m6qpyNFJU84RB',
+    badge:'STRESS · RHYTHM',
+    intro:'강렬한 비트와 함께 영어 강세(Stress) 패턴을 몸으로 느껴보세요.',
+    lyrics:[
+      {t:0.5,eng:"'Cause you're a sky full of stars",
+       note:"<b>'Cause</b>=Because 구어 축약. <b>you're</b>=you are. <b>sky</b>에 강세",highlights:["'Cause","you're"]},
+      {t:4.5,eng:"I'm gonna give you my heart",
+       note:"<b>I'm gonna</b>=I am going to 이중 축약. <b>give you</b>→giv-yuh 연음",highlights:["I'm","gonna"]},
+      {t:8.5,eng:"'Cause you're a sky full of stars",
+       note:"반복 코러스 — 리듬 패턴 귀에 익히기",highlights:["'Cause","you're"]},
+      {t:12.5,eng:"Such a heavenly view",
+       note:"<b>Such a</b>→suh-chuh 연음. <b>heavenly</b>→HEV-un-lee 3음절 강세",highlights:[]},
+      {t:16.0,eng:"You're a sky full of stars",
+       note:"<b>You're</b>=You are. 반복되는 리듬에서 강세 위치를 체크",highlights:["You're"]}
+    ],
+    contractions:[
+      {s:"'Cause", f:"Because",    ph:"kuz"},
+      {s:"you're", f:"you are",    ph:"YER"},
+      {s:"I'm",    f:"I am",       ph:"AHM"},
+      {s:"gonna",  f:"going to",   ph:"GUN-uh"}
+    ]
+  },
+  // ── Bruno Mars ────────────────────────────────────────
+  {
+    title:'Uptown Funk',artist:'Mark Ronson ft. Bruno Mars',
+    searchQ:'uptown funk bruno mars',
+    spotifyId:'4zfPkrKPobcg1ncgEzK4Al',
+    badge:'RHYTHM · REDUCTIONS',
+    intro:'빠른 리듬 속 구어 축약과 연음을 집중 훈련하세요.',
+    lyrics:[
+      {t:0.5,eng:"Don't believe me, just watch",
+       note:"<b>Don't</b>=do not 축약. <b>just watch</b>→jus-WOCH 연음. 짧고 강한 리듬",highlights:["Don't"]},
+      {t:4.0,eng:"Stop, wait a minute",
+       note:"<b>wait a</b>→wayt-uh 연음. <b>minute</b>→MIN-it (2음절)",highlights:[]},
+      {t:7.5,eng:"Before we leave, lemme tell y'all something",
+       note:"<b>lemme</b>=let me 구어 축약. <b>y'all</b>=you all 남부 미국 영어 축약",highlights:["lemme","y'all"]},
+      {t:12.0,eng:"Too hot, hot damn",
+       note:"<b>Too hot</b>→tuh-HOT 연음. 강한 단음절에 감정 강세",highlights:[]},
+      {t:15.5,eng:"Don't believe me, just watch",
+       note:"반복 후렴 — 리듬 패턴 다시 확인",highlights:["Don't"]}
+    ],
+    contractions:[
+      {s:"Don't",  f:"do not",     ph:"DOHNT"},
+      {s:"lemme",  f:"let me",     ph:"LEM-ee"},
+      {s:"y'all",  f:"you all",    ph:"YAWL"},
       {s:"gonna",  f:"going to",   ph:"GUN-uh"},
-      {s:"nothin'",f:"nothing",    ph:"NUH-thin"},
-      {s:"kinda",  f:"kind of",    ph:"KAI-nda"}
+      {s:"wanna",  f:"want to",    ph:"WON-uh"}
+    ]
+  },
+  {
+    title:'24K Magic',artist:'Bruno Mars',
+    searchQ:'24k magic bruno mars',
+    spotifyId:'3QDljVpNkcFRnRnMD8Tzvv',
+    badge:'SLANG · RHYTHM',
+    intro:'현대 미국 영어 슬랭과 빠른 리듬 속 약화 패턴을 익혀보세요.',
+    lyrics:[
+      {t:0.5,eng:"Put your pinky rings up to the moon",
+       note:"<b>your</b>→yer 약화. <b>pinky rings</b>→PINK-ee-RINGS 복합명사 강세",highlights:[]},
+      {t:4.0,eng:"She's a good girl",
+       note:"<b>She's</b>=She is 축약. <b>good girl</b>→gud-GURL 연음",highlights:["She's"]},
+      {t:7.0,eng:"24 karat magic in the air",
+       note:"<b>in the</b>→in-thuh 약화. <b>magic</b>→MAH-jik 강세",highlights:[]},
+      {t:11.5,eng:"Everybody put your hands together",
+       note:"<b>Everybody</b>→EV-ree-bah-dee 4음절. <b>put your</b>→put-yer 연음",highlights:[]},
+      {t:16.0,eng:"Don't fight the feeling",
+       note:"<b>Don't</b>=do not. <b>fight the</b>→fayt-thuh 연음",highlights:["Don't"]}
+    ],
+    contractions:[
+      {s:"She's",  f:"She is",     ph:"SHEEZ"},
+      {s:"Don't",  f:"do not",     ph:"DOHNT"},
+      {s:"I'm",    f:"I am",       ph:"AHM"},
+      {s:"it's",   f:"it is",      ph:"ITS"}
+    ]
+  },
+  {
+    title:'Locked Out of Heaven',artist:'Bruno Mars',
+    searchQ:'locked out of heaven bruno mars',
+    spotifyId:'1CqCjF9DWGvlnTUlG8JXy1',
+    badge:'REDUCTIONS · STRESS',
+    intro:'빠른 템포의 팝록에서 강세와 연음 패턴을 집중 훈련하세요.',
+    lyrics:[
+      {t:1.0,eng:"Never had much faith in love or miracles",
+       note:"<b>Never had</b>→NEV-er-had 연음. <b>or</b>→er 약화. <b>miracles</b>→MIR-uh-kulz 3음절",highlights:[]},
+      {t:5.5,eng:"Never wanna put my heart on the line",
+       note:"<b>wanna</b>=want to 구어 축약. <b>put my</b>→put-mah 연음",highlights:["wanna"]},
+      {t:10.0,eng:"But swimming in your world is something spiritual",
+       note:"<b>something spiritual</b>→SUM-thing-SPIR-it-yoo-ul. 강세 위치 주의",highlights:[]},
+      {t:15.0,eng:"You make me feel like I've been locked out of heaven",
+       note:"<b>I've been</b>=I have been 축약. <b>locked out of</b>→lokt-owt-uv 연음",highlights:["I've"]},
+      {t:21.0,eng:"Can I just stay here, spend the rest of my life",
+       note:"<b>Can I</b>→kun-AH 연음. <b>rest of my</b>→rest-uv-mah 연속 약화",highlights:[]}
+    ],
+    contractions:[
+      {s:"wanna",  f:"want to",    ph:"WON-uh"},
+      {s:"I've",   f:"I have",     ph:"AHV"},
+      {s:"can't",  f:"cannot",     ph:"KANT"},
+      {s:"you're", f:"you are",    ph:"YER"}
+    ]
+  },
+  {
+    title:"That's What I Like",artist:'Bruno Mars',
+    searchQ:"that's what i like bruno mars",
+    spotifyId:'0KKkJNfGyhkQ5aFogxQAPU',
+    badge:'CONTRACTIONS · RHYTHM',
+    intro:'그루브 있는 R&B 리듬 속 축약과 연음을 익혀보세요.',
+    lyrics:[
+      {t:0.5,eng:"I got a condo in Manhattan",
+       note:"<b>got a</b>→gah-duh Flap-T. <b>Manhattan</b>→man-HAT-un 강세 2음절",highlights:[]},
+      {t:4.0,eng:"Baby girl, what's hatnin'",
+       note:"<b>what's</b>=what is 축약. <b>hatnin'</b>=happening -ing 약화",highlights:["what's"]},
+      {t:8.0,eng:"That's what I like",
+       note:"<b>That's</b>=That is 축약. 후렴 핵심 구절 — 리듬에 맞춰 반복",highlights:["That's"]},
+      {t:12.0,eng:"I'd do anything for ya, babe",
+       note:"<b>I'd</b>=I would 축약. <b>for ya</b>=for you 구어 약화",highlights:["I'd","ya"]},
+      {t:16.0,eng:"That's what I like",
+       note:"반복 후렴 — <b>That's</b> 강세 위치 다시 확인",highlights:["That's"]}
+    ],
+    contractions:[
+      {s:"That's", f:"That is",    ph:"THATS"},
+      {s:"what's", f:"what is",    ph:"WHUTS"},
+      {s:"I'd",    f:"I would",    ph:"AHD"},
+      {s:"ya",     f:"you",        ph:"yuh"},
+      {s:"gonna",  f:"going to",   ph:"GUN-uh"}
+    ]
+  },
+  // ── Lana Del Rey ──────────────────────────────────────
+  {
+    title:'Summertime Sadness',artist:'Lana Del Rey',
+    searchQ:'summertime sadness lana del rey',
+    spotifyId:'1FEiijYPJtyswChfcpv3p0',
+    badge:'INTONATION · VOWELS',
+    intro:'긴 모음과 감정적 억양 패턴을 귀로 익혀보세요.',
+    lyrics:[
+      {t:1.0,eng:"I got my red dress on tonight",
+       note:"<b>got my</b>→gah-mah Flap-T+연음. <b>tonight</b>→tuh-NAYT 강세",highlights:[]},
+      {t:5.0,eng:"Dancing in the dark in the pale moonlight",
+       note:"<b>in the</b>→in-thuh 반복 약화. <b>pale moonlight</b> 복합명사 강세",highlights:[]},
+      {t:9.5,eng:"I'm on fire, I feel it everywhere",
+       note:"<b>I'm</b>=I am 축약. <b>feel it</b>→feel-it Flap-T 연음",highlights:["I'm"]},
+      {t:14.0,eng:"I got that summertime, summertime sadness",
+       note:"<b>got that</b>→gah-that Flap-T. <b>sadness</b>→SAD-nis 강세",highlights:[]},
+      {t:20.0,eng:"Oh, oh, oh, I'm so sad",
+       note:"<b>I'm</b>=I am 축약. 감탄사 억양 — 음정보다 말하듯이",highlights:["I'm"]}
+    ],
+    contractions:[
+      {s:"I'm",    f:"I am",       ph:"AHM"},
+      {s:"I've",   f:"I have",     ph:"AHV"},
+      {s:"don't",  f:"do not",     ph:"DOHNT"},
+      {s:"it's",   f:"it is",      ph:"ITS"}
+    ]
+  },
+  {
+    title:'National Anthem',artist:'Lana Del Rey',
+    searchQ:'national anthem lana del rey',
+    spotifyId:'7gLosLGcstpPsNkR845uZY',
+    badge:'RHYTHM · CONTRACTIONS',
+    intro:'빠른 전개 속에서 리듬과 축약 패턴을 훈련하세요.',
+    lyrics:[
+      {t:0.5,eng:"Money is the anthem of success",
+       note:"<b>of</b>→uv 약화. <b>anthem</b>→AN-thum 강세 1음절",highlights:[]},
+      {t:4.5,eng:"So put on, let's ride",
+       note:"<b>let's</b>=let us 축약. <b>put on</b>→put-ON 강세",highlights:["let's"]},
+      {t:8.0,eng:"We don't care, we aren't caught up in your love affair",
+       note:"<b>don't</b>=do not. <b>aren't</b>=are not 축약. <b>caught up</b>→kawt-UP 연음",highlights:["don't","aren't"]},
+      {t:14.0,eng:"Red, white, blue is in the skies",
+       note:"<b>is in the</b>→iz-in-thuh 연속 약화. 짧은 기능어 전부 약하게",highlights:[]},
+      {t:18.0,eng:"Summer's in the air and baby heaven's in your eyes",
+       note:"<b>Summer's</b>=Summer is. <b>heaven's</b>=heaven is 축약. <b>your</b>→yer 약화",highlights:["Summer's","heaven's"]}
+    ],
+    contractions:[
+      {s:"let's",   f:"let us",     ph:"LETS"},
+      {s:"don't",   f:"do not",     ph:"DOHNT"},
+      {s:"aren't",  f:"are not",    ph:"AR-nt"},
+      {s:"Summer's",f:"Summer is",  ph:"SUM-erz"},
+      {s:"heaven's",f:"heaven is",  ph:"HEV-unz"}
+    ]
+  },
+  {
+    title:'Young and Beautiful',artist:'Lana Del Rey',
+    searchQ:'young and beautiful lana del rey',
+    spotifyId:'5xRQhbs7QJOwqmcOnqsdJL',
+    badge:'INTONATION · VOWELS',
+    intro:'느린 템포에서 영어 모음 발음과 억양 곡선을 정밀하게 익혀보세요.',
+    lyrics:[
+      {t:1.0,eng:"Will you still love me when I'm no longer young and beautiful",
+       note:"<b>I'm</b>=I am. <b>no longer</b>→noh-LONG-ger. <b>young and</b>→yung-und 연음",highlights:["I'm"]},
+      {t:9.0,eng:"Will you still love me when I've got nothing but my aching soul",
+       note:"<b>I've got</b>=I have got 축약. <b>nothing but</b>→nuh-thing-but 연음",highlights:["I've"]},
+      {t:18.0,eng:"I know you will",
+       note:"<b>I know you</b>→ah-noh-yuh 연음. 짧은 확신의 구절",highlights:[]},
+      {t:21.5,eng:"I know you will",
+       note:"반복 — 억양 곡선이 올라가는지 내려가는지 주목",highlights:[]},
+      {t:25.0,eng:"Oh, I know you will",
+       note:"<b>Oh, I</b>→oh-AH 연음. 감탄사 이후 억양 자연스럽게",highlights:[]}
+    ],
+    contractions:[
+      {s:"I'm",    f:"I am",       ph:"AHM"},
+      {s:"I've",   f:"I have",     ph:"AHV"},
+      {s:"you'll", f:"you will",   ph:"YOOL"},
+      {s:"nothing",f:"(기능어)",   ph:"NUH-thing"}
+    ]
+  },
+  {
+    title:'Born to Die',artist:'Lana Del Rey',
+    searchQ:'born to die lana del rey',
+    spotifyId:'4TxgdCyF0qfLfnn47wI0gX',
+    badge:'REDUCTIONS · INTONATION',
+    intro:'드라마틱한 억양과 약화 패턴을 집중해서 들어보세요.',
+    lyrics:[
+      {t:1.0,eng:"Feet don't fail me now",
+       note:"<b>don't</b>=do not 축약. <b>fail me</b>→fayl-mee 연음. 명령문 억양",highlights:["don't"]},
+      {t:4.5,eng:"Take me to the finish line",
+       note:"<b>Take me to the</b>→tayk-mee-tuh-thuh 연속 약화. <b>finish line</b> 복합명사",highlights:[]},
+      {t:8.5,eng:"Oh, my heart, it breaks every step that I take",
+       note:"<b>every step that I</b>→ev-ree-step-thut-ah 연음 연속. <b>breaks</b> 강세",highlights:[]},
+      {t:14.0,eng:"But I'm hoping that the gates they'll open up for me",
+       note:"<b>I'm hoping</b>=I am 축약. <b>they'll</b>=they will 축약. <b>open up</b>→OH-pun-up",highlights:["I'm","they'll"]},
+      {t:20.0,eng:"Choose your last words, this is the last time",
+       note:"<b>this is the</b>→this-iz-thuh 약화. <b>last time</b>→LAST-TAHYM 강세",highlights:[]}
+    ],
+    contractions:[
+      {s:"don't",  f:"do not",     ph:"DOHNT"},
+      {s:"I'm",    f:"I am",       ph:"AHM"},
+      {s:"they'll",f:"they will",  ph:"THEYL"},
+      {s:"it's",   f:"it is",      ph:"ITS"},
+      {s:"won't",  f:"will not",   ph:"WOHNT"}
     ]
   }
 ];
@@ -1554,8 +1818,8 @@ function render(){
     }
 
     app.innerHTML='<div style="background:#1a1a1a;min-height:100vh;display:flex;flex-direction:column">'
-      // ── Dark top: header + dots ──
-      +'<div style="padding:36px 22px 24px;flex-shrink:0">'
+      // ── Dark top: header + dots (2/3 of screen) ──
+      +'<div style="min-height:67vh;padding:36px 22px 24px;flex-shrink:0;display:flex;flex-direction:column;justify-content:flex-start">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
       +'<div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#fff">Phonix<span style="opacity:.5">Coach</span></div>'
       +'<button onclick="goSaved()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:12px">저장목록</button>'
