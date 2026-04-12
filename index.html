@@ -1107,7 +1107,7 @@ function speakAI(){speakEng(S.aiEng);}
 var MUSIC_DATA=[
   {
     title:'Cruel Summer',artist:'Taylor Swift',
-    itunesQ:'cruel+summer+taylor+swift',
+    searchQ:'cruel summer taylor swift',
     badge:'CONTRACTIONS · RHYTHM',
     intro:'팝송으로 원어민 리듬과 축약을 자연스럽게 체득해요. 노래를 들으며 강세·약화를 귀로 익혀보세요.',
     lines:[
@@ -1149,29 +1149,56 @@ function goMusic(){
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
 }
 
-function loadMusicPreview(){
-  var song=MUSIC_DATA[S.musicSongIdx||0];
-  if(S.musicPreviewUrl){toggleMusicPlay();return;}
-  set({musicLoading:true});
-  fetch('https://itunes.apple.com/search?term='+song.itunesQ+'&media=music&limit=5')
+// Fetch preview URL: tries Deezer → iTunes → allorigins proxy
+function _fetchPreviewUrl(q,cb){
+  var deezerUrl='https://api.deezer.com/search?q='+encodeURIComponent(q);
+  var itunesUrl='https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&entity=song&limit=5';
+
+  function fromDeezer(json){
+    var d;try{d=typeof json==='string'?JSON.parse(json):json;}catch(e){return null;}
+    var x=(d.data||[]).find(function(i){return i.preview;});
+    return x?x.preview:null;
+  }
+  function fromItunes(json){
+    var d;try{d=typeof json==='string'?JSON.parse(json):json;}catch(e){return null;}
+    var x=(d.results||[]).find(function(i){return i.previewUrl;});
+    return x?x.previewUrl:null;
+  }
+
+  fetch(deezerUrl)
     .then(function(r){return r.json();})
-    .then(function(d){
-      var results=(d.results||[]).filter(function(r){return r.previewUrl;});
-      if(!results.length) throw new Error('no preview');
-      var url=results[0].previewUrl;
-      set({musicLoading:false,musicPreviewUrl:url});
-      playMusicPreview(url);
-    })
-    .catch(function(){set({musicLoading:false,musicPreviewUrl:'__error__'});});
+    .then(function(d){var u=fromDeezer(d);if(!u)throw new Error('no url');cb(u);})
+    .catch(function(){
+      fetch(itunesUrl)
+        .then(function(r){return r.json();})
+        .then(function(d){var u=fromItunes(d);if(!u)throw new Error('no url');cb(u);})
+        .catch(function(){
+          // Last resort: allorigins proxy for Deezer
+          fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(deezerUrl))
+            .then(function(r){return r.text();})
+            .then(function(t){var u=fromDeezer(t);cb(u||null);})
+            .catch(function(){cb(null);});
+        });
+    });
+}
+
+function loadMusicPreview(){
+  if(S.musicLoading) return;
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  set({musicLoading:true,musicPreviewUrl:''});
+  _fetchPreviewUrl(song.searchQ,function(url){
+    // Just store URL — don't auto-play here (breaks iOS gesture requirement)
+    set({musicLoading:false,musicPreviewUrl:url||'__error__'});
+  });
 }
 
 function playMusicPreview(url){
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   _musicAudio=new Audio(url);
-  _musicAudio.onended=function(){set({musicPlaying:false});};
+  _musicAudio.onended=function(){_musicAudio=null;set({musicPlaying:false});};
   _musicAudio.onerror=function(){_musicAudio=null;set({musicPlaying:false,musicPreviewUrl:'__error__'});};
   var p=_musicAudio.play();
-  if(p&&p.catch) p.catch(function(){set({musicPlaying:false,musicPreviewUrl:'__error__'});});
+  if(p&&p.catch) p.catch(function(){if(_musicAudio){_musicAudio=null;}set({musicPlaying:false,musicPreviewUrl:'__error__'});});
   set({musicPlaying:true});
 }
 
@@ -1179,10 +1206,16 @@ function toggleMusicPlay(){
   if(S.musicPlaying){
     if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
     set({musicPlaying:false});
-  } else {
-    if(S.musicPreviewUrl&&S.musicPreviewUrl!=='__error__') playMusicPreview(S.musicPreviewUrl);
-    else loadMusicPreview();
+    return;
   }
+  if(S.musicLoading) return;
+  if(!S.musicPreviewUrl||S.musicPreviewUrl==='__error__'){
+    // Step 1: load URL (async — can't play yet)
+    loadMusicPreview();
+    return;
+  }
+  // Step 2: URL ready — play directly in gesture handler (works on iOS)
+  playMusicPreview(S.musicPreviewUrl);
 }
 
 function splitSentences(text){
@@ -1415,15 +1448,23 @@ function render(){
           +'</div>';
       }).join('')
       +'</div>';
-    // Play button
+    // Play button — 2-step: first tap loads URL, second tap plays (iOS gesture fix)
     var playBtn='';
-    if(S.musicPreviewUrl==='__error__'){
-      playBtn='<div style="font-size:12px;color:#DC2626;padding:8px 0">iTunes 미리듣기를 불러올 수 없어요</div>';
-    } else if(S.musicLoading){
-      playBtn='<div style="display:flex;align-items:center;gap:8px;padding:10px 0"><div class="sp"></div><span style="font-size:12px;color:#888">불러오는 중...</span></div>';
+    if(S.musicLoading){
+      playBtn='<div style="display:flex;align-items:center;gap:8px"><div class="sp"></div><span style="font-size:12px;color:#888">미리듣기 불러오는 중...</span></div>';
+    } else if(S.musicPreviewUrl==='__error__'){
+      playBtn='<div style="display:flex;align-items:center;gap:10px">'
+        +'<span style="font-size:12px;color:#999">미리듣기를 불러올 수 없어요</span>'
+        +'<button onclick="loadMusicPreview()" style="background:#f5f5f5;border:1px solid #e0e0e0;border-radius:9px;padding:7px 14px;font-size:12px;cursor:pointer;color:#555;font-weight:600">재시도</button>'
+        +'</div>';
+    } else if(S.musicPlaying){
+      playBtn='<button onclick="toggleMusicPlay()" style="background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">⏹ 정지</button>';
+    } else if(S.musicPreviewUrl){
+      // URL loaded — one tap to play
+      playBtn='<button onclick="toggleMusicPlay()" style="background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">▶ 재생</button>';
     } else {
-      playBtn='<button onclick="toggleMusicPlay()" style="background:'+(S.musicPlaying?'#fff':'#1a1a1a')+';color:'+(S.musicPlaying?'#1a1a1a':'#fff')+';border:'+(S.musicPlaying?'1.5px solid #1a1a1a':'none')+';border-radius:12px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px">'
-        +(S.musicPlaying?'⏹ 정지':'▶ 30초 미리듣기')+'</button>';
+      // Initial — first tap loads URL
+      playBtn='<button onclick="toggleMusicPlay()" style="background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">▶ 30초 미리듣기</button>';
     }
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
