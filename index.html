@@ -1140,27 +1140,27 @@ var MUSIC_DATA=[
        eng:"It's new, the shape of your body",
        note:"<b>It's</b> = it is 축약, <b>I've</b> = I have 축약. <b>your</b>→yer로 약화해서 빠르게",
        highlights:["It's","I've"]},
-      {t:6,
+      {t:5.5,
        group:["And it's ooh, whoa-oh","It's a cruel summer"],
        eng:"It's a cruel summer",
        note:"감탄사 → 코러스 진입. <b>cruel</b>→KRU-el (2음절). 멜로디에 실어 자연스럽게",
        highlights:["It's"]},
-      {t:10,
+      {t:11,
        group:['"It\'s cool," that\'s what I tell \'em',"No rules in breakable heaven"],
        eng:"It's cool, that's what I tell 'em",
        note:"<b>tell 'em</b> = tell them — <b>'em</b>은 them의 축약. <b>that's</b> = that is 축약",
        highlights:["that's","'em"]},
-      {t:15,
+      {t:16.5,
        group:["But ooh, whoa-oh","It's a cruel summer with you"],
        eng:"It's a cruel summer with you",
        note:"코러스 반복! <b>with you</b> — with는 약하게, <b>YOU</b>에만 강세. 약강 리듬",
        highlights:["It's"]},
-      {t:19,
+      {t:22,
        group:["I'm drunk in the back of the car","And I cried like a baby coming home from the bar (oh)"],
        eng:"I'm drunk in the back of the car",
        note:"<b>I'm</b> = I am 축약. <b>in the</b>→in-thuh, <b>of the</b>→uv-thuh 기능어 약화",
        highlights:["I'm"]},
-      {t:25,
+      {t:27.5,
        group:['Said, "I\'m fine," but it wasn\'t true'],
        eng:"Said I'm fine but it wasn't true",
        note:"<b>I'm</b> = I am, <b>wasn't</b> = was not 축약. <b>Said</b>→SEHD 과거형 발음에 주의",
@@ -1189,6 +1189,7 @@ var _spotifyController=null;
 var _currentPos=0;
 var _previewStartPos=null;
 var _lastLyricIdx=-1;
+var _timingOffset=0;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
@@ -1233,6 +1234,7 @@ function goMusic(){
   stopAll();
   _previewStartPos=null;
   _lastLyricIdx=-1;
+  _timingOffset=0;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
@@ -1261,7 +1263,7 @@ function _updateLyricHighlight(pos){
   var song=MUSIC_DATA[S.musicSongIdx||0];
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
-  for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t){activeIdx=i;break;}}
+  for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t+_timingOffset){activeIdx=i;break;}}
   if(activeIdx!==_lastLyricIdx) _setLyricDisplay(activeIdx);
 }
 
@@ -1468,24 +1470,25 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
-    // One big box — all lyrics + phonetics in sequence
-    var allLyricsHtml=(song.lyrics||[]).map(function(line,i){
+    var lyricHtml=(song.lyrics||[]).map(function(line,i){
       var groupLines=line.group||[line.eng];
-      var textHtml=groupLines.map(function(l){
+      var textHtml=groupLines.map(function(l,li){
         var disp=l;
         (line.highlights||[]).forEach(function(h){
           disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
-            '$1<span style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
+            '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
         });
-        return '<div>'+disp+'</div>';
+        return '<div style="'+(li>0?'margin-top:2px':'')+'">'+disp+'</div>';
       }).join('');
       var phonHtml=groupLines.map(function(l,li){
-        return (li>0?'<div style="margin-top:4px"></div>':'')+musicWordPhon(l);
+        return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:4px"></div>':'')+musicWordPhon(l);
       }).join('');
-      return '<div style="'+(i>0?'margin-top:20px;padding-top:20px;border-top:1px solid #f0f0f0':'')+'">'
-        +'<div style="font-size:16px;font-weight:700;color:#1a1a1a;line-height:1.6;margin-bottom:10px">'+textHtml+'</div>'
+      return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s">'
+        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6">'+textHtml+'</div>'
+        +'<div class="lc-phon" style="display:none;margin-top:12px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px 12px">'
         +phonHtml
-        +'<div style="font-size:11px;color:#888;background:#f8f8f8;border-left:3px solid #FF6B35;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:8px;line-height:1.7">'+line.note+'</div>'
+        +'<div style="font-size:11px;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
+        +'</div>'
         +'</div>';
     }).join('');
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
@@ -1494,20 +1497,23 @@ function render(){
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
       +'<div style="padding:0 18px">'
-      // Spotify player card
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
       +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">'+song.badge+'</div>'
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="font-size:10px;color:#bbb;margin-top:8px">팝업이 뜨면 × 로 닫으세요</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
+      +'<span style="font-size:10px;color:#bbb">박자 조정:</span>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset-0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">← 빠르게</button>'
+      +'<span id="off-val" style="font-size:11px;color:#888;min-width:36px;text-align:center">+0.0s</span>'
+      +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset+0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">늦게 →</button>'
       +'</div>'
-      // ONE big lyrics + phonetics box
-      +'<div style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb">'
-      +allLyricsHtml
       +'</div>'
+      +'</div>'
+      +lyricHtml
       +'</div></div>';
-    setTimeout(_initSpotifyPlayer, 100);
+    setTimeout(function(){ _setLyricDisplay(0); _initSpotifyPlayer(); }, 100);
     return;
   }
 
