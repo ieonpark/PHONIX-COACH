@@ -1159,10 +1159,19 @@ var MUSIC_DATA=[
 var _musicAudio=null;
 var _spotifyApi=null;
 var _spotifyController=null;
+var _currentPos=0;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
 };
+
+function _calTap(i){
+  var t=Math.max(0,_currentPos-0.15);
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  if(song.lyrics[i]) song.lyrics[i].t=t;
+  var btn=document.getElementById('cal-'+i);
+  if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
+}
 
 function goMusic(){
   stopAll();
@@ -1186,6 +1195,9 @@ function _initSpotifyPlayer(){
 }
 
 function _updateLyricHighlight(pos){
+  _currentPos=pos;
+  var posEl=document.getElementById('music-pos');
+  if(posEl) posEl.textContent=pos.toFixed(1)+'s';
   var song=MUSIC_DATA[S.musicSongIdx||0];
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
@@ -1428,7 +1440,10 @@ function render(){
           '<span class="lyric-hl" style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">$&</span>');
       });
       return '<div class="lyric-line" data-idx="'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:all .25s ease;opacity:0.75">'
-        +'<div class="lyric-eng" style="font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.5">'+engDisp+'</div>'
+        +'<div style="display:flex;align-items:flex-start;gap:8px">'
+        +'<div class="lyric-eng" style="flex:1;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.5">'+engDisp+'</div>'
+        +'<button id="cal-'+i+'" onclick="_calTap('+i+')" style="flex-shrink:0;font-size:9px;color:#ccc;background:transparent;border:1px solid #e5e5e5;border-radius:6px;padding:2px 8px;cursor:pointer;font-family:monospace;transition:all .2s">📍</button>'
+        +'</div>'
         +'<div class="lyric-phonetics" style="display:none;margin-top:10px;background:#fff;border-radius:10px">'
         +wordByWordHTML(line.eng,'')
         +'<div style="font-size:11px;color:#555;background:#f4f4f4;border-left:3px solid #FF6B35;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:6px;line-height:1.7">'+line.note+'</div>'
@@ -1461,7 +1476,10 @@ function render(){
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       // Spotify Embed API mounts here
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="font-size:10px;color:#bbb;margin-top:8px;line-height:1.5">▶ 재생 버튼을 누르면 노래와 함께 아래 가사가 자동으로 따라가요</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
+      +'<div style="font-size:10px;color:#bbb;line-height:1.5">▶ 재생하면 가사가 자동으로 따라가요 · 📍로 타이밍 조정</div>'
+      +'<span id="music-pos" style="font-family:monospace;font-size:11px;color:#bbb;background:#f5f5f5;border-radius:5px;padding:1px 6px">0.0s</span>'
+      +'</div>'
       +'<div style="font-size:11px;color:#aaa;line-height:1.7;border-top:1px solid #f5f5f5;padding-top:10px;margin-top:10px">'+song.intro+'</div>'
       +'</div>'
       // Karaoke lyric lines
