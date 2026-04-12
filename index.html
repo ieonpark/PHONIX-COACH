@@ -815,7 +815,8 @@ var S={
   rec:false,live:'',result:null,err:'',analyzing:false,recRef:null,speaking:false,
   cRec:false,cLive:'',cResult:null,cErr:'',cAnalyzing:false,cRef:null,
   savedMsg:'',
-  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiLoading:false,aiImgLoading:false,aiError:''
+  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiLoading:false,aiImgLoading:false,aiError:'',
+  musicSongIdx:0,musicPlaying:false,musicLoading:false,musicPreviewUrl:''
 };
 function set(patch){Object.assign(S,patch);render();}
 
@@ -992,8 +993,9 @@ function stopAll(){
   stopMic(S.cRef); S.cRef=null;
   stopMic(S.recRef); S.recRef=null;
   if(_ttsAudio){try{_ttsAudio.pause();}catch(e){}_ttsAudio=null;}
+  if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   try{if(window.speechSynthesis) speechSynthesis.cancel();}catch(e){}
-  S.cRec=false; S.rec=false; S.speaking=false;
+  S.cRec=false; S.rec=false; S.speaking=false; S.musicPlaying=false;
 }
 
 // ─── ANALYSIS RESULT HTML ────────────────────────────
@@ -1100,6 +1102,88 @@ function goAnalyze(){
     aiLoading:false,aiImgLoading:false,aiError:''});
 }
 function speakAI(){speakEng(S.aiEng);}
+
+// ─── MUSIC COACH ─────────────────────────────────────
+var MUSIC_DATA=[
+  {
+    title:'Cruel Summer',artist:'Taylor Swift',
+    itunesQ:'cruel+summer+taylor+swift',
+    badge:'CONTRACTIONS · RHYTHM',
+    intro:'팝송으로 원어민 리듬과 축약을 자연스럽게 체득해요. 노래를 들으며 강세·약화를 귀로 익혀보세요.',
+    lines:[
+      {eng:"It's a cruel summer",
+       note:"<b>It's</b> = <b>It is</b> 의 축약 — 영어에서 's는 is를 줄인 것",
+       highlights:["It's"]},
+      {eng:"Fever dream high in the quiet of the night",
+       note:"<b>in the</b> → <b>in-thuh</b>, <b>of the</b> → <b>uv-thuh</b> — 기능어는 빠르게 약화됩니다",
+       highlights:[]},
+      {eng:"What doesn't kill me makes me want you more",
+       note:"<b>doesn't</b> = <b>does not</b> 의 축약 — n't는 not을 줄인 것",
+       highlights:["doesn't"]},
+      {eng:"I don't wanna keep secrets just to keep you",
+       note:"<b>don't</b> = <b>do not</b> 축약, <b>wanna</b> = <b>want to</b> 의 구어체 축약",
+       highlights:["don't","wanna"]}
+    ],
+    contractions:[
+      {s:"I'm",   f:"I am",       ph:"AHM"},
+      {s:"It's",  f:"It is",      ph:"ITS"},
+      {s:"don't", f:"do not",     ph:"DOHNT"},
+      {s:"doesn't",f:"does not",  ph:"DUZ-nt"},
+      {s:"won't", f:"will not",   ph:"WOHNT"},
+      {s:"can't", f:"can not",    ph:"KAANT"},
+      {s:"I've",  f:"I have",     ph:"AHV"},
+      {s:"I'll",  f:"I will",     ph:"AHL"},
+      {s:"I'd",   f:"I would",    ph:"AHD"},
+      {s:"you're",f:"you are",    ph:"YER"},
+      {s:"wanna", f:"want to",    ph:"WON-uh"},
+      {s:"gonna", f:"going to",   ph:"GUN-uh"}
+    ]
+  }
+];
+
+var _musicAudio=null;
+
+function goMusic(){
+  stopAll();
+  if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
+  set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
+}
+
+function loadMusicPreview(){
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  if(S.musicPreviewUrl){toggleMusicPlay();return;}
+  set({musicLoading:true});
+  fetch('https://itunes.apple.com/search?term='+song.itunesQ+'&media=music&limit=5')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var results=(d.results||[]).filter(function(r){return r.previewUrl;});
+      if(!results.length) throw new Error('no preview');
+      var url=results[0].previewUrl;
+      set({musicLoading:false,musicPreviewUrl:url});
+      playMusicPreview(url);
+    })
+    .catch(function(){set({musicLoading:false,musicPreviewUrl:'__error__'});});
+}
+
+function playMusicPreview(url){
+  if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
+  _musicAudio=new Audio(url);
+  _musicAudio.onended=function(){set({musicPlaying:false});};
+  _musicAudio.onerror=function(){_musicAudio=null;set({musicPlaying:false,musicPreviewUrl:'__error__'});};
+  var p=_musicAudio.play();
+  if(p&&p.catch) p.catch(function(){set({musicPlaying:false,musicPreviewUrl:'__error__'});});
+  set({musicPlaying:true});
+}
+
+function toggleMusicPlay(){
+  if(S.musicPlaying){
+    if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
+    set({musicPlaying:false});
+  } else {
+    if(S.musicPreviewUrl&&S.musicPreviewUrl!=='__error__') playMusicPreview(S.musicPreviewUrl);
+    else loadMusicPreview();
+  }
+}
 
 function splitSentences(text){
   var parts=text.match(/[^.!?]+[.!?]+/g)||[];
@@ -1238,12 +1322,7 @@ function render(){
 
   // HOME
   if(S.screen==='home'){
-    var chips=CATS.map(function(c){
-      return '<div onclick="startDrill(\''+c.id+'\')" style="background:#fff;border-radius:15px;padding:12px;cursor:pointer;border:1.5px solid #ebebeb;display:flex;align-items:center;gap:9px">'
-        +'<div style="width:30px;height:30px;border-radius:9px;background:'+c.color+';display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:800;font-size:9px">'+c.id.slice(0,2).toUpperCase()+'</div>'
-        +'<div><div style="font-weight:700;font-size:12px;color:#1a1a1a;line-height:1.2">'+c.name+'</div><div style="font-size:10px;color:#888">'+c.desc+'</div></div>'
-        +'</div>';
-    }).join('');
+    // chips moved to Practice Course screen
     var ds=getDailyStats();
     var dp=Math.min(ds.count||0,DAILY_GOAL);
     var dpct=Math.round(dp/DAILY_GOAL*100);
@@ -1275,26 +1354,105 @@ function render(){
       +dailyBar
       +'<div style="padding:16px 18px 0">'
       +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">모드 선택</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      // 1: Pronunciation Checker (black)
       +'<div onclick="goChecker()" style="background:#1a1a1a;border-radius:18px;padding:20px 16px;cursor:pointer">'
-      +'<div style="font-size:24px;margin-bottom:10px">🎙</div>'
+      +'<div style="font-size:26px;margin-bottom:10px">🎙</div>'
       +'<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:3px;line-height:1.3">Pronunciation<br>Checker</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.5;margin-top:4px">원어민 귀에 들리는 발음</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.5;margin-top:4px">원어민 귀에 들리는 발음</div>'
       +'</div>'
+      // 2: Practice Course (white)
       +'<div onclick="goPCats()" style="background:#fff;border:1.5px solid #e8e8e8;border-radius:18px;padding:20px 16px;cursor:pointer">'
-      +'<div style="font-size:24px;margin-bottom:10px">📖</div>'
+      +'<div style="font-size:26px;margin-bottom:10px">📖</div>'
       +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:3px;line-height:1.3">Practice<br>Course</div>'
-      +'<div style="font-size:10px;color:#aaa;line-height:1.5;margin-top:4px">발음 표기·강세·억양·채점</div>'
+      +'<div style="font-size:10px;color:#aaa;line-height:1.5;margin-top:4px">카테고리별 발음·억양·채점</div>'
+      +'</div>'
+      // 3: 내 문장 분석 (white)
+      +'<div onclick="goAnalyze()" style="background:#fff;border:1.5px solid #e8e8e8;border-radius:18px;padding:20px 16px;cursor:pointer">'
+      +'<div style="font-size:26px;margin-bottom:10px">🔍</div>'
+      +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:3px;line-height:1.3">내 문장<br>분석</div>'
+      +'<div style="font-size:10px;color:#aaa;line-height:1.5;margin-top:4px">발음·번역·문법 가이드</div>'
+      +'</div>'
+      // 4: Music Coach (black)
+      +'<div onclick="goMusic()" style="background:#1a1a1a;border-radius:18px;padding:20px 16px;cursor:pointer;position:relative;overflow:hidden">'
+      +'<div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:.1">♩</div>'
+      +'<div style="font-size:26px;margin-bottom:10px">🎵</div>'
+      +'<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:3px;line-height:1.3">Music<br>Coach</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.5;margin-top:4px">팝송으로 리듬·축약 학습</div>'
       +'</div>'
       +'</div>'
-      +'<div onclick="goAnalyze()" style="background:#fff;border:1.5px solid #e8e8e8;border-radius:18px;padding:16px 18px;cursor:pointer;margin-bottom:20px;display:flex;align-items:center;gap:14px">'
-      +'<div style="width:44px;height:44px;border-radius:13px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🔍</div>'
-      +'<div>'
-      +'<div style="font-weight:700;font-size:14px;color:#1a1a1a;margin-bottom:3px">내 문장 분석</div>'
-      +'<div style="font-size:11px;color:#aaa;line-height:1.5">문장 입력·사진 → 발음·번역·문법</div>'
-      +'</div></div>'
-      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">카테고리 바로가기</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+chips+'</div>'
+      +'</div></div>';
+    return;
+  }
+
+  // MUSIC COACH
+  if(S.screen==='music'){
+    var song=MUSIC_DATA[S.musicSongIdx||0];
+    // Build line cards
+    var lineCards=song.lines.map(function(line){
+      // highlight contractions in the eng text
+      var engDisp=line.eng;
+      (line.highlights||[]).forEach(function(h){
+        engDisp=engDisp.replace(new RegExp('\\b'+h.replace(/'/g,"'?")+'\\b','i'),
+          '<b style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">$&</b>');
+      });
+      return '<div style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid #ebebeb">'
+        +'<div style="font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.6;margin-bottom:10px">'+engDisp+'</div>'
+        +wordByWordHTML(line.eng,'')
+        +'<div style="font-size:11px;color:#555;background:#f8f8f8;border-left:3px solid #1a1a1a;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:4px;line-height:1.7">'+line.note+'</div>'
+        +'</div>';
+    }).join('');
+    // Contraction table
+    var ctable='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+      +song.contractions.map(function(c){
+        return '<div style="background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:9px 12px">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
+          +'<span style="font-size:14px;font-weight:800;color:#1a1a1a">'+c.s+'</span>'
+          +'<span style="font-size:11px;color:#bbb">→</span>'
+          +'<span style="font-size:11px;color:#666">'+c.f+'</span>'
+          +'</div>'
+          +'<div style="font-family:monospace;font-size:12px;color:#888;background:#f5f5f5;border-radius:5px;padding:2px 7px;display:inline-block">'+c.ph+'</div>'
+          +'</div>';
+      }).join('')
+      +'</div>';
+    // Play button
+    var playBtn='';
+    if(S.musicPreviewUrl==='__error__'){
+      playBtn='<div style="font-size:12px;color:#DC2626;padding:8px 0">iTunes 미리듣기를 불러올 수 없어요</div>';
+    } else if(S.musicLoading){
+      playBtn='<div style="display:flex;align-items:center;gap:8px;padding:10px 0"><div class="sp"></div><span style="font-size:12px;color:#888">불러오는 중...</span></div>';
+    } else {
+      playBtn='<button onclick="toggleMusicPlay()" style="background:'+(S.musicPlaying?'#fff':'#1a1a1a')+';color:'+(S.musicPlaying?'#1a1a1a':'#fff')+';border:'+(S.musicPlaying?'1.5px solid #1a1a1a':'none')+';border-radius:12px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px">'
+        +(S.musicPlaying?'⏹ 정지':'▶ 30초 미리듣기')+'</button>';
+    }
+    app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
+      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
+      +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
+      +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
+      +'</div>'
+      +'<div style="padding:0 18px">'
+      // Song card
+      +'<div style="background:#fff;border-radius:18px;padding:18px 20px;margin-bottom:16px;border:1px solid #ebebeb">'
+      +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">'
+      +'<div style="width:54px;height:54px;background:#1a1a1a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🎵</div>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px">'+song.badge+'</div>'
+      +'<div style="font-size:17px;font-weight:800;color:#1a1a1a;line-height:1.2">'+song.title+'</div>'
+      +'<div style="font-size:12px;color:#888;margin-top:2px">'+song.artist+'</div>'
+      +'</div>'
+      +'</div>'
+      +playBtn
+      +'<div style="font-size:11px;color:#aaa;margin-top:10px;line-height:1.6;border-top:1px solid #f5f5f5;padding-top:10px">'+song.intro+'</div>'
+      +'</div>'
+      // Lyric analysis
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">가사 분석 — 리듬 &amp; 축약</div>'
+      +lineCards
+      // Contraction table
+      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;margin-top:6px">축약 패턴 정리</div>'
+      +ctable
+      +'<div style="margin-top:14px;padding:14px 16px;background:#fff;border-radius:14px;border:1px solid #ebebeb;font-size:12px;color:#aaa;text-align:center;line-height:1.7">'
+      +'곧 더 많은 곡이 추가될 예정이에요<br><span style="font-size:11px">♩ Shake It Off · Blinding Lights · Shape of You ...</span>'
+      +'</div>'
       +'</div></div>';
     return;
   }
