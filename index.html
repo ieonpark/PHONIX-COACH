@@ -726,102 +726,93 @@ function startMic(onInterim,onFinal,onErr){
 function stopMic(ref){if(ref){try{ref.stop();}catch(e){}}return null;}
 
 // ─── TTS ────────────────────────────────────────────
+var _ttsAudio=null;  // track current Audio element so stopAll() can cancel it
+
 function speakEng(txt){
-  if(!window.speechSynthesis||!txt) return;
+  if(!txt) return;
+  txt=txt.trim();
+  if(!txt) return;
+
+  // Stop anything playing
+  if(_ttsAudio){try{_ttsAudio.pause();}catch(e){}_ttsAudio=null;}
+  if(window.speechSynthesis) speechSynthesis.cancel();
+
+  S.speaking=true; render();
+  function onDone(){S.speaking=false;_ttsAudio=null;render();}
+
+  // Primary: Google Translate TTS — neural quality, no API key required
+  // <audio> elements are not subject to CORS restrictions for playback
+  var q=encodeURIComponent(txt.substring(0,200));
+  var url='https://translate.google.com/translate_tts?ie=UTF-8&q='+q+'&tl=en-US&client=tw-ob&ttsspeed=0.87';
+  _ttsAudio=new Audio(url);
+  _ttsAudio.onended=onDone;
+  _ttsAudio.onerror=function(){_ttsAudio=null;_speakWebAPI(txt,onDone);};
+  var p=_ttsAudio.play();
+  if(p&&p.catch) p.catch(function(){if(_ttsAudio){_ttsAudio=null;_speakWebAPI(txt,onDone);}});
+}
+
+// Fallback: Web Speech API (device-bundled voices)
+function _speakWebAPI(txt,onDone){
+  if(!window.speechSynthesis){if(onDone)onDone();return;}
   speechSynthesis.cancel();
 
   function doSpeak(){
     var voices=speechSynthesis.getVoices();
-
-    // Best natural English voices by priority
-    // iOS: Samantha (enhanced), Aaron, Nicky
-    // Android: English (US) Google, or local en-US
-    // Windows: Zira, David, Mark
+    // Priority: Microsoft Neural (Chrome/Edge on Windows) > iOS Siri > Google > legacy
     var PREF=[
-      'Samantha','com.apple.ttsbundle.Samantha-premium',
-      'com.apple.ttsbundle.Samantha-compact',
+      'Microsoft Aria Online (Natural) - English (United States)',
+      'Microsoft Jenny Online (Natural) - English (United States)',
+      'Microsoft Andrew Online (Natural) - English (United States)',
+      'Microsoft Eric Online (Natural) - English (United States)',
+      'Microsoft Ana Online (Natural) - English (United States)',
+      'Microsoft Emma Online (Natural) - English (United States)',
+      'Microsoft Brian Online (Natural) - English (United States)',
+      'Microsoft Christopher Online (Natural) - English (United States)',
+      'Microsoft Guy Online (Natural) - English (United States)',
+      'Microsoft Roger Online (Natural) - English (United States)',
+      'com.apple.ttsbundle.Samantha-premium',
       'com.apple.voice.enhanced.en-US.Nicky',
       'com.apple.ttsbundle.Daniel-premium',
-      'Aaron','Nicky','Martha','Alex',
-      'Google US English','Microsoft Zira','Microsoft David',
+      'Samantha','Aaron','Nicky','Martha','Alex',
+      'Google US English',
+      'Microsoft Zira','Microsoft David','Microsoft Mark',
       'Karen','Daniel','Moira','Rishi'
     ];
-
     var v=null;
-
-    // 1. Try by exact name
-    for(var i=0;i<PREF.length&&!v;i++){
-      for(var j=0;j<voices.length;j++){
+    for(var i=0;i<PREF.length&&!v;i++)
+      for(var j=0;j<voices.length;j++)
         if(voices[j].name===PREF[i]){v=voices[j];break;}
-      }
+    if(!v) for(var j=0;j<voices.length;j++){
+      var vn=voices[j].name.toLowerCase(),vl=voices[j].lang;
+      if(vl==='en-US'&&(vn.indexOf('natural')>=0||vn.indexOf('neural')>=0||vn.indexOf('premium')>=0||vn.indexOf('enhanced')>=0)){v=voices[j];break;}
     }
+    if(!v) for(var j=0;j<voices.length;j++) if(voices[j].lang==='en-US'&&voices[j].localService){v=voices[j];break;}
+    if(!v) for(var j=0;j<voices.length;j++) if(voices[j].lang==='en-US'){v=voices[j];break;}
+    if(!v) for(var j=0;j<voices.length;j++) if(voices[j].lang.startsWith('en')){v=voices[j];break;}
 
-    // 2. Any en-US voice that looks premium/enhanced
-    if(!v){
-      for(var j=0;j<voices.length;j++){
-        var vn=voices[j].name.toLowerCase();
-        var vl=voices[j].lang;
-        if(vl==='en-US'&&(vn.indexOf('premium')>=0||vn.indexOf('enhanced')>=0)){
-          v=voices[j];break;
-        }
-      }
-    }
-
-    // 3. Any en-US local (better quality than network)
-    if(!v){
-      for(var j=0;j<voices.length;j++){
-        if(voices[j].lang==='en-US'&&voices[j].localService){v=voices[j];break;}
-      }
-    }
-
-    // 4. Any en-US
-    if(!v){
-      for(var j=0;j<voices.length;j++){
-        if(voices[j].lang==='en-US'){v=voices[j];break;}
-      }
-    }
-
-    // 5. Any English
-    if(!v){
-      for(var j=0;j<voices.length;j++){
-        if(voices[j].lang.startsWith('en')){v=voices[j];break;}
-      }
-    }
-
-    // Build utterance — split at natural pause points for better prosody
-    // Commas and mid-sentence pauses make TTS sound much more natural
     var u=new SpeechSynthesisUtterance(txt);
     if(v) u.voice=v;
     u.lang='en-US';
-
-    // Tune rate/pitch per sentence type
-    var isQuestion=txt.trim().endsWith('?');
-    var isExclamation=txt.trim().endsWith('!');
-    var wordCount=txt.trim().split(/\s+/).length;
-
-    // Slightly slower for longer sentences, question rises naturally
-    u.rate = wordCount<=5 ? 0.82 : wordCount<=9 ? 0.85 : 0.88;
-    u.pitch = isQuestion ? 1.05 : isExclamation ? 1.02 : 1.0;
+    var wc=txt.trim().split(/\s+/).length;
+    u.rate=wc<=5?0.88:wc<=9?0.90:0.93;
+    u.pitch=txt.trim().endsWith('?')?1.05:txt.trim().endsWith('!')?1.02:1.0;
     u.volume=1;
-
     u.onstart=function(){S.speaking=true;render();};
-    u.onend=function(){S.speaking=false;render();};
-    u.onerror=function(){S.speaking=false;render();};
-
+    u.onend=function(){if(onDone)onDone();};
+    u.onerror=function(){if(onDone)onDone();};
     speechSynthesis.speak(u);
     if(speechSynthesis.paused) speechSynthesis.resume();
   }
 
-  // iOS Safari: voices load async — retry a couple times if empty
   var voices=speechSynthesis.getVoices();
   if(voices.length>0){
-    setTimeout(doSpeak,120);
+    setTimeout(doSpeak,80);
   } else {
     var tries=0;
     var poll=setInterval(function(){
       if(speechSynthesis.getVoices().length>0||tries>10){
         clearInterval(poll);
-        setTimeout(doSpeak,120);
+        setTimeout(doSpeak,80);
       }
       tries++;
     },200);
@@ -836,6 +827,7 @@ function speakIt(){
 function stopAll(){
   stopMic(S.cRef); S.cRef=null;
   stopMic(S.recRef); S.recRef=null;
+  if(_ttsAudio){try{_ttsAudio.pause();}catch(e){}_ttsAudio=null;}
   try{if(window.speechSynthesis) speechSynthesis.cancel();}catch(e){}
   S.cRec=false; S.rec=false; S.speaking=false;
 }
