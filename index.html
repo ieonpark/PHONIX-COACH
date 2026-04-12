@@ -1149,46 +1149,45 @@ function goMusic(){
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
 }
 
-// Fetch preview URL: tries Deezer → iTunes → allorigins proxy
-function _fetchPreviewUrl(q,cb){
-  var deezerUrl='https://api.deezer.com/search?q='+encodeURIComponent(q);
-  var itunesUrl='https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&entity=song&limit=5';
-
-  function fromDeezer(json){
-    var d;try{d=typeof json==='string'?JSON.parse(json):json;}catch(e){return null;}
-    var x=(d.data||[]).find(function(i){return i.preview;});
-    return x?x.preview:null;
+// JSONP loader — bypasses CORS entirely (script tag injection)
+function _jsonpItunes(q,cb){
+  var id='_itunes'+Date.now();
+  var timer=setTimeout(function(){
+    cleanup();cb(null);
+  },8000);
+  function cleanup(){
+    try{delete window[id];}catch(e){}
+    var el=document.getElementById(id);
+    if(el){try{document.head.removeChild(el);}catch(e){}}
   }
-  function fromItunes(json){
-    var d;try{d=typeof json==='string'?JSON.parse(json):json;}catch(e){return null;}
-    var x=(d.results||[]).find(function(i){return i.previewUrl;});
-    return x?x.previewUrl:null;
-  }
-
-  fetch(deezerUrl)
-    .then(function(r){return r.json();})
-    .then(function(d){var u=fromDeezer(d);if(!u)throw new Error('no url');cb(u);})
-    .catch(function(){
-      fetch(itunesUrl)
-        .then(function(r){return r.json();})
-        .then(function(d){var u=fromItunes(d);if(!u)throw new Error('no url');cb(u);})
-        .catch(function(){
-          // Last resort: allorigins proxy for Deezer
-          fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(deezerUrl))
-            .then(function(r){return r.text();})
-            .then(function(t){var u=fromDeezer(t);cb(u||null);})
-            .catch(function(){cb(null);});
-        });
-    });
+  window[id]=function(data){
+    clearTimeout(timer);cleanup();
+    var item=(data.results||[]).find(function(r){return r.previewUrl;});
+    cb(item?item.previewUrl:null);
+  };
+  var s=document.createElement('script');
+  s.id=id;
+  s.onerror=function(){clearTimeout(timer);cleanup();cb(null);};
+  s.src='https://itunes.apple.com/search?term='+encodeURIComponent(q)
+    +'&media=music&entity=song&limit=10&callback='+id;
+  document.head.appendChild(s);
 }
 
 function loadMusicPreview(){
   if(S.musicLoading) return;
   var song=MUSIC_DATA[S.musicSongIdx||0];
   set({musicLoading:true,musicPreviewUrl:''});
-  _fetchPreviewUrl(song.searchQ,function(url){
-    // Just store URL — don't auto-play here (breaks iOS gesture requirement)
-    set({musicLoading:false,musicPreviewUrl:url||'__error__'});
+  _jsonpItunes(song.searchQ,function(url){
+    if(url){set({musicLoading:false,musicPreviewUrl:url});return;}
+    // Fallback: allOrigins proxy for iTunes
+    var itunesUrl='https://itunes.apple.com/search?term='+encodeURIComponent(song.searchQ)+'&media=music&entity=song&limit=5';
+    fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(itunesUrl))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var item=(d.results||[]).find(function(x){return x.previewUrl;});
+        set({musicLoading:false,musicPreviewUrl:item?item.previewUrl:'__error__'});
+      })
+      .catch(function(){set({musicLoading:false,musicPreviewUrl:'__error__'});});
   });
 }
 
