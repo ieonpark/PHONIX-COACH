@@ -1194,6 +1194,96 @@ var MUSIC_DATA=[
       {s:"wanna",  f:"want to",    ph:"WON-uh"},
       {s:"gonna",  f:"going to",   ph:"GUN-uh"}
     ]
+  },
+  {
+    title:'Sign of the Times',artist:'Harry Styles',
+    searchQ:'sign of the times harry styles',
+    spotifyId:'5ELRkzdzz0HvGpMDlfZHkV',
+    badge:'REDUCTIONS · STRESS',
+    intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 자연스럽게 쓰는 약화(Reduction)와 강세(Stress) 패턴을 귀로 익혀보세요.',
+    lyrics:[
+      {t:0.5,
+       eng:"Just stop your crying, it's a sign of the times",
+       note:"<b>it's</b> = it is 축약. <b>stop your</b>→stop-yer 연음. <b>sign</b>에 강세",
+       highlights:["it's"]},
+      {t:5.5,
+       eng:"Welcome to the final show",
+       note:"<b>Welcome to the</b>→WEL-kum-tuh-thuh 기능어 약화. <b>final</b>→FAI-nul",
+       highlights:[]},
+      {t:9.0,
+       eng:"Hope you're wearing your best clothes",
+       note:"<b>you're</b> = you are 축약. <b>Hope you're</b>→hohp-yer 연음",
+       highlights:["you're"]},
+      {t:13.0,
+       eng:"You can't bribe the door on your way to the sky",
+       note:"<b>can't</b> = cannot 축약. <b>on your</b>→on-yer 연음. <b>bribe</b> 강세",
+       highlights:["can't"]},
+      {t:18.5,
+       eng:"You look pretty good down here",
+       note:"<b>pretty</b>→PRIT-ee, <b>t</b>가 살짝 D처럼 들림(flap T). <b>down here</b> 강세",
+       highlights:[]},
+      {t:22.5,
+       eng:"But you ain't really good",
+       note:"<b>ain't</b> = am not / are not 구어 축약. <b>really</b>→REE-lee 강세 주의",
+       highlights:["ain't"]},
+      {t:25.5,
+       eng:"We never learn, we've been here before",
+       note:"<b>we've</b> = we have 축약. <b>never</b>→NEV-er 강세. <b>been here</b>→bin-HEER 연음",
+       highlights:["we've"]}
+    ],
+    contractions:[
+      {s:"it's",   f:"it is",      ph:"ITS"},
+      {s:"you're", f:"you are",    ph:"YER"},
+      {s:"can't",  f:"cannot",     ph:"KANT"},
+      {s:"ain't",  f:"am/are not", ph:"AYNT"},
+      {s:"we've",  f:"we have",    ph:"WEEV"},
+      {s:"don't",  f:"do not",     ph:"DOHNT"},
+      {s:"they'll",f:"they will",  ph:"THEYL"},
+      {s:"we'll",  f:"we will",    ph:"WEEL"}
+    ]
+  },
+  {
+    title:'As It Was',artist:'Harry Styles',
+    searchQ:'as it was harry styles',
+    spotifyId:'4LRPiXqCikLlN15c3yImP7',
+    badge:'REDUCTIONS · -ING',
+    intro:'노래를 들으면서 아래 가사 분석을 읽으세요. -ing 끝 소리가 -in\'으로 약화되는 패턴과 연음을 귀로 체득할 수 있어요.',
+    lyrics:[
+      {t:8.0,
+       eng:"Holdin' me back",
+       note:"<b>Holdin'</b> = holding — <b>-ing</b>→<b>-in'</b> 구어 약화. 원어민은 일상 대화에서 자주 사용",
+       highlights:["Holdin'"]},
+      {t:11.0,
+       eng:"Gravity's holdin' me back",
+       note:"<b>Gravity's</b> = Gravity is 축약. <b>holdin'</b> -ing 약화 반복",
+       highlights:["Gravity's","holdin'"]},
+      {t:17.5,
+       eng:"From you",
+       note:"<b>From</b>→fruhm 약화. 기능어는 강세 없이 빠르게 발음",
+       highlights:[]},
+      {t:20.0,
+       eng:"Fallin' like that",
+       note:"<b>Fallin'</b> = falling — <b>-ing</b>→<b>-in'</b> 약화. <b>like that</b>→laik-THAT 강세",
+       highlights:["Fallin'"]},
+      {t:25.0,
+       eng:"Go home, get ahead, light speed internet",
+       note:"<b>get ahead</b>→get-uh-HED 연음. <b>light speed</b> 복합명사: 앞 단어에 강세",
+       highlights:[]},
+      {t:28.5,
+       eng:"I don't wanna talk about the way it was",
+       note:"<b>don't</b> = do not. <b>wanna</b> = want to 구어 축약. <b>about the</b>→uh-BOUT-thuh 약화",
+       highlights:["don't","wanna"]}
+    ],
+    contractions:[
+      {s:"Holdin'", f:"Holding",   ph:"HOL-din"},
+      {s:"Fallin'", f:"Falling",   ph:"FAW-lin"},
+      {s:"Gravity's",f:"Gravity is",ph:"GRAV-ih-teez"},
+      {s:"don't",  f:"do not",     ph:"DOHNT"},
+      {s:"wanna",  f:"want to",    ph:"WON-uh"},
+      {s:"gonna",  f:"going to",   ph:"GUN-uh"},
+      {s:"nothin'",f:"nothing",    ph:"NUH-thin"},
+      {s:"kinda",  f:"kind of",    ph:"KAI-nda"}
+    ]
   }
 ];
 
@@ -1498,10 +1588,20 @@ function render(){
         +'</div>'
         +'</div>';
     }).join('');
+    var songPickHtml=MUSIC_DATA.map(function(s,i){
+      var active=(S.musicSongIdx||0)===i;
+      return '<button onclick="set({musicSongIdx:'+i+'});render();" style="flex:1;background:'+(active?'#1a1a1a':'#f0f0f0')+';color:'+(active?'#fff':'#555')+';border:none;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;line-height:1.3;text-align:center">'
+        +'<div>'+s.title+'</div>'
+        +'<div style="font-size:9px;opacity:.7;margin-top:2px">'+s.artist+'</div>'
+        +'</button>';
+    }).join('');
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
-      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
+      +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:12px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
+      +'</div>'
+      +'<div style="padding:0 18px;margin-bottom:14px">'
+      +'<div style="display:flex;gap:8px">'+songPickHtml+'</div>'
       +'</div>'
       +'<div style="padding:0 18px">'
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
