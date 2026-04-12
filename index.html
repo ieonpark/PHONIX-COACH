@@ -1187,7 +1187,8 @@ var _musicAudio=null;
 var _spotifyApi=null;
 var _spotifyController=null;
 var _currentPos=0;
-var _previewStartPos=null;  // normalizes absolute vs relative position
+var _previewStartPos=null;
+var _lastLyricIdx=-1;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
@@ -1202,9 +1203,48 @@ function _calTap(i){
   if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
 }
 
+function _setLyricDisplay(idx){
+  var container=document.getElementById('lyric-display');
+  if(!container) return;
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  var lyrics=song.lyrics||[];
+  _lastLyricIdx=idx;
+  if(idx<0||idx>=lyrics.length){
+    container.style.opacity='0.4';
+    return;
+  }
+  var line=lyrics[idx];
+  var groupLines=line.group||[line.eng];
+  var lyricsHtml=groupLines.map(function(l,li){
+    var disp=l;
+    (line.highlights||[]).forEach(function(h){
+      disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
+        '$1<span style="background:#FF6B35;color:#fff;border-radius:4px;padding:1px 6px">'+h+'</span>$2');
+    });
+    return '<div style="'+(li>0?'margin-top:2px':'')+'">'+disp+'</div>';
+  }).join('');
+  var phonHtml=groupLines.map(function(l,li){
+    return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:6px"></div>':'')+musicWordPhon(l);
+  }).join('');
+  container.style.transition='opacity .12s ease,transform .12s ease';
+  container.style.opacity='0';
+  container.style.transform='translateY(8px)';
+  setTimeout(function(){
+    container.innerHTML=
+      '<div style="font-size:19px;font-weight:800;color:#1a1a1a;line-height:1.6;margin-bottom:16px">'+lyricsHtml+'</div>'
+      +'<div style="background:#f5f5f5;border-radius:10px;padding:12px 14px">'
+      +phonHtml
+      +'<div style="font-size:11px;color:#555;border-top:1px solid #e0e0e0;margin-top:10px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
+      +'</div>';
+    container.style.opacity='1';
+    container.style.transform='translateY(0)';
+  },120);
+}
+
 function goMusic(){
   stopAll();
   _previewStartPos=null;
+  _lastLyricIdx=-1;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
@@ -1226,7 +1266,6 @@ function _initSpotifyPlayer(){
 
 function _updateLyricHighlight(pos){
   _currentPos=pos;
-  // Normalize: first non-zero position becomes t=0 for lyrics
   if(_previewStartPos===null&&pos>0.5) _previewStartPos=pos;
   var relPos=_previewStartPos!==null?pos-_previewStartPos:pos;
   var posEl=document.getElementById('music-pos');
@@ -1235,31 +1274,7 @@ function _updateLyricHighlight(pos){
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
   for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t){activeIdx=i;break;}}
-  var lines=document.querySelectorAll('.lyric-line');
-  for(var j=0;j<lines.length;j++){
-    var el=lines[j];
-    var ph=el.querySelector('.lyric-phonetics');
-    var engEl=el.querySelector('.lyric-eng');
-    var hls=el.querySelectorAll('.lyric-hl');
-    if(j===activeIdx){
-      el.style.opacity='1';
-      el.style.background='#1a1a1a';
-      el.style.borderColor='#1a1a1a';
-      el.style.transform='scale(1.02)';
-      if(engEl) engEl.style.color='#fff';
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
-      if(ph) ph.style.display='block';
-      el.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }else{
-      el.style.opacity=j<activeIdx?'0.35':'0.75';
-      el.style.background='#fff';
-      el.style.borderColor='#ebebeb';
-      el.style.transform='scale(1)';
-      if(engEl) engEl.style.color='#1a1a1a';
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#1a1a1a';hls[k].style.color='#fff';}
-      if(ph) ph.style.display='none';
-    }
-  }
+  if(activeIdx!==_lastLyricIdx) _setLyricDisplay(activeIdx);
 }
 
 function splitSentences(text){
@@ -1465,72 +1480,25 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
-    // Build karaoke lyric lines
-    var lyricLines=(song.lyrics||[]).map(function(line,i){
-      // Build display text from group array (multi-line)
-      var groupLines=line.group||[line.eng];
-      var engDisp=groupLines.join('\n');
-      (line.highlights||[]).forEach(function(h){
-        engDisp=engDisp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
-          '$1<span class="lyric-hl" style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">'+h+'</span>$2');
-      });
-      // Convert \n to styled line breaks
-      var engHtml=engDisp.split('\n').map(function(l,li){
-        return '<div style="'+(li>0?'margin-top:4px;opacity:0.75':'')+'">'+l+'</div>';
-      }).join('');
-      return '<div class="lyric-line" data-idx="'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:all .25s ease;opacity:0.75">'
-        +'<div style="display:flex;align-items:flex-start;gap:8px">'
-        +'<div class="lyric-eng" style="flex:1;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.6">'+engHtml+'</div>'
-        +'<button id="cal-'+i+'" onclick="_calTap('+i+')" style="flex-shrink:0;font-size:9px;color:#ccc;background:transparent;border:1px solid #e5e5e5;border-radius:6px;padding:2px 8px;cursor:pointer;font-family:monospace;transition:all .2s">📍</button>'
-        +'</div>'
-        +'<div class="lyric-phonetics" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:10px;padding:10px 12px">'
-        +(groupLines).map(function(l,li){
-          return (li>0?'<div style="border-top:1px solid #e8e8e8;margin-top:8px;padding-top:4px"></div>':'')+musicWordPhon(l);
-        }).join('')
-        +'<div style="font-size:11px;color:#555;border-top:1px solid #e8e8e8;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
-        +'</div>'
-        +'</div>';
-    }).join('');
-    // Contraction reference table
-    var ctable='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
-      +song.contractions.map(function(c){
-        return '<div style="background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:9px 12px">'
-          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
-          +'<span style="font-size:14px;font-weight:800;color:#1a1a1a">'+c.s+'</span>'
-          +'<span style="font-size:11px;color:#bbb">→</span>'
-          +'<span style="font-size:11px;color:#666">'+c.f+'</span>'
-          +'</div>'
-          +'<div style="font-family:monospace;font-size:12px;color:#888;background:#f5f5f5;border-radius:5px;padding:2px 7px;display:inline-block">'+c.ph+'</div>'
-          +'</div>';
-      }).join('')
-      +'</div>';
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
       +'<div style="padding:0 18px">'
-      // Song card — Spotify Embed API player (no login, 30s preview)
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
       +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">'+song.badge+'</div>'
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
-      // Spotify Embed API mounts here
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
-      +'<div style="font-size:10px;color:#bbb;line-height:1.5">▶ 재생하면 가사가 자동으로 따라가요 · 📍로 타이밍 조정</div>'
-      +'<span id="music-pos" style="font-family:monospace;font-size:11px;color:#bbb;background:#f5f5f5;border-radius:5px;padding:1px 6px">0.0s</span>'
+      +'<div style="font-size:10px;color:#bbb">▶ 재생하면 아래 가사가 자동으로 따라가요</div>'
+      +'<span id="music-pos" style="font-size:10px;color:#ddd;font-family:monospace">0.0s</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:#aaa;line-height:1.7;border-top:1px solid #f5f5f5;padding-top:10px;margin-top:10px">'+song.intro+'</div>'
       +'</div>'
-      // Karaoke lyric lines
-      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">🎤 가사 · 따라가기</div>'
-      +lyricLines
-      // Contraction reference
-      +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;margin-top:18px">축약 패턴 정리</div>'
-      +ctable
-      +'<div style="margin-top:14px;padding:14px 16px;background:#fff;border-radius:14px;border:1px solid #ebebeb;font-size:12px;color:#aaa;text-align:center;line-height:1.7">'
-      +'곧 더 많은 곡이 추가될 예정이에요<br><span style="font-size:11px">♩ Shake It Off · Blinding Lights · Shape of You ...</span>'
+      // Single lyric display box — updates in place as song plays
+      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:220px;transition:opacity .12s ease,transform .12s ease">'
+      +'<div style="display:flex;align-items:center;justify-content:center;height:160px;color:#ccc;font-size:13px">▶ 재생 버튼을 눌러 시작하세요</div>'
       +'</div>'
       +'</div></div>';
     // Mount Spotify player after DOM is ready
