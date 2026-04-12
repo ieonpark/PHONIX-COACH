@@ -132,94 +132,94 @@ function analyze(transcript,targetSentence){
 
 // ─── PHONETIC DISPLAY ────────────────────────────────
 var PH={
-  "i":"eye","im":"im","id":"id","ill":"ile","ive":"ive","its":"its","it":"it",
-  "you":"yuh","your":"yer","youre":"yer","youll":"yul","youve":"yuv",
+  "i":"eye","im":"IM","id":"ID","ill":"ILE","ive":"IVE","its":"its","it":"it",
+  "you":"yuh","your":"yer","youre":"YER","youll":"YUL","youve":"YUV",
   "he":"hee","him":"him","his":"hiz","she":"shee","her":"her",
-  "we":"wee","us":"us","our":"owr","ours":"owrz",
+  "we":"wee","us":"us","our":"owr","ours":"OWRZ",
   "they":"thay","them":"thum","their":"thair",
   "who":"hoo","whom":"hoom","whose":"hooz","which":"wich","what":"WUHT","that":"that",
   "the":"thuh","a":"uh","an":"un","this":"thiss","these":"theez","those":"thohz",
-  "some":"sum","any":"EN-ee","no":"noh","all":"awl","each":"eech","every":"EV-ree",
+  "some":"SUM","any":"EN-ee","no":"noh","all":"AWL","each":"EECH","every":"EV-ree",
   "is":"iz","are":"ar","was":"wuz","were":"wer","be":"bee","been":"bin","being":"BEE-ing",
-  "am":"am","isnt":"IZ-nt","arent":"AR-nt","wasnt":"WUZ-nt","werent":"WER-nt",
+  "am":"AM","isnt":"IZ-nt","arent":"AR-nt","wasnt":"WUZ-nt","werent":"WER-nt",
   "have":"hav","has":"huz","had":"had","having":"HAV-ing","havent":"HAV-nt","hasnt":"HAZ-nt",
-  "do":"doo","does":"duz","did":"did","done":"dun","doing":"DOO-ing","dont":"dohnt","doesnt":"DUZ-nt","didnt":"DID-nt",
+  "do":"doo","does":"duz","did":"did","done":"DUN","doing":"DOO-ing","dont":"DOHNT","doesnt":"DUZ-nt","didnt":"DID-nt",
   "can":"kun","cant":"KAANT","could":"kud","couldnt":"KUD-nt",
   "will":"wil","wont":"WOHNT","would":"wud","wouldnt":"WUD-nt",
   "shall":"shal","should":"shud","shouldnt":"SHUD-nt",
   "may":"may","might":"myt","must":"must","need":"NEED",
-  "go":"GOH","going":"GOH-ing","gone":"gon","went":"went",
-  "come":"kum","coming":"KUM-ing","came":"kaym",
-  "get":"GET","getting":"GET-ing","got":"got","gotten":"GOT-un",
-  "make":"MAYK","making":"MAYK-ing","made":"mayd",
-  "take":"TAYK","taking":"TAYK-ing","took":"tuk","taken":"TAY-kun",
-  "give":"giv","giving":"GIV-ing","gave":"gayv","given":"GIV-un",
-  "know":"noh","knowing":"NOH-ing","knew":"nyoo","known":"nohn",
+  "go":"GOH","going":"GOH-ing","gone":"GON","went":"WENT",
+  "come":"KUM","coming":"KUM-ing","came":"KAYM",
+  "get":"GET","getting":"GET-ing","got":"GOT","gotten":"GOT-un",
+  "make":"MAYK","making":"MAYK-ing","made":"MAYD",
+  "take":"TAYK","taking":"TAYK-ing","took":"TUK","taken":"TAY-kun",
+  "give":"GIV","giving":"GIV-ing","gave":"GAYV","given":"GIV-un",
+  "know":"NOH","knowing":"NOH-ing","knew":"NYOO","known":"NOHN",
   "think":"THINK","thinking":"THINK-ing","thought":"THAWT",
-  "see":"SEE","seeing":"SEE-ing","saw":"saw","seen":"seen",
-  "say":"say","saying":"SAY-ing","said":"sed",
-  "tell":"TEL","telling":"TEL-ing","told":"tohld",
-  "ask":"ask","asking":"ASK-ing","asked":"askt",
-  "want":"wont","wanting":"WON-ting","wanted":"WON-tid",
-  "look":"luk","looking":"LUK-ing","looked":"lukt",
-  "work":"WERK","working":"WERK-ing","worked":"werkt",
-  "feel":"FEEL","feeling":"FEEL-ing","felt":"felt",
+  "see":"SEE","seeing":"SEE-ing","saw":"SAW","seen":"SEEN",
+  "say":"SAY","saying":"SAY-ing","said":"SED",
+  "tell":"TEL","telling":"TEL-ing","told":"TOHLD",
+  "ask":"ASK","asking":"ASK-ing","asked":"ASKT",
+  "want":"WONT","wanting":"WON-ting","wanted":"WON-tid",
+  "look":"LUK","looking":"LUK-ing","looked":"LUKT",
+  "work":"WERK","working":"WERK-ing","worked":"WERKT",
+  "feel":"FEEL","feeling":"FEEL-ing","felt":"FELT",
   "leave":"LEEV","leaving":"LEEV-ing","left":"LEFT",
-  "put":"put","keep":"KEEP","kept":"kept","try":"TRY","tried":"tryd",
-  "find":"FYND","found":"fownd","call":"KAWL","called":"kawld",
-  "help":"HELP","let":"let","use":"YOOZ","used":"yoozd",
-  "show":"SHOH","showed":"showd","shown":"shohn",
-  "run":"RUN","ran":"ran","move":"MOOV","moved":"moovd",
-  "live":"LIV","living":"LIV-ing","play":"PLAY","pay":"PAY","paid":"payd",
-  "hear":"HEER","heard":"herd","meet":"MEET","met":"met",
+  "put":"PUT","keep":"KEEP","kept":"KEPT","try":"TRY","tried":"TRYD",
+  "find":"FYND","found":"FOWND","call":"KAWL","called":"KAWLD",
+  "help":"HELP","let":"LET","use":"YOOZ","used":"YOOZD",
+  "show":"SHOH","showed":"SHOWD","shown":"SHOHN",
+  "run":"RUN","ran":"RAN","move":"MOOV","moved":"MOOVD",
+  "live":"LIV","living":"LIV-ing","play":"PLAY","pay":"PAY","paid":"PAYD",
+  "hear":"HEER","heard":"HERD","meet":"MEET","met":"MET",
   "turn":"TERN","start":"START","stop":"STOP","open":"OH-pun","close":"KLOHZ",
-  "write":"RYT","wrote":"roht","written":"RIT-un",
-  "read":"REED","send":"SEND","sent":"sent",
+  "write":"RYT","wrote":"ROHT","written":"RIT-un",
+  "read":"REED","send":"SEND","sent":"SENT",
   "check":"CHEK","sign":"SYN","wait":"WAYT","change":"CHAYNJ",
   "in":"in","on":"on","at":"at","to":"tuh","for":"fer","of":"uv","with":"with",
-  "by":"by","from":"frum","up":"up","out":"owt","off":"awf",
+  "by":"by","from":"frum","up":"UP","out":"owt","off":"awf",
   "about":"uh-BOWT","into":"IN-tuh","through":"throo","before":"bih-FOR","after":"AF-ter",
   "between":"bih-TWEEN","without":"with-OWT","within":"wih-THIN","under":"UN-der",
   "over":"OH-ver","around":"uh-ROWND",
   "and":"and","but":"but","or":"or","so":"soh","if":"if","as":"az",
-  "because":"bih-KUZ","while":"wyl","when":"wen","where":"wair","how":"HOW","why":"wy",
-  "whether":"WETH-er","unless":"un-LES","since":"sins","until":"un-TIL","though":"thoh",
-  "not":"not","yes":"yes","well":"wel","just":"just",
-  "also":"AWL-soh","very":"VER-ee","really":"REE-lee","quite":"kwyt",
-  "still":"stil","now":"now","then":"then","here":"HEER","there":"thair",
-  "too":"too","only":"OHN-lee","even":"EE-vun","already":"awl-RED-ee",
+  "because":"bih-KUZ","while":"WYL","when":"wen","where":"wair","how":"HOW","why":"WY",
+  "whether":"WETH-er","unless":"un-LES","since":"SINS","until":"un-TIL","though":"THOH",
+  "not":"not","yes":"YES","well":"WEL","just":"JUST",
+  "also":"AWL-soh","very":"VER-ee","really":"REE-lee","quite":"KWYT",
+  "still":"STIL","now":"NOW","then":"THEN","here":"HEER","there":"thair",
+  "too":"TOO","only":"OHN-lee","even":"EE-vun","already":"awl-RED-ee",
   "always":"AWL-wayz","never":"NEV-er","often":"AW-fun","sometimes":"SUM-tymz",
-  "maybe":"MAY-bee","please":"PLEEZ","again":"uh-GEN","back":"bak","away":"uh-WAY",
+  "maybe":"MAY-bee","please":"PLEEZ","again":"uh-GEN","back":"BAK","away":"uh-WAY",
   "together":"tuh-GETH-er","probably":"PROB-uh-blee","actually":"AK-choo-uh-lee",
   "exactly":"ig-ZAKT-lee","especially":"uh-SPESH-uh-lee","completely":"kum-PLEET-lee",
   "absolutely":"AB-suh-loot-lee","definitely":"DEF-uh-nit-lee","seriously":"SEER-ee-us-lee",
   "clearly":"KLEER-lee","quickly":"KWIK-lee","carefully":"KAIR-ful-ee",
   "immediately":"ih-MEE-dee-it-lee","currently":"KER-unt-lee","honestly":"ON-ist-lee",
-  "good":"GUD","bad":"bad","great":"GRAYT","nice":"NYS","fine":"fyn",
-  "new":"noo","old":"ohld","big":"big","small":"smawl","large":"larj",
-  "long":"long","short":"short","high":"hy","low":"loh","fast":"fast","slow":"sloh",
-  "easy":"EE-zee","hard":"hard","hot":"hot","cold":"kohld","warm":"worm",
-  "right":"RYT","wrong":"rong","true":"troo",
-  "important":"im-PORT-unt","different":"DIF-rent","same":"saym","other":"UTH-er",
-  "last":"last","first":"FERST","next":"nekst","few":"fyoo","many":"MEN-ee",
-  "much":"much","more":"mor","most":"mohst","less":"les","least":"leest",
-  "better":"BET-er","best":"best","sure":"SHOR","ready":"RED-ee",
-  "possible":"POS-ih-bul","clear":"kleer","free":"free","full":"ful",
-  "early":"ER-lee","late":"layt","recent":"REE-sunt","main":"mayn","whole":"hohl",
-  "time":"TYM","day":"DAY","year":"YEER","way":"way","man":"man","woman":"WUM-un",
-  "people":"PEE-pul","thing":"THING","place":"plays","case":"kays",
-  "week":"WEEK","month":"munth","night":"nyt","home":"hohm","hand":"hand",
-  "life":"lyf","world":"WERLD","part":"part","house":"hows",
-  "room":"ROOM","money":"MUN-ee","book":"buk","water":"WAW-ter",
-  "food":"food","door":"dor","table":"TAY-bul","phone":"fohn","plan":"plan",
-  "car":"kar","bus":"BUS","train":"TRAYN","flight":"FLYT","hotel":"hoh-TEL",
-  "office":"AW-fis","school":"skool","city":"SIT-ee","country":"KUN-tree",
+  "good":"GUD","bad":"BAD","great":"GRAYT","nice":"NYS","fine":"FYN",
+  "new":"NOO","old":"OHLD","big":"BIG","small":"SMAWL","large":"LARJ",
+  "long":"LONG","short":"SHORT","high":"HY","low":"LOH","fast":"FAST","slow":"SLOH",
+  "easy":"EE-zee","hard":"HARD","hot":"HOT","cold":"KOHLD","warm":"WORM",
+  "right":"RYT","wrong":"RONG","true":"TROO",
+  "important":"im-PORT-unt","different":"DIF-rent","same":"SAYM","other":"UTH-er",
+  "last":"LAST","first":"FERST","next":"NEKST","few":"FYOO","many":"MEN-ee",
+  "much":"MUCH","more":"MOR","most":"MOHST","less":"LES","least":"LEEST",
+  "better":"BET-er","best":"BEST","sure":"SHOR","ready":"RED-ee",
+  "possible":"POS-ih-bul","clear":"KLEER","free":"FREE","full":"FUL",
+  "early":"ER-lee","late":"LAYT","recent":"REE-sunt","main":"MAYN","whole":"HOHL",
+  "time":"TYM","day":"DAY","year":"YEER","way":"WAY","man":"MAN","woman":"WUM-un",
+  "people":"PEE-pul","thing":"THING","place":"PLAYS","case":"KAYS",
+  "week":"WEEK","month":"MUNTH","night":"NYT","home":"HOHM","hand":"HAND",
+  "life":"LYF","world":"WERLD","part":"PART","house":"HOWS",
+  "room":"ROOM","money":"MUN-ee","book":"BUK","water":"WAW-ter",
+  "food":"FOOD","door":"DOR","table":"TAY-bul","phone":"FOHN","plan":"PLAN",
+  "car":"KAR","bus":"BUS","train":"TRAYN","flight":"FLYT","hotel":"hoh-TEL",
+  "office":"AW-fis","school":"SKOOL","city":"SIT-ee","country":"KUN-tree",
   "company":"KUM-puh-nee","team":"TEEM","meeting":"MEET-ing","report":"rih-PORT",
   "project":"PROJ-ekt","issue":"ISH-oo","point":"POYNT","question":"KWES-chun",
   "answer":"AN-ser","problem":"PROB-lum","decision":"dih-SIH-zhun",
   "service":"SER-vis","business":"BIZ-nis","market":"MAR-kit",
-  "credit":"KRED-it","card":"kard","rate":"rayt","price":"prys",
-  "cost":"kawst","budget":"BUJ-it","deal":"deel","offer":"AW-fer",
+  "credit":"KRED-it","card":"KARD","rate":"RAYT","price":"PRYS",
+  "cost":"KAWST","budget":"BUJ-it","deal":"DEEL","offer":"AW-fer",
   "what":"WUHT","okay":"oh-KAY","ok":"oh-KAY",
   "thank":"THANGK","thanks":"THANGKS","sorry":"SOR-ee",
   "let":"LET","lets":"LETS","needs":"NEEDZ",
@@ -244,15 +244,15 @@ var PH={
   "fail":"FAYL","meet":"MEET","lead":"LEED","share":"SHAIR","spend":"SPEND","analysis":"uh-NAL-ih-sis","guides":"GYDZ","guide":"GYD",
   "theory":"THEE-uh-ree","approach":"uh-PROHCH","result":"rih-ZULT",
   "example":"ig-ZAM-pul","problem":"PROB-lum","question":"KWES-chun",
-  "answer":"AN-ser","reason":"REE-zun","level":"LEV-ul","fact":"fakt",
+  "answer":"AN-ser","reason":"REE-zun","level":"LEV-ul","fact":"FAKT",
   "point":"POYNT","idea":"eye-DEE-uh","context":"KON-tekst","effect":"ih-FEKT",
   "impact":"IM-pakt","focus":"FOH-kus","issue":"ISH-oo","factor":"FAK-ter",
   "process":"PROH-ses","method":"METH-ud","data":"DAY-tuh","research":"REE-serch",
   "study":"STUD-ee","evidence":"EV-ih-dens","model":"MOD-ul","structure":"STRUK-cher",
   "function":"FUNGK-shun","language":"LANG-gwij","culture":"KUL-cher",
   "nature":"NAY-cher","feature":"FEE-cher","section":"SEK-shun","chapter":"CHAP-ter",
-  "subject":"SUB-jekt","object":"OB-jekt","task":"task","step":"step","role":"ROHL",
-  "type":"typ","kind":"kynd","form":"form","style":"styl","level":"LEV-ul",
+  "subject":"SUB-jekt","object":"OB-jekt","task":"TASK","step":"STEP","role":"ROHL",
+  "type":"TYP","kind":"KYND","form":"FORM","style":"STYL","level":"LEV-ul",
   "knowledge":"NOL-ij","skills":"SKILZ","approach":"uh-PROHCH","strategy":"STRAT-uh-jee",
   "solution":"suh-LOO-shun","challenge":"CHAL-enj","goal":"GOHL","plan":"PLAN",
   "area":"AIR-ee-uh","field":"FEELD","sector":"SEK-ter","industry":"IN-duh-stree",
@@ -311,7 +311,7 @@ var PH={
   "theyve":"THAYV","wouldnt":"WUD-nt","couldnt":"KUD-nt",
   "didnt":"DID-nt","doesnt":"DUZ-nt","isnt":"IZ-nt","arent":"AR-nt",
   "cant":"KAANT","wont":"WOHNT","dont":"DOHNT","lets":"LETS",
-  "lets":"LETS","thats":"thats","hows":"HOWZ","whats":"WUTS",
+  "lets":"LETS","thats":"THATS","hows":"HOWZ","whats":"WUTS",
   "time":"TYM","times":"TYMZ","day":"DAY","days":"DAYZ",
   "way":"WAY","ways":"WAYZ","rate":"RAYT","rates":"RAYTS",
   "room":"ROOM","rooms":"ROOMZ","show":"SHOH","shows":"SHOHZ",
@@ -413,6 +413,51 @@ function ipaConvert(s){
     .replace(/[ˈˌːˑ()]/g,'');
 }
 
+// Split a phonetic string into syllables; uppercase first (stressed)
+// e.g. "bawldnuhs" → ["BAWLD","nuhs"], "hapin" → ["HAP","in"]
+function splitPhonSyllables(s){
+  if(!s) return [s||''];
+  var p=s.toLowerCase();
+  // Vowel nuclei patterns, longest first
+  var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+  var vPos=[];
+  var i=0;
+  while(i<p.length){
+    var found=false;
+    for(var vi=0;vi<VNUC.length;vi++){
+      var vl=VNUC[vi].length;
+      if(p.slice(i,i+vl)===VNUC[vi]){vPos.push({s:i,e:i+vl});i+=vl;found=true;break;}
+    }
+    if(!found){
+      if('aeiou'.indexOf(p[i])>=0||(p[i]==='y'&&i===p.length-1)) vPos.push({s:i,e:i+1});
+      i++;
+    }
+  }
+  if(vPos.length<=1) return [s.toUpperCase()];
+  // Valid consonant onset clusters
+  var ONSETS={'bl':1,'br':1,'ch':1,'cl':1,'cr':1,'dr':1,'dw':1,'fl':1,'fr':1,'gl':1,
+    'gr':1,'pl':1,'pr':1,'sh':1,'sk':1,'sl':1,'sm':1,'sn':1,'sp':1,'st':1,'sw':1,
+    'th':1,'tr':1,'tw':1,'wh':1,'spl':1,'spr':1,'str':1,'thr':1,'shr':1};
+  function onsetLen(cons){
+    for(var l=Math.min(3,cons.length);l>=2;l--) if(ONSETS[cons.slice(-l).toLowerCase()]) return l;
+    return Math.min(1,cons.length);
+  }
+  var bounds=[0];
+  for(var k=0;k<vPos.length-1;k++){
+    var cStart=vPos[k].e, cEnd=vPos[k+1].s;
+    var cons=p.slice(cStart,cEnd);
+    bounds.push(cons.length===0?cStart:cEnd-onsetLen(cons));
+  }
+  var result=[];
+  for(var k=0;k<bounds.length;k++){
+    var start=bounds[k], end=k+1<bounds.length?bounds[k+1]:s.length;
+    if(end>start) result.push(s.slice(start,end));
+  }
+  if(!result.length) return [s.toUpperCase()];
+  result[0]=result[0].toUpperCase();
+  return result;
+}
+
 function ipaToPhon(ipa){
   var s=(ipa||'').replace(/^[\/\[]|[\/\]]$/g,'').replace(/ˌ/g,'').trim();
   if(!s) return '';
@@ -424,10 +469,12 @@ function ipaToPhon(ipa){
     }).filter(Boolean).join('-');
   }
   var idx=s.indexOf('ˈ');
-  if(idx<0) return ipaConvert(s).toUpperCase();
+  if(idx<0) return splitPhonSyllables(ipaConvert(s)).join('-');
   var before=ipaConvert(s.slice(0,idx));
   var after=ipaConvert(s.slice(idx+1));
-  return (before?before+'-':'')+after.toUpperCase();
+  // ˈ in middle: before is unstressed prefix, after is stressed+rest
+  var afterSyls=splitPhonSyllables(after);
+  return (before?before+'-':'')+afterSyls.join('-');
 }
 
 function fetchPhonForWords(words){
@@ -507,8 +554,8 @@ function phonetize(w){
   if(p.length>2&&/[^aeiou]e$/.test(p)) p=p.slice(0,-1);
   // Final -s/-es → z if after vowel/voiced consonant
   p=p.replace(/([aeioulmnr])s$/,'$1z');
-  // Uppercase whole thing (single stressed syllable for most short unknown words)
-  return p.toUpperCase();
+  // Syllabify and stress first syllable
+  return splitPhonSyllables(p).join('-');
 }
 
 function wordByWordHTML(eng,phon){
