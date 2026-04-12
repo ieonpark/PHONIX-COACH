@@ -1422,7 +1422,6 @@ function render(){
     var song=MUSIC_DATA[S.musicSongIdx||0];
     // Build line cards
     var lineCards=song.lines.map(function(line){
-      // highlight contractions in the eng text
       var engDisp=line.eng;
       (line.highlights||[]).forEach(function(h){
         engDisp=engDisp.replace(new RegExp('\\b'+h.replace(/'/g,"'?")+'\\b','i'),
@@ -1447,42 +1446,44 @@ function render(){
           +'</div>';
       }).join('')
       +'</div>';
-    // Play button — 2-step: first tap loads URL, second tap plays (iOS gesture fix)
-    var playBtn='';
-    if(S.musicLoading){
-      playBtn='<div style="display:flex;align-items:center;gap:8px"><div class="sp"></div><span style="font-size:12px;color:#888">미리듣기 불러오는 중...</span></div>';
-    } else if(S.musicPreviewUrl==='__error__'){
-      playBtn='<div style="display:flex;align-items:center;gap:10px">'
-        +'<span style="font-size:12px;color:#999">미리듣기를 불러올 수 없어요</span>'
-        +'<button onclick="loadMusicPreview()" style="background:#f5f5f5;border:1px solid #e0e0e0;border-radius:9px;padding:7px 14px;font-size:12px;cursor:pointer;color:#555;font-weight:600">재시도</button>'
-        +'</div>';
-    } else if(S.musicPlaying){
-      playBtn='<button onclick="toggleMusicPlay()" style="background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">⏹ 정지</button>';
-    } else if(S.musicPreviewUrl){
-      // URL loaded — one tap to play
-      playBtn='<button onclick="toggleMusicPlay()" style="background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">▶ 재생</button>';
-    } else {
-      // Initial — first tap loads URL
-      playBtn='<button onclick="toggleMusicPlay()" style="background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">▶ 30초 미리듣기</button>';
-    }
+    // Streaming links — no API, no CORS, just works
+    var q=encodeURIComponent(song.title+' '+song.artist);
+    var streamLinks=''
+      +'<a href="https://music.youtube.com/search?q='+q+'" target="_blank" rel="noopener" '
+        +'style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #ebebeb;border-radius:12px;padding:11px 14px;text-decoration:none;color:#1a1a1a;font-weight:600;font-size:13px">'
+        +'<span style="font-size:20px">▶</span>'
+        +'<div><div style="font-size:12px;font-weight:700">YouTube Music에서 듣기</div>'
+        +'<div style="font-size:10px;color:#aaa;font-weight:400">앱 또는 브라우저로 열림</div></div>'
+        +'<span style="margin-left:auto;font-size:12px;color:#bbb">↗</span>'
+      +'</a>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'
+        +'<a href="https://open.spotify.com/search/'+q+'" target="_blank" rel="noopener" '
+          +'style="display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;border:1.5px solid #ebebeb;border-radius:11px;padding:10px;text-decoration:none;color:#1a1a1a;font-size:12px;font-weight:600">'
+          +'<span>🎵</span>Spotify'
+        +'</a>'
+        +'<a href="https://music.apple.com/us/search?term='+q+'" target="_blank" rel="noopener" '
+          +'style="display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;border:1.5px solid #ebebeb;border-radius:11px;padding:10px;text-decoration:none;color:#1a1a1a;font-size:12px;font-weight:600">'
+          +'<span>🍎</span>Apple Music'
+        +'</a>'
+      +'</div>';
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
       +'<div style="padding:0 18px">'
-      // Song card
+      // Song info + streaming buttons
       +'<div style="background:#fff;border-radius:18px;padding:18px 20px;margin-bottom:16px;border:1px solid #ebebeb">'
-      +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">'
-      +'<div style="width:54px;height:54px;background:#1a1a1a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🎵</div>'
+      +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">'
+      +'<div style="width:52px;height:52px;background:#1a1a1a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🎵</div>'
       +'<div style="flex:1">'
-      +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px">'+song.badge+'</div>'
+      +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px">'+song.badge+'</div>'
       +'<div style="font-size:17px;font-weight:800;color:#1a1a1a;line-height:1.2">'+song.title+'</div>'
-      +'<div style="font-size:12px;color:#888;margin-top:2px">'+song.artist+'</div>'
+      +'<div style="font-size:12px;color:#888;margin-top:1px">'+song.artist+'</div>'
       +'</div>'
       +'</div>'
-      +playBtn
-      +'<div style="font-size:11px;color:#aaa;margin-top:10px;line-height:1.6;border-top:1px solid #f5f5f5;padding-top:10px">'+song.intro+'</div>'
+      +streamLinks
+      +'<div style="font-size:11px;color:#aaa;margin-top:12px;line-height:1.7;border-top:1px solid #f5f5f5;padding-top:10px">'+song.intro+'</div>'
       +'</div>'
       // Lyric analysis
       +'<div style="font-size:11px;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">가사 분석 — 리듬 &amp; 축약</div>'
