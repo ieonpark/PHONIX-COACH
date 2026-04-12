@@ -1114,45 +1114,53 @@ var MUSIC_DATA=[
     badge:'CONTRACTIONS · RHYTHM',
     intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 쓰는 축약(Contraction)과 약화(Reduction) 패턴을 귀로 체득할 수 있어요.',
     lyrics:[
-      {t:0,   eng:"And it's new, the shape of your body",
-       note:"<b>it's</b> = <b>it is</b> 축약. <b>your</b>→yer로 약화. 연음: 'shape-of'→SHAY-puv",
-       highlights:[]},
-      {t:3.5, eng:"It's blue, the feeling I've got",
-       note:"<b>I've</b> = <b>I have</b> 축약 — 've는 have를 줄인 것. 'I've got'은 구어체 표현",
-       highlights:["I've"]},
-      {t:7,   eng:"And it's ooh, whoa, oh",
-       note:"감탄사 구간 — 강세 없이 멜로디에 따라 흘러가는 소리들",
-       highlights:[]},
-      {t:9.5, eng:"It's a cruel summer",
-       note:"<b>It's</b> = <b>It is</b> 축약. <b>cruel</b>→KRU-el (2음절). 코러스 시작!",
+      {t:0,
+       group:["And it's new, the shape of your body","It's blue, the feeling I've got"],
+       eng:"And it's new, the shape of your body",
+       note:"<b>it's</b> = <b>it is</b> 축약, <b>I've</b> = <b>I have</b> 축약. <b>your</b>→yer로 약화",
+       highlights:["it's","I've"]},
+      {t:5.5,
+       group:["And it's ooh, whoa-oh","It's a cruel summer"],
+       eng:"It's a cruel summer",
+       note:"코러스 진입! <b>It's</b> = <b>It is</b> 축약. <b>cruel</b>→KRU-el (2음절로 발음)",
        highlights:["It's"]},
-      {t:12,  eng:"With you",
-       note:"약강 리듬 — <b>with</b>는 짧고 약하게, <b>YOU</b>에만 강세",
+      {t:10,
+       group:['"It\'s cool," that\'s what I tell \'em',"No rules in breakable heaven"],
+       eng:"It's cool, that's what I tell 'em",
+       note:"<b>'em</b> = <b>them</b>의 축약. <b>that's</b> = <b>that is</b>. 원어민은 them을 거의 'em으로 줄여요",
+       highlights:["'em","that's"]},
+      {t:15.5,
+       group:["But ooh, whoa-oh","It's a cruel summer with you (yeah, yeah)"],
+       eng:"It's a cruel summer with you",
+       note:"<b>with you</b> — <b>with</b>는 약하게, <b>YOU</b>에 강세. 약강 리듬의 기본",
+       highlights:["It's"]},
+      {t:20.5,
+       group:["Hang your head low in the glow of the vending machine"],
+       eng:"Hang your head low in the glow of the vending machine",
+       note:"<b>your</b>→yer, <b>in the</b>→in-thuh. <b>vending machine</b>→VEN-ding muh-SHEEN 강세",
        highlights:[]},
-      {t:15,  eng:"Fever dream high in the quiet of the night",
-       note:"<b>in the</b>→in-thuh, <b>of the</b>→uv-thuh — 기능어는 약화",
-       highlights:[]},
-      {t:19.5,eng:"You know that I caught it",
-       note:"'caught it'→이어서 <b>CAW-dit</b> 연음. 두 단어가 자연스럽게 붙어요",
-       highlights:[]},
-      {t:22.5,eng:"Bad, bad boy, shiny toy with a price",
-       note:"<b>bad bad</b> 반복 강조 — 중요 단어만 뚜렷하게, 나머지는 빠르게",
-       highlights:[]},
-      {t:26.5,eng:"You know that I bought it",
-       note:"'bought it'→이어서 <b>BAW-dit</b> 연음. caught it과 동일한 패턴",
-       highlights:[]}
+      {t:24,
+       group:["I'm not dying (oh yeah, you're right, I want it)"],
+       eng:"I'm not dying, you're right, I want it",
+       note:"<b>I'm</b> = I am, <b>you're</b> = you are 축약. <b>want it</b>→WON-dit 연음",
+       highlights:["I'm","you're"]},
+      {t:27.5,
+       group:["You say that we'll just screw it up in these trying times","We're not trying (oh yeah, you're right, I want it)"],
+       eng:"You say that we'll just screw it up in these trying times",
+       note:"<b>we'll</b> = <b>we will</b> 축약. <b>screw it up</b> = 망치다. <b>trying times</b> = 힘든 시절",
+       highlights:["we'll","We're"]}
     ],
     contractions:[
-      {s:"I'm",   f:"I am",       ph:"AHM"},
-      {s:"It's",  f:"It is",      ph:"ITS"},
-      {s:"don't", f:"do not",     ph:"DOHNT"},
-      {s:"doesn't",f:"does not",  ph:"DUZ-nt"},
-      {s:"won't", f:"will not",   ph:"WOHNT"},
-      {s:"can't", f:"can not",    ph:"KAANT"},
+      {s:"it's",  f:"it is",      ph:"ITS"},
       {s:"I've",  f:"I have",     ph:"AHV"},
-      {s:"I'll",  f:"I will",     ph:"AHL"},
-      {s:"I'd",   f:"I would",    ph:"AHD"},
+      {s:"that's",f:"that is",    ph:"THATS"},
+      {s:"'em",   f:"them",       ph:"EM"},
+      {s:"I'm",   f:"I am",       ph:"AHM"},
       {s:"you're",f:"you are",    ph:"YER"},
+      {s:"we'll", f:"we will",    ph:"WEEL"},
+      {s:"we're", f:"we are",     ph:"WEER"},
+      {s:"don't", f:"do not",     ph:"DOHNT"},
+      {s:"won't", f:"will not",   ph:"WOHNT"},
       {s:"wanna", f:"want to",    ph:"WON-uh"},
       {s:"gonna", f:"going to",   ph:"GUN-uh"}
     ]
@@ -1443,17 +1451,23 @@ function render(){
     var song=MUSIC_DATA[S.musicSongIdx||0];
     // Build karaoke lyric lines
     var lyricLines=(song.lyrics||[]).map(function(line,i){
-      var engDisp=line.eng;
+      // Build display text from group array (multi-line)
+      var groupLines=line.group||[line.eng];
+      var engDisp=groupLines.join('\n');
       (line.highlights||[]).forEach(function(h){
-        engDisp=engDisp.replace(new RegExp('\\b'+h.replace(/'/g,"'?")+'\\b','i'),
-          '<span class="lyric-hl" style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">$&</span>');
+        engDisp=engDisp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
+          '$1<span class="lyric-hl" style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px;font-size:inherit">'+h+'</span>$2');
       });
+      // Convert \n to styled line breaks
+      var engHtml=engDisp.split('\n').map(function(l,li){
+        return '<div style="'+(li>0?'margin-top:4px;opacity:0.75':'')+'">'+l+'</div>';
+      }).join('');
       return '<div class="lyric-line" data-idx="'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:all .25s ease;opacity:0.75">'
         +'<div style="display:flex;align-items:flex-start;gap:8px">'
-        +'<div class="lyric-eng" style="flex:1;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.5">'+engDisp+'</div>'
+        +'<div class="lyric-eng" style="flex:1;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.6">'+engHtml+'</div>'
         +'<button id="cal-'+i+'" onclick="_calTap('+i+')" style="flex-shrink:0;font-size:9px;color:#ccc;background:transparent;border:1px solid #e5e5e5;border-radius:6px;padding:2px 8px;cursor:pointer;font-family:monospace;transition:all .2s">📍</button>'
         +'</div>'
-        +'<div class="lyric-phonetics" style="display:none;margin-top:10px;background:#fff;border-radius:10px">'
+        +'<div class="lyric-phonetics" style="display:none;margin-top:10px">'
         +wordByWordHTML(line.eng,'')
         +'<div style="font-size:11px;color:#555;background:#f4f4f4;border-left:3px solid #FF6B35;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:6px;line-height:1.7">'+line.note+'</div>'
         +'</div>'
