@@ -1114,30 +1114,33 @@ var MUSIC_DATA=[
     badge:'CONTRACTIONS · RHYTHM',
     intro:'노래를 들으면서 아래 가사 분석을 읽으세요. 원어민이 쓰는 축약(Contraction)과 약화(Reduction) 패턴을 귀로 체득할 수 있어요.',
     lyrics:[
-      {t:0,   eng:"It's a cruel summer",
-       note:"<b>It's</b> = <b>It is</b> 축약 — 영어에서 's는 is를 줄인 것. 빠르게 이어서 발음해요",
+      {t:0,   eng:"And it's new, the shape of your body",
+       note:"<b>it's</b> = <b>it is</b> 축약. <b>your</b>→yer로 약화. 연음: 'shape-of'→SHAY-puv",
+       highlights:[]},
+      {t:3.5, eng:"It's blue, the feeling I've got",
+       note:"<b>I've</b> = <b>I have</b> 축약 — 've는 have를 줄인 것. 'I've got'은 구어체 표현",
+       highlights:["I've"]},
+      {t:7,   eng:"And it's ooh, whoa, oh",
+       note:"감탄사 구간 — 강세 없이 멜로디에 따라 흘러가는 소리들",
+       highlights:[]},
+      {t:9.5, eng:"It's a cruel summer",
+       note:"<b>It's</b> = <b>It is</b> 축약. <b>cruel</b>→KRU-el (2음절). 코러스 시작!",
        highlights:["It's"]},
-      {t:3,   eng:"With you",
-       note:"약강 리듬 — <b>with</b>는 짧고 약하게, <b>YOU</b>에 강세. 영어 기본 리듬 패턴",
+      {t:12,  eng:"With you",
+       note:"약강 리듬 — <b>with</b>는 짧고 약하게, <b>YOU</b>에만 강세",
        highlights:[]},
-      {t:6,   eng:"Fever dream high in the quiet of the night",
-       note:"<b>in the</b>→in-thuh, <b>of the</b>→uv-thuh — 기능어는 약화되어 빠르게 발음합니다",
+      {t:15,  eng:"Fever dream high in the quiet of the night",
+       note:"<b>in the</b>→in-thuh, <b>of the</b>→uv-thuh — 기능어는 약화",
        highlights:[]},
-      {t:10.5,eng:"You know that I caught it",
+      {t:19.5,eng:"You know that I caught it",
        note:"'caught it'→이어서 <b>CAW-dit</b> 연음. 두 단어가 자연스럽게 붙어요",
        highlights:[]},
-      {t:13.5,eng:"Bad, bad boy, shiny toy with a price",
-       note:"<b>bad bad</b> 반복 강조 — 강세 있는 단어만 뚜렷하게, 나머지는 빠르게",
+      {t:22.5,eng:"Bad, bad boy, shiny toy with a price",
+       note:"<b>bad bad</b> 반복 강조 — 중요 단어만 뚜렷하게, 나머지는 빠르게",
        highlights:[]},
-      {t:18,  eng:"You know that I bought it",
-       note:"'bought it'→이어서 <b>BAW-dit</b> 연음. caught it과 같은 패턴",
-       highlights:[]},
-      {t:21,  eng:"Killing me slow, out the window",
-       note:"<b>slow</b>에 강세 — 감정 강조 시 중요 단어를 느리게 길게 늘려요",
-       highlights:[]},
-      {t:24,  eng:"I'm always waiting for you to be waiting below",
-       note:"<b>I'm</b> = <b>I am</b> 축약 — 'm은 am을 줄인 것. 원어민은 항상 이렇게 말해요",
-       highlights:["I'm"]}
+      {t:26.5,eng:"You know that I bought it",
+       note:"'bought it'→이어서 <b>BAW-dit</b> 연음. caught it과 동일한 패턴",
+       highlights:[]}
     ],
     contractions:[
       {s:"I'm",   f:"I am",       ph:"AHM"},
@@ -1160,13 +1163,15 @@ var _musicAudio=null;
 var _spotifyApi=null;
 var _spotifyController=null;
 var _currentPos=0;
+var _previewStartPos=null;  // normalizes absolute vs relative position
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
 };
 
 function _calTap(i){
-  var t=Math.max(0,_currentPos-0.15);
+  var relPos=_previewStartPos!==null?_currentPos-_previewStartPos:_currentPos;
+  var t=Math.max(0,relPos-0.15);
   var song=MUSIC_DATA[S.musicSongIdx||0];
   if(song.lyrics[i]) song.lyrics[i].t=t;
   var btn=document.getElementById('cal-'+i);
@@ -1175,6 +1180,7 @@ function _calTap(i){
 
 function goMusic(){
   stopAll();
+  _previewStartPos=null;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
@@ -1196,12 +1202,15 @@ function _initSpotifyPlayer(){
 
 function _updateLyricHighlight(pos){
   _currentPos=pos;
+  // Normalize: first non-zero position becomes t=0 for lyrics
+  if(_previewStartPos===null&&pos>0.5) _previewStartPos=pos;
+  var relPos=_previewStartPos!==null?pos-_previewStartPos:pos;
   var posEl=document.getElementById('music-pos');
-  if(posEl) posEl.textContent=pos.toFixed(1)+'s';
+  if(posEl) posEl.textContent=relPos.toFixed(1)+'s';
   var song=MUSIC_DATA[S.musicSongIdx||0];
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
-  for(var i=lyrics.length-1;i>=0;i--){if(pos>=lyrics[i].t){activeIdx=i;break;}}
+  for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t){activeIdx=i;break;}}
   var lines=document.querySelectorAll('.lyric-line');
   for(var j=0;j<lines.length;j++){
     var el=lines[j];
