@@ -1468,26 +1468,24 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
-    // Build all lyric cards (all visible, active one highlighted)
-    var lyricHtml=(song.lyrics||[]).map(function(line,i){
+    // One big box — all lyrics + phonetics in sequence
+    var allLyricsHtml=(song.lyrics||[]).map(function(line,i){
       var groupLines=line.group||[line.eng];
-      var textHtml=groupLines.map(function(l,li){
+      var textHtml=groupLines.map(function(l){
         var disp=l;
         (line.highlights||[]).forEach(function(h){
           disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
-            '$1<span class="lyric-hl" style="background:#ddd;color:#888;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
+            '$1<span style="background:#1a1a1a;color:#fff;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
         });
-        return '<div style="'+(li>0?'margin-top:3px':'')+'">'+disp+'</div>';
+        return '<div>'+disp+'</div>';
       }).join('');
       var phonHtml=groupLines.map(function(l,li){
-        return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:6px"></div>':'')+musicWordPhon(l);
+        return (li>0?'<div style="margin-top:4px"></div>':'')+musicWordPhon(l);
       }).join('');
-      return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;cursor:pointer" onclick="_setLyricDisplay('+i+')">'
-        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#888;line-height:1.6">'+textHtml+'</div>'
-        +'<div class="lc-phon" style="display:none;margin-top:12px;background:#f5f5f5;border-radius:8px;padding:10px 12px">'
+      return '<div style="'+(i>0?'margin-top:20px;padding-top:20px;border-top:1px solid #f0f0f0':'')+'">'
+        +'<div style="font-size:16px;font-weight:700;color:#1a1a1a;line-height:1.6;margin-bottom:10px">'+textHtml+'</div>'
         +phonHtml
-        +'<div style="font-size:11px;color:#555;border-top:1px solid #e0e0e0;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
-        +'</div>'
+        +'<div style="font-size:11px;color:#888;background:#f8f8f8;border-left:3px solid #FF6B35;padding:6px 10px;border-radius:0 6px 6px 0;margin-top:8px;line-height:1.7">'+line.note+'</div>'
         +'</div>';
     }).join('');
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
@@ -1496,21 +1494,20 @@ function render(){
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
       +'<div style="padding:0 18px">'
+      // Spotify player card
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
       +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">'+song.badge+'</div>'
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="font-size:10px;color:#bbb;margin-top:8px">▶ 재생하면 아래 가사가 자동으로 따라가요 &nbsp;·&nbsp; <b style="color:#FF6B35">팝업은 × 로 닫으세요</b></div>'
+      +'<div style="font-size:10px;color:#bbb;margin-top:8px">팝업이 뜨면 × 로 닫으세요</div>'
       +'</div>'
-      // All lyrics visible at once — active one highlighted
-      +lyricHtml
+      // ONE big lyrics + phonetics box
+      +'<div style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb">'
+      +allLyricsHtml
+      +'</div>'
       +'</div></div>';
-    // Show first lyric immediately, then mount Spotify player
-    setTimeout(function(){
-      _setLyricDisplay(0);
-      _initSpotifyPlayer();
-    }, 100);
+    setTimeout(_initSpotifyPlayer, 100);
     return;
   }
 
