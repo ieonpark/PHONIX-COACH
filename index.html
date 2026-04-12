@@ -1203,50 +1203,30 @@ function _calTap(i){
   if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
 }
 
-function _navLyric(dir){
-  var song=MUSIC_DATA[S.musicSongIdx||0];
-  var total=(song.lyrics||[]).length;
-  var curr=_lastLyricIdx<0?0:_lastLyricIdx;
-  var next=Math.max(0,Math.min(total-1,curr+dir));
-  _setLyricDisplay(next);
-}
-
 function _setLyricDisplay(idx){
-  var container=document.getElementById('lyric-display');
-  if(!container) return;
-  var song=MUSIC_DATA[S.musicSongIdx||0];
-  var lyrics=song.lyrics||[];
+  if(idx<0) return;
   _lastLyricIdx=idx;
-  if(idx<0||idx>=lyrics.length){
-    container.style.opacity='0.4';
-    return;
+  var cards=document.querySelectorAll('.lyric-card');
+  for(var i=0;i<cards.length;i++){
+    var card=cards[i];
+    var textEl=card.querySelector('.lc-text');
+    var phonEl=card.querySelector('.lc-phon');
+    var hls=card.querySelectorAll('.lyric-hl');
+    if(i===idx){
+      card.style.background='#1a1a1a';
+      card.style.borderColor='#1a1a1a';
+      if(textEl) textEl.style.color='#fff';
+      for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
+      if(phonEl) phonEl.style.display='block';
+      card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }else{
+      card.style.background='#fff';
+      card.style.borderColor='#ebebeb';
+      if(textEl) textEl.style.color='#888';
+      for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
+      if(phonEl) phonEl.style.display='none';
+    }
   }
-  var line=lyrics[idx];
-  var groupLines=line.group||[line.eng];
-  var lyricsHtml=groupLines.map(function(l,li){
-    var disp=l;
-    (line.highlights||[]).forEach(function(h){
-      disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
-        '$1<span style="background:#FF6B35;color:#fff;border-radius:4px;padding:1px 6px">'+h+'</span>$2');
-    });
-    return '<div style="'+(li>0?'margin-top:2px':'')+'">'+disp+'</div>';
-  }).join('');
-  var phonHtml=groupLines.map(function(l,li){
-    return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:6px"></div>':'')+musicWordPhon(l);
-  }).join('');
-  container.style.transition='opacity .12s ease,transform .12s ease';
-  container.style.opacity='0';
-  container.style.transform='translateY(8px)';
-  setTimeout(function(){
-    container.innerHTML=
-      '<div style="font-size:19px;font-weight:800;color:#1a1a1a;line-height:1.6;margin-bottom:16px">'+lyricsHtml+'</div>'
-      +'<div style="background:#f5f5f5;border-radius:10px;padding:12px 14px">'
-      +phonHtml
-      +'<div style="font-size:11px;color:#555;border-top:1px solid #e0e0e0;margin-top:10px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
-      +'</div>';
-    container.style.opacity='1';
-    container.style.transform='translateY(0)';
-  },120);
 }
 
 function goMusic(){
@@ -1488,6 +1468,28 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
+    // Build all lyric cards (all visible, active one highlighted)
+    var lyricHtml=(song.lyrics||[]).map(function(line,i){
+      var groupLines=line.group||[line.eng];
+      var textHtml=groupLines.map(function(l,li){
+        var disp=l;
+        (line.highlights||[]).forEach(function(h){
+          disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/'/g,"'?")+'(\\b|$)','gi'),
+            '$1<span class="lyric-hl" style="background:#ddd;color:#888;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
+        });
+        return '<div style="'+(li>0?'margin-top:3px':'')+'">'+disp+'</div>';
+      }).join('');
+      var phonHtml=groupLines.map(function(l,li){
+        return (li>0?'<div style="border-top:1px solid #e0e0e0;margin-top:8px;padding-top:6px"></div>':'')+musicWordPhon(l);
+      }).join('');
+      return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;cursor:pointer" onclick="_setLyricDisplay('+i+')">'
+        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#888;line-height:1.6">'+textHtml+'</div>'
+        +'<div class="lc-phon" style="display:none;margin-top:12px;background:#f5f5f5;border-radius:8px;padding:10px 12px">'
+        +phonHtml
+        +'<div style="font-size:11px;color:#555;border-top:1px solid #e0e0e0;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
@@ -1499,17 +1501,10 @@ function render(){
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="font-size:10px;color:#bbb;margin-top:8px;line-height:1.6">'
-      +'▶ 재생 버튼을 누르세요 &nbsp;·&nbsp; <b style="color:#FF6B35">팝업이 뜨면 × 를 눌러 닫으면 돼요</b>'
+      +'<div style="font-size:10px;color:#bbb;margin-top:8px">▶ 재생하면 아래 가사가 자동으로 따라가요 &nbsp;·&nbsp; <b style="color:#FF6B35">팝업은 × 로 닫으세요</b></div>'
       +'</div>'
-      +'</div>'
-      // Single lyric display box
-      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:200px;transition:opacity .12s ease,transform .12s ease"></div>'
-      // Manual prev/next navigation
-      +'<div style="display:flex;gap:10px;margin-top:10px">'
-      +'<button onclick="_navLyric(-1)" style="flex:1;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;font-size:13px;color:#555;cursor:pointer;font-weight:600">← 이전</button>'
-      +'<button onclick="_navLyric(1)" style="flex:1;background:#1a1a1a;border:none;border-radius:12px;padding:12px;font-size:13px;color:#fff;cursor:pointer;font-weight:600">다음 →</button>'
-      +'</div>'
+      // All lyrics visible at once — active one highlighted
+      +lyricHtml
       +'</div></div>';
     // Show first lyric immediately, then mount Spotify player
     setTimeout(function(){
