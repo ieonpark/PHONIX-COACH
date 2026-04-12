@@ -1203,6 +1203,14 @@ function _calTap(i){
   if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
 }
 
+function _navLyric(dir){
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  var total=(song.lyrics||[]).length;
+  var next=(_lastLyricIdx<0?0:_lastLyricIdx)+dir;
+  next=Math.max(0,Math.min(total-1,next));
+  _setLyricDisplay(next);
+}
+
 function _setLyricDisplay(idx){
   var container=document.getElementById('lyric-display');
   if(!container) return;
@@ -1491,14 +1499,18 @@ function render(){
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
-      +'<div style="font-size:10px;color:#bbb">▶ 재생하면 아래 가사가 자동으로 따라가요</div>'
-      +'<span id="music-pos" style="font-size:10px;color:#ddd;font-family:monospace">0.0s</span>'
+      +'<div style="font-size:10px;color:#bbb;margin-top:8px;line-height:1.6">'
+      +'▶ 재생 버튼을 누르세요 &nbsp;·&nbsp; <b style="color:#FF6B35">팝업이 뜨면 × 를 눌러 닫으면 돼요</b>'
       +'</div>'
       +'</div>'
-      // Single lyric display box — updates in place as song plays
-      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:220px;transition:opacity .12s ease,transform .12s ease">'
-      +'<div style="display:flex;align-items:center;justify-content:center;height:160px;color:#ccc;font-size:13px">▶ 재생 버튼을 눌러 시작하세요</div>'
+      // Single lyric display box
+      +'<div id="lyric-display" style="background:#fff;border-radius:18px;padding:20px 18px;border:1px solid #ebebeb;min-height:200px;transition:opacity .12s ease,transform .12s ease">'
+      +'<div style="display:flex;align-items:center;justify-content:center;height:140px;color:#ccc;font-size:13px">▶ 재생 버튼을 눌러 시작하세요</div>'
+      +'</div>'
+      // Manual prev/next navigation
+      +'<div style="display:flex;gap:10px;margin-top:10px">'
+      +'<button onclick="_navLyric(-1)" style="flex:1;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;font-size:13px;color:#555;cursor:pointer;font-weight:600">← 이전</button>'
+      +'<button onclick="_navLyric(1)" style="flex:1;background:#1a1a1a;border:none;border-radius:12px;padding:12px;font-size:13px;color:#fff;cursor:pointer;font-weight:600">다음 →</button>'
       +'</div>'
       +'</div></div>';
     // Mount Spotify player after DOM is ready
