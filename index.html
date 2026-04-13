@@ -1188,6 +1188,7 @@ function goAnalyze(){
 function speakAI(){speakEng(S.aiEng);}
 
 // ─── MUSIC COACH ─────────────────────────────────────
+var _musicOpenAll=false;
 var MUSIC_DATA=[
   {
     title:'Cruel Summer',artist:'Taylor Swift',
@@ -1497,11 +1498,13 @@ function _setLyricDisplay(idx){
     var card=cards[i];
     var textEl=card.querySelector('.lc-text');
     var phonEl=card.querySelector('.lc-phon');
+    var ttsBtn=card.querySelector('.lc-tts');
     var hls=card.querySelectorAll('.lyric-hl');
     if(i===idx){
       card.style.background='#1a1a1a';
-      card.style.borderColor='#1a1a1a';
+      card.style.borderColor='#333';
       if(textEl) textEl.style.color='#fff';
+      if(ttsBtn){ttsBtn.style.background='rgba(255,255,255,.15)';ttsBtn.style.color='#fff';}
       for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
       if(phonEl) phonEl.style.display='block';
       card.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -1509,9 +1512,25 @@ function _setLyricDisplay(idx){
       card.style.background='#fff';
       card.style.borderColor='#ebebeb';
       if(textEl) textEl.style.color='#888';
+      if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
       for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
-      if(phonEl) phonEl.style.display='none';
+      if(phonEl && !_musicOpenAll) phonEl.style.display='none';
     }
+  }
+}
+function _applyOpenAllMode(){
+  var btn=document.getElementById('open-all-btn');
+  if(btn){
+    btn.textContent=_musicOpenAll?'부분 열기':'전체 열기';
+    btn.style.background=_musicOpenAll?'#1a1a1a':'#f0f0f0';
+    btn.style.color=_musicOpenAll?'#fff':'#555';
+  }
+  var cards=document.querySelectorAll('.lyric-card');
+  for(var i=0;i<cards.length;i++){
+    var phonEl=cards[i].querySelector('.lc-phon');
+    if(!phonEl) continue;
+    if(_musicOpenAll){phonEl.style.display='block';}
+    else if(i!==_lastLyricIdx){phonEl.style.display='none';}
   }
 }
 
@@ -1520,6 +1539,7 @@ function goMusic(){
   _previewStartPos=null;
   _lastLyricIdx=-1;
   _timingOffset=0;
+  _musicOpenAll=false;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
@@ -1804,11 +1824,15 @@ function render(){
         disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/['"]/g,'[\\\'"]?')+'(\\b|$)','gi'),
           '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
       });
-      return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s">'
-        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6">'+disp+'</div>'
-        +'<div class="lc-phon" style="display:none;margin-top:12px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px 12px">'
+      var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return '<div class="lyric-card" id="lc-'+i+'" onclick="if(!_musicOpenAll)_setLyricDisplay('+i+')" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px">'
+        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakEng(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:1px">🔊</button>'
+        +'</div>'
+        +'<div class="lc-phon" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:10px 12px">'
         +musicWordPhon(line.eng)
-        +'<div style="font-size:11px;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
+        +'<div style="font-size:11px;color:#888;border-top:1px solid #efefef;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
         +'</div>'
         +'</div>';
     }).join('');
@@ -1840,6 +1864,10 @@ function render(){
       +'<span id="off-val" style="font-size:11px;color:#888;min-width:36px;text-align:center">+0.0s</span>'
       +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset+0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">늦게 →</button>'
       +'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">'
+      +'<span style="font-size:10px;color:#bbb">가사 보기:</span>'
+      +'<button id="open-all-btn" onclick="_musicOpenAll=!_musicOpenAll;_applyOpenAllMode()" style="background:#f0f0f0;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;color:#555">전체 열기</button>'
       +'</div>'
       +'</div>'
       +lyricHtml
