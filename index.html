@@ -1717,23 +1717,18 @@ function render(){
     var _monthNames=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
     var _ds=getDailyStats();
 
-    // Dot grid — 7 per row like a real calendar
-    var _dotsHtml='';
-    var _weeks=Math.ceil(_daysInMonth/7);
-    for(var _row=0;_row<_weeks;_row++){
-      _dotsHtml+='<div style="display:flex;gap:7px;margin-bottom:5px">';
-      for(var _col=0;_col<7;_col++){
-        var _d=_row*7+_col+1;
-        if(_d>_daysInMonth){_dotsHtml+='<div style="width:9px;height:9px;flex-shrink:0"></div>';continue;}
-        var _isToday=_d===_today;
-        var _isPast=_d<_today;
-        var _dotBg=_isToday?'#ffffff':_isPast?'rgba(255,255,255,0.7)':'rgba(255,255,255,0.2)';
-        var _dotSize=_isToday?'12px':'9px';
-        var _dotMt=_isToday?'0':'1.5px';
-        _dotsHtml+='<div onclick="'+(_isToday?'set({homeExpanded:!S.homeExpanded})':'')+'" style="width:'+_dotSize+';height:'+_dotSize+';margin-top:'+_dotMt+';border-radius:50%;background:'+_dotBg+';cursor:'+(_isToday?'pointer':'default')+';flex-shrink:0;'+(_isToday?'box-shadow:0 0 0 3px rgba(255,255,255,.25);':'')+'"></div>';
-      }
-      _dotsHtml+='</div>';
+    // Dot grid — single CSS grid, fills width with large dots
+    var _dotsHtml='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;">';
+    for(var _d=1;_d<=_daysInMonth;_d++){
+      var _isToday=_d===_today;
+      var _isPast=_d<_today;
+      var _dotBg=_isToday?'#ffffff':_isPast?'rgba(255,255,255,0.75)':'rgba(255,255,255,0.18)';
+      var _dotExtra=_isToday?'box-shadow:0 0 0 3px rgba(255,255,255,.3);cursor:pointer;':'cursor:default;';
+      _dotsHtml+='<div onclick="'+(_isToday?'set({homeExpanded:!S.homeExpanded})':'')+'" style="aspect-ratio:1/1;border-radius:50%;background:'+_dotBg+';'+_dotExtra+'"></div>';
     }
+    var _rem=(7-(_daysInMonth%7))%7;
+    for(var _i=0;_i<_rem;_i++){_dotsHtml+='<div style="aspect-ratio:1/1"></div>';}
+    _dotsHtml+='</div>';
 
     // Today's music (rotate by day of month)
     var _tmIdx=(_today-1)%MUSIC_DATA.length;
@@ -1768,9 +1763,9 @@ function render(){
       +'<button onclick="goSaved()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:12px">저장목록</button>'
       +'</div>'
       +'<div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px">'+_monthNames[_month]+' '+_year+'</div>'
-      // Dot grid
-      +'<div style="margin-bottom:6px">'+_dotsHtml+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:8px">'+_today+'일째 · '+(_ds.streak||0)+' day streak — 오늘의 점을 눌러 연습 시작</div>'
+      // Dot grid — flex:1 so it fills ~2/3 of the dark section
+      +'<div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:10px 0">'+_dotsHtml+'</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+_today+'일째 · '+(_ds.streak||0)+' day streak — 오늘의 점을 눌러 연습 시작</div>'
       +_expandHtml
       +'</div>'
       // ── Light bottom: always-visible tools ──
