@@ -387,7 +387,39 @@ var PH={
   "through":"THROO","throughout":"throo-OWT","following":"FOL-oh-ing","against":"uh-GENST",
   "themselves":"them-SELVZ","ourselves":"owr-SELVZ","yourself":"yer-SELF","myself":"my-SELF",
   "already":"awl-RED-ee","always":"AWL-wayz","usually":"YOO-zhoo-uh-lee","actually":"AK-choo-uh-lee",
-  "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee"
+  "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee",
+  "reach":"REECH","reached":"REECHT","reaching":"REECH-ing","reaches":"REECH-iz",
+  "quality":"KWAHL-ih-tee","image":"IM-ij","images":"IM-ih-jiz",
+  "toward":"tuh-WORD","towards":"tuh-WORDZ","forward":"FOR-werd","forward":"FOR-werd",
+  "follow":"FAH-loh","following":"FAH-loh-ing","followed":"FAH-lohd",
+  "allow":"uh-LOW","allows":"uh-LOWZ","allowed":"uh-LOWD",
+  "believe":"bih-LEEV","believed":"bih-LEEVD","believes":"bih-LEEVZ",
+  "receive":"rih-SEEV","received":"rih-SEEVD",
+  "achieve":"uh-CHEEV","achieved":"uh-CHEEVD",
+  "increase":"in-KREES","decrease":"dee-KREES",
+  "focus":"FOH-kus","local":"LOH-kul","vocal":"VOH-kul",
+  "total":"TOH-tul","final":"FY-nul","global":"GLOH-bul",
+  "create":"kree-AYT","created":"kree-AY-tid",
+  "relate":"rih-LAYT","related":"rih-LAY-tid",
+  "minute":"MIN-it","second":"SEK-und","moment":"MOH-munt",
+  "pretty":"PRIT-ee","heavy":"HEV-ee","ready":"RED-ee","steady":"STED-ee",
+  "body":"BAH-dee","copy":"KAH-pee","happy":"HAP-ee","carry":"KAR-ee",
+  "early":"ER-lee","clearly":"KLEER-lee","nearly":"NEER-lee",
+  "behind":"bih-HYND","beyond":"bee-OND","beside":"bih-SYD",
+  "together":"tuh-GETH-er","another":"uh-NUH-ther",
+  "whether":"WETH-er","either":"EE-ther","neither":"NEE-ther",
+  "often":"AW-fun","listen":"LIS-un","written":"RIT-un","button":"BUT-un",
+  "mountain":"MOWN-tun","certain":"SER-tun","captain":"KAP-tun",
+  "different":"DIF-er-unt","important":"im-POR-tunt","current":"KER-unt",
+  "present":"PREZ-unt","student":"STOO-dunt","moment":"MOH-munt",
+  "manage":"MAN-ij","damage":"DAM-ij","package":"PAK-ij","language":"LANG-gwij",
+  "message":"MES-ij","passage":"PAS-ij","village":"VIL-ij","college":"KAHL-ij",
+  "knowledge":"NAH-lij","acknowledge":"ak-NAH-lij",
+  "challenge":"CHAL-unj","change":"CHAYNJ","strange":"STRAYNJ","arrange":"uh-RAYNJ",
+  "choose":"CHOOZ","chosen":"CHOH-zun","loose":"LOOS","lose":"LOOZ","lost":"LAWST",
+  "cause":"KAWZ","pause":"PAWZ","clause":"KLAWZ",
+  "though":"THOH","through":"THROO","thought":"THAWT","bought":"BAWT","brought":"BRAWT",
+  "enough":"ih-NUF","rough":"RUF","tough":"TUF","cough":"KAWF"
 };
 
 function wordPhon(w){
@@ -400,18 +432,26 @@ var PHON_CACHE={};
 
 function ipaConvert(s){
   return s
-    .replace(/ɑː/g,'aa').replace(/ɑ/g,'ah').replace(/æ/g,'a')
-    .replace(/eɪ/g,'ay').replace(/ɪər/g,'eer').replace(/ɛər/g,'air').replace(/eər/g,'air')
-    .replace(/iː/g,'ee').replace(/ɪ/g,'i')
-    .replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/ɔɪ/g,'oy').replace(/ɔː/g,'aw').replace(/ɔ/g,'aw')
-    .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'u')
-    .replace(/ʌ/g,'uh').replace(/ɜː/g,'er').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
-    .replace(/aɪ/g,'eye').replace(/aʊ/g,'ow')
-    .replace(/ɛ/g,'e')
-    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh').replace(/tʃ/g,'ch')
-    .replace(/θ/g,'th').replace(/ð/g,'th').replace(/ŋ/g,'ng').replace(/j/g,'y')
-    .replace(/dʒ/g,'j')
-    .replace(/[ˈˌːˑ()]/g,'');
+    // Diphthongs and long vowels — longest first
+    .replace(/ɑː/g,'ah').replace(/ɔː/g,'aw').replace(/uː/g,'oo').replace(/iː/g,'ee').replace(/ɜː/g,'er')
+    .replace(/eɪ/g,'ay').replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/aɪ/g,'eye').replace(/aʊ/g,'ow').replace(/ɔɪ/g,'oy')
+    .replace(/ɪər/g,'eer').replace(/ʊər/g,'oor').replace(/ɛər/g,'air').replace(/eər/g,'air')
+    // Short vowels
+    .replace(/ɒ/g,'ah')   // British short-o: quality, hot, lot
+    .replace(/ɑ/g,'ah')
+    .replace(/æ/g,'a')
+    .replace(/ɪ/g,'i')
+    .replace(/ʊ/g,'oo')
+    .replace(/ʌ/g,'uh')
+    .replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
+    .replace(/ɛ/g,'e').replace(/ɐ/g,'uh')
+    // Consonants
+    .replace(/dʒ/g,'j').replace(/tʃ/g,'ch')
+    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh')
+    .replace(/θ/g,'th').replace(/ð/g,'th')
+    .replace(/ŋ/g,'ng').replace(/j/g,'y')
+    // Strip remaining IPA marks
+    .replace(/[ˈˌːˑ()\[\]\/]/g,'');
 }
 
 // Split a phonetic string into syllables; uppercase first (stressed)
@@ -499,63 +539,73 @@ function fetchPhonForWords(words){
 }
 
 // ── Phonetic rules fallback for words not in PH dict ──
+var _PHON_EXCEPTIONS={
+  'pro':'PROH','pros':'PROHZ','photo':'FOH-toh','logo':'LOH-goh',
+  'nano':'NAY-noh','macro':'MAK-roh','micro':'MY-kroh',
+  'video':'VID-ee-oh','audio':'AW-dee-oh','studio':'STOO-dee-oh',
+  'radio':'RAY-dee-oh','ratio':'RAY-shoh','patio':'PAY-tee-oh',
+  'data':'DAY-tuh','beta':'BAY-tuh','alpha':'AL-fuh','sigma':'SIG-muh',
+  'quality':'KWAHL-ih-tee','quantity':'KWAHN-tih-tee',
+  'image':'IM-ij','images':'IM-ih-jiz','imagine':'ih-MAJ-in',
+  'reach':'REECH','reached':'REECHT','reaches':'REECH-iz',
+  'achieve':'uh-CHEEV','achieved':'uh-CHEEVD',
+  'people':'PEE-pul','other':'UH-ther','another':'uh-NUH-ther',
+  'water':'WAW-ter','world':'WERLD','school':'SKOOL',
+  'thought':'THAWT','through':'THROO','though':'THOH',
+  'enough':'ih-NUF','laugh':'LAF','rough':'RUF',
+  'women':'WIM-in','woman':'WUM-un',
+  'friend':'FREND','friends':'FRENDZ',
+  'their':'thair','there':'thair','they\'re':'thair',
+  'hour':'OW-er','hours':'OW-erz',
+  'whole':'HOHL','whose':'HOOZ',
+  'beautiful':'BYOO-tih-ful','beauty':'BYOO-tee',
+  'special':'SPESH-ul','usually':'YOO-zhoo-uh-lee',
+  'different':'DIF-er-unt','difficult':'DIF-ih-kult',
+  'important':'im-POR-tunt','possible':'PAH-sih-bul',
+  'question':'KWES-chun','answer':'AN-ser',
+  'because':'bih-KUZ','something':'SUM-thing',
+  'everything':'EV-ree-thing','anything':'EN-ee-thing',
+  'together':'tuh-GETH-er','whether':'WETH-er',
+  'pretty':'PRIT-ee','city':'SIT-ee','body':'BAH-dee',
+  'only':'OHN-lee','really':'REE-lee','already':'awl-RED-ee',
+  'family':'FAM-uh-lee','money':'MUN-ee','country':'KUN-tree',
+  'company':'KUM-puh-nee','community':'kuh-MYOO-nih-tee',
+  'government':'GUV-ern-munt','national':'NASH-uh-nul',
+  'language':'LANG-gwij','example':'ig-ZAM-pul',
+  'business':'BIZ-nis','system':'SIS-tum','problem':'PRAH-blum',
+  'information':'in-fer-MAY-shun','technology':'tek-NAH-luh-jee'
+};
+
 function phonetize(w){
   if(!w) return '';
-  var p=w;
-  // Multi-char digraph patterns (order: longest first)
-  p=p.replace(/tion/g,'shun');
-  p=p.replace(/sion/g,'zhun');
-  p=p.replace(/ture/g,'cher');
-  p=p.replace(/through/g,'throo');
-  p=p.replace(/though/g,'thoh');
-  p=p.replace(/enough/g,'ih-NUF');
-  p=p.replace(/cough/g,'kawf');
-  p=p.replace(/rough/g,'ruf');
-  p=p.replace(/tough/g,'tuf');
-  p=p.replace(/aught/g,'awt');
-  p=p.replace(/ought/g,'awt');
-  p=p.replace(/ight/g,'ite');
-  p=p.replace(/igh/g,'eye');
-  p=p.replace(/eigh/g,'ay');
-  p=p.replace(/ough/g,'oh');
+  var lower=w.toLowerCase();
+  if(_PHON_EXCEPTIONS[lower]) return _PHON_EXCEPTIONS[lower];
+  var p=lower;
+  // Multi-char patterns — longest first
+  p=p.replace(/tion/g,'shun').replace(/sion/g,'zhun').replace(/ture/g,'cher');
+  p=p.replace(/eigh/g,'ay').replace(/ight/g,'yt').replace(/igh/g,'eye');
+  p=p.replace(/aught/g,'awt').replace(/ought/g,'awt').replace(/ough/g,'oh');
   // Vowel digraphs
-  p=p.replace(/oo/g,'oo');
-  p=p.replace(/ee/g,'ee');
-  p=p.replace(/ea/g,'ee');
-  p=p.replace(/ai/g,'ay');
-  p=p.replace(/ay/g,'ay');
-  p=p.replace(/oa/g,'oh');
-  p=p.replace(/oe/g,'oh');
-  p=p.replace(/oi/g,'oy');
-  p=p.replace(/oy/g,'oy');
-  p=p.replace(/ow/g,'oh');
-  p=p.replace(/ou/g,'ow');
-  p=p.replace(/ew/g,'yoo');
-  p=p.replace(/aw/g,'aw');
-  p=p.replace(/au/g,'aw');
-  p=p.replace(/ue/g,'oo');
-  p=p.replace(/ui/g,'oo');
-  p=p.replace(/ie/g,'ee');
-  p=p.replace(/ei/g,'ay');
+  p=p.replace(/oo/g,'oo').replace(/ee/g,'ee').replace(/ea/g,'ee');
+  p=p.replace(/ai/g,'ay').replace(/ay/g,'ay');
+  p=p.replace(/oa/g,'oh').replace(/oe/g,'oh');
+  p=p.replace(/oi/g,'oy').replace(/oy/g,'oy');
+  p=p.replace(/ew/g,'yoo').replace(/aw/g,'aw').replace(/au/g,'aw');
+  p=p.replace(/ue/g,'oo').replace(/ui/g,'oo');
+  p=p.replace(/ie/g,'ee').replace(/ei/g,'ay');
+  p=p.replace(/ou/g,'ow').replace(/ow/g,'oh');
   // Consonant patterns
-  p=p.replace(/tch/g,'ch');
-  p=p.replace(/ck/g,'k');
-  p=p.replace(/ph/g,'f');
-  p=p.replace(/gh/g,'');
-  p=p.replace(/kn/g,'n');
-  p=p.replace(/wr/g,'r');
-  p=p.replace(/qu/g,'kw');
-  p=p.replace(/wh/g,'w');
-  p=p.replace(/mb$/,'m');
-  p=p.replace(/c([ei])/g,'s$1');
-  p=p.replace(/c/g,'k');
-  p=p.replace(/g([ei])/g,'j$1');
-  p=p.replace(/x/g,'ks');
-  // Silent final e (magic e: consonant + e at end)
-  if(p.length>2&&/[^aeiou]e$/.test(p)) p=p.slice(0,-1);
-  // Final -s/-es → z if after vowel/voiced consonant
-  p=p.replace(/([aeioulmnr])s$/,'$1z');
-  // Syllabify and stress first syllable
+  p=p.replace(/tch/g,'ch').replace(/ck/g,'k').replace(/ph/g,'f');
+  p=p.replace(/gh/g,'').replace(/kn/g,'n').replace(/wr/g,'r');
+  p=p.replace(/qu/g,'kw').replace(/wh/g,'w').replace(/mb$/g,'m');
+  p=p.replace(/c([eiy])/g,'s$1').replace(/c/g,'k');
+  p=p.replace(/g([ei])/g,'j$1').replace(/x/g,'ks');
+  // Silent final e
+  if(p.length>2&&/[^aeiouy]e$/.test(p)) p=p.slice(0,-1);
+  // Final -s → z after vowel/voiced
+  p=p.replace(/([aeiooulmnr])s$/g,'$1z');
+  // Map remaining bare vowels to clearer sounds
+  p=p.replace(/\boh\b/g,'oh');
   return splitPhonSyllables(p).join('-');
 }
 
