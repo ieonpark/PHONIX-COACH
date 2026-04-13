@@ -1413,6 +1413,7 @@ var _currentPos=0;
 var _previewStartPos=null;
 var _lastLyricIdx=-1;
 var _timingOffset=0;
+var _looping=false;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
@@ -1472,7 +1473,25 @@ function _initSpotifyPlayer(){
   _spotifyApi.createController(container,opts,function(ctrl){
     _spotifyController=ctrl;
     ctrl.addListener('playback_update',function(e){
-      if(e.data&&typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
+      if(!e.data) return;
+      if(typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
+      if(e.data.isPaused&&_previewStartPos!==null&&!_looping){
+        var relPos=(e.data.position/1000)-_previewStartPos;
+        if(relPos>25){
+          _looping=true;
+          _lastLyricIdx=-1;
+          _setLyricDisplay(0);
+          setTimeout(function(){
+            if(_spotifyController){
+              _spotifyController.seek(_previewStartPos*1000);
+              setTimeout(function(){
+                if(_spotifyController) _spotifyController.togglePlay();
+                _looping=false;
+              },400);
+            } else { _looping=false; }
+          },300);
+        }
+      }
     });
   });
 }
