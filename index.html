@@ -1186,6 +1186,16 @@ function goAnalyze(){
     aiLoading:false,aiImgLoading:false,aiError:''});
 }
 function speakAI(){speakEng(S.aiEng);}
+// Lyric TTS: Google Translate voice (natural), never calls render() so no display reset
+function speakLyric(txt){
+  if(!txt) return;
+  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  var url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+encodeURIComponent(txt)+'&tl=en&client=gtx&ttsspeed=1';
+  var a=new Audio(url);
+  _ttsAudio=a;
+  a.play().catch(function(){_speakWebAPI(txt,null);});
+}
 
 // ─── MUSIC COACH ─────────────────────────────────────
 var _musicOpenAll=false;
@@ -1501,20 +1511,34 @@ function _setLyricDisplay(idx){
     var ttsBtn=card.querySelector('.lc-tts');
     var hls=card.querySelectorAll('.lyric-hl');
     if(i===idx){
-      card.style.background='#1a1a1a';
-      card.style.borderColor='#333';
-      if(textEl) textEl.style.color='#fff';
-      if(ttsBtn){ttsBtn.style.background='rgba(255,255,255,.15)';ttsBtn.style.color='#fff';}
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
-      if(phonEl) phonEl.style.display='block';
+      if(_musicOpenAll){
+        // Single-box mode: subtle row highlight
+        card.style.background='rgba(0,0,0,0.05)';
+        if(textEl){textEl.style.color='#1a1a1a';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='#e0e0e0';ttsBtn.style.color='#333';}
+      } else {
+        // Card mode: dark card
+        card.style.background='#1a1a1a';
+        card.style.borderColor='#333';
+        if(textEl){textEl.style.color='#fff';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='rgba(255,255,255,.15)';ttsBtn.style.color='#fff';}
+        for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
+        if(phonEl) phonEl.style.display='block';
+      }
       card.scrollIntoView({behavior:'smooth',block:'nearest'});
     }else{
-      card.style.background='#fff';
-      card.style.borderColor='#ebebeb';
-      if(textEl) textEl.style.color='#888';
-      if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
-      if(phonEl && !_musicOpenAll) phonEl.style.display='none';
+      if(_musicOpenAll){
+        card.style.background='transparent';
+        if(textEl){textEl.style.color='#aaa';textEl.style.fontWeight='400';}
+        if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
+      } else {
+        card.style.background='#fff';
+        card.style.borderColor='#ebebeb';
+        if(textEl){textEl.style.color='#888';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
+        for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
+        if(phonEl) phonEl.style.display='none';
+      }
     }
   }
 }
@@ -1525,12 +1549,10 @@ function _applyOpenAllMode(){
     btn.style.background=_musicOpenAll?'#1a1a1a':'#f0f0f0';
     btn.style.color=_musicOpenAll?'#fff':'#555';
   }
-  var cards=document.querySelectorAll('.lyric-card');
-  for(var i=0;i<cards.length;i++){
-    var phonEl=cards[i].querySelector('.lc-phon');
-    if(!phonEl) continue;
-    if(_musicOpenAll){phonEl.style.display='block';}
-    else if(i!==_lastLyricIdx){phonEl.style.display='none';}
+  var cont=document.getElementById('lyrics-container');
+  if(cont){
+    cont.innerHTML=_musicOpenAll?(window._lyricHtmlOpen||''):(window._lyricHtmlPartial||'');
+    _setLyricDisplay(_lastLyricIdx>=0?_lastLyricIdx:0);
   }
 }
 
@@ -1818,17 +1840,18 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
-    var lyricHtml=(song.lyrics||[]).map(function(line,i){
+    // — Partial mode: individual cards with phonetics
+    var lyricHtmlPartial=(song.lyrics||[]).map(function(line,i){
       var disp=line.eng;
       (line.highlights||[]).forEach(function(h){
         disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/['"]/g,'[\\\'"]?')+'(\\b|$)','gi'),
           '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
       });
       var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return '<div class="lyric-card" id="lc-'+i+'" onclick="if(!_musicOpenAll)_setLyricDisplay('+i+')" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
+      return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+')" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
         +'<div style="display:flex;align-items:flex-start;gap:8px">'
         +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
-        +'<button class="lc-tts" onclick="event.stopPropagation();speakEng(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:1px">🔊</button>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:1px">🔊</button>'
         +'</div>'
         +'<div class="lc-phon" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:10px 12px">'
         +musicWordPhon(line.eng)
@@ -1836,6 +1859,19 @@ function render(){
         +'</div>'
         +'</div>';
     }).join('');
+    window._lyricHtmlPartial=lyricHtmlPartial;
+    // — Open-all mode: single flat box, all lyrics as rows
+    var lyricHtmlOpen='<div style="background:#fff;border-radius:14px;padding:10px 14px;margin-bottom:8px;border:1px solid #ebebeb">';
+    (song.lyrics||[]).forEach(function(line,i){
+      var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      lyricHtmlOpen+='<div class="lyric-card" id="lc-'+i+'" style="display:flex;align-items:flex-start;gap:10px;padding:8px 6px;border-radius:8px;transition:background .15s,color .15s">'
+        +'<div class="lc-text" style="flex:1;font-size:14px;color:#aaa;line-height:1.75;font-weight:400">'+line.eng+'</div>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:30px;height:30px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:2px">🔊</button>'
+        +'</div>';
+    });
+    lyricHtmlOpen+='</div>';
+    window._lyricHtmlOpen=lyricHtmlOpen;
+    var lyricHtml=_musicOpenAll?lyricHtmlOpen:lyricHtmlPartial;
     var songPickHtml=MUSIC_DATA.map(function(s,i){
       var active=(S.musicSongIdx||0)===i;
       return '<button onclick="set({musicSongIdx:'+i+'});render();" style="flex:1;background:'+(active?'#1a1a1a':'#f0f0f0')+';color:'+(active?'#fff':'#555')+';border:none;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;line-height:1.3;text-align:center">'
@@ -1870,9 +1906,12 @@ function render(){
       +'<button id="open-all-btn" onclick="_musicOpenAll=!_musicOpenAll;_applyOpenAllMode()" style="background:#f0f0f0;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;color:#555">전체 열기</button>'
       +'</div>'
       +'</div>'
-      +lyricHtml
+      +'<div id="lyrics-container">'+lyricHtml+'</div>'
       +'</div></div>';
-    setTimeout(function(){ _setLyricDisplay(0); _initSpotifyPlayer(); }, 100);
+    setTimeout(function(){
+      if(_lastLyricIdx===-1) _setLyricDisplay(0);
+      _initSpotifyPlayer();
+    }, 100);
     return;
   }
 
