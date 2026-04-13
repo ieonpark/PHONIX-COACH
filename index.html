@@ -1396,83 +1396,7 @@ var MUSIC_DATA=[
       {s:"it's",   f:"it is",      ph:"ITS"}
     ]
   },
-  {
-    title:'Locked Out of Heaven',artist:'Bruno Mars',
-    searchQ:'locked out of heaven bruno mars',
-    spotifyId:'1CqCjF9DWGvlnTUlG8JXy1',
-    badge:'REDUCTIONS · STRESS',
-    intro:'빠른 템포의 팝록에서 강세와 연음 패턴을 집중 훈련하세요.',
-    lyrics:[
-      {t:1.0,eng:"Never had much faith in love or miracles",
-       note:"<b>Never had</b>→NEV-er-had 연음. <b>or</b>→er 약화. <b>miracles</b>→MIR-uh-kulz 3음절",highlights:[]},
-      {t:5.5,eng:"Never wanna put my heart on the line",
-       note:"<b>wanna</b>=want to 구어 축약. <b>put my</b>→put-mah 연음",highlights:["wanna"]},
-      {t:10.0,eng:"But swimming in your world is something spiritual",
-       note:"<b>something spiritual</b>→SUM-thing-SPIR-it-yoo-ul. 강세 위치 주의",highlights:[]},
-      {t:15.0,eng:"You make me feel like I've been locked out of heaven",
-       note:"<b>I've been</b>=I have been 축약. <b>locked out of</b>→lokt-owt-uv 연음",highlights:["I've"]},
-      {t:21.0,eng:"Can I just stay here, spend the rest of my life",
-       note:"<b>Can I</b>→kun-AH 연음. <b>rest of my</b>→rest-uv-mah 연속 약화",highlights:[]}
-    ],
-    contractions:[
-      {s:"wanna",  f:"want to",    ph:"WON-uh"},
-      {s:"I've",   f:"I have",     ph:"AHV"},
-      {s:"can't",  f:"cannot",     ph:"KANT"},
-      {s:"you're", f:"you are",    ph:"YER"}
-    ]
-  },
-  {
-    title:"That's What I Like",artist:'Bruno Mars',
-    searchQ:"that's what i like bruno mars",
-    spotifyId:'0KKkJNfGyhkQ5aFogxQAPU',
-    badge:'CONTRACTIONS · RHYTHM',
-    intro:'그루브 있는 R&B 리듬 속 축약과 연음을 익혀보세요.',
-    lyrics:[
-      {t:0.5,eng:"I got a condo in Manhattan",
-       note:"<b>got a</b>→gah-duh Flap-T. <b>Manhattan</b>→man-HAT-un 강세 2음절",highlights:[]},
-      {t:4.0,eng:"Baby girl, what's hatnin'",
-       note:"<b>what's</b>=what is 축약. <b>hatnin'</b>=happening -ing 약화",highlights:["what's"]},
-      {t:8.0,eng:"That's what I like",
-       note:"<b>That's</b>=That is 축약. 후렴 핵심 구절 — 리듬에 맞춰 반복",highlights:["That's"]},
-      {t:12.0,eng:"I'd do anything for ya, babe",
-       note:"<b>I'd</b>=I would 축약. <b>for ya</b>=for you 구어 약화",highlights:["I'd","ya"]},
-      {t:16.0,eng:"That's what I like",
-       note:"반복 후렴 — <b>That's</b> 강세 위치 다시 확인",highlights:["That's"]}
-    ],
-    contractions:[
-      {s:"That's", f:"That is",    ph:"THATS"},
-      {s:"what's", f:"what is",    ph:"WHUTS"},
-      {s:"I'd",    f:"I would",    ph:"AHD"},
-      {s:"ya",     f:"you",        ph:"yuh"},
-      {s:"gonna",  f:"going to",   ph:"GUN-uh"}
-    ]
-  },
   // ── Lana Del Rey ──────────────────────────────────────
-  {
-    title:'Summertime Sadness',artist:'Lana Del Rey',
-    searchQ:'summertime sadness lana del rey',
-    spotifyId:'1FEiijYPJtyswChfcpv3p0',
-    badge:'INTONATION · VOWELS',
-    intro:'긴 모음과 감정적 억양 패턴을 귀로 익혀보세요.',
-    lyrics:[
-      {t:1.0,eng:"I got my red dress on tonight",
-       note:"<b>got my</b>→gah-mah Flap-T+연음. <b>tonight</b>→tuh-NAYT 강세",highlights:[]},
-      {t:5.0,eng:"Dancing in the dark in the pale moonlight",
-       note:"<b>in the</b>→in-thuh 반복 약화. <b>pale moonlight</b> 복합명사 강세",highlights:[]},
-      {t:9.5,eng:"I'm on fire, I feel it everywhere",
-       note:"<b>I'm</b>=I am 축약. <b>feel it</b>→feel-it Flap-T 연음",highlights:["I'm"]},
-      {t:14.0,eng:"I got that summertime, summertime sadness",
-       note:"<b>got that</b>→gah-that Flap-T. <b>sadness</b>→SAD-nis 강세",highlights:[]},
-      {t:20.0,eng:"Oh, oh, oh, I'm so sad",
-       note:"<b>I'm</b>=I am 축약. 감탄사 억양 — 음정보다 말하듯이",highlights:["I'm"]}
-    ],
-    contractions:[
-      {s:"I'm",    f:"I am",       ph:"AHM"},
-      {s:"I've",   f:"I have",     ph:"AHV"},
-      {s:"don't",  f:"do not",     ph:"DOHNT"},
-      {s:"it's",   f:"it is",      ph:"ITS"}
-    ]
-  },
   {
     title:'National Anthem',artist:'Lana Del Rey',
     searchQ:'national anthem lana del rey',
@@ -1691,7 +1615,7 @@ function callFreeAI(text){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})
   })
-  .then(function(r){return r.text();})
+  .then(function(r){if(!r.ok) return checkGrammarFree(text);return r.text();})
   .then(function(t){
     var m=t.match(/\{[\s\S]*\}/);
     if(!m) return [];
@@ -1717,7 +1641,7 @@ function callPronCoach(text){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})
   })
-  .then(function(r){return r.text();})
+  .then(function(r){if(!r.ok) return [];return r.text();})
   .then(function(t){
     var m=t.match(/\{[\s\S]*\}/);
     if(!m) return [];
