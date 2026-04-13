@@ -390,7 +390,15 @@ var PH={
   "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee",
   "reach":"REECH","reached":"REECHT","reaching":"REECH-ing","reaches":"REECH-iz",
   "quality":"KWAHL-ih-tee","image":"IM-ij","images":"IM-ih-jiz",
-  "toward":"tuh-WORD","towards":"tuh-WORDZ","forward":"FOR-werd","forward":"FOR-werd",
+  "toward":"tuh-WORD","towards":"tuh-WORDZ","forward":"FOR-werd",
+  "down":"DOWN","downtown":"DOWN-town","downstairs":"DOWN-stairz","download":"DOWN-lohd",
+  "town":"TOWN","brown":"BROWN","crown":"KROWN","crowd":"KROWD","frown":"FROWN",
+  "found":"FOWND","sound":"SOWND","ground":"GROWND","round":"ROWND","bound":"BOWND","wound":"WOWND",
+  "count":"KOWNT","mount":"MOWNT","mouth":"MOWTH","south":"SOWTH","couch":"KOWCH","pouch":"POWCH",
+  "power":"POW-er","flower":"FLOW-er","tower":"TOW-er","shower":"SHOW-er","hour":"OW-er",
+  "vowel":"VOW-ul","towel":"TOW-ul","owl":"OWL","howl":"HOWL","growl":"GROWL",
+  "plow":"PLOW","brow":"BROW","vow":"VOW","cow":"KOW","bow":"BOW","wow":"WOW",
+  "bowl":"BOHL","soul":"SOHL","roll":"ROHL","toll":"TOHL","pole":"POHL",
   "follow":"FAH-loh","following":"FAH-loh-ing","followed":"FAH-lohd",
   "allow":"uh-LOW","allows":"uh-LOWZ","allowed":"uh-LOWD",
   "believe":"bih-LEEV","believed":"bih-LEEVD","believes":"bih-LEEVZ",
@@ -438,6 +446,7 @@ function ipaConvert(s){
     .replace(/ɪər/g,'eer').replace(/ʊər/g,'oor').replace(/ɛər/g,'air').replace(/eər/g,'air')
     // Short vowels
     .replace(/ɒ/g,'ah')   // British short-o: quality, hot, lot
+    .replace(/ɔ/g,'aw')   // plain ɔ without length mark: off, on
     .replace(/ɑ/g,'ah')
     .replace(/æ/g,'a')
     .replace(/ɪ/g,'i')
@@ -583,7 +592,7 @@ function phonetize(w){
   var p=lower;
   // Multi-char patterns — longest first
   p=p.replace(/tion/g,'shun').replace(/sion/g,'zhun').replace(/ture/g,'cher');
-  p=p.replace(/eigh/g,'ay').replace(/ight/g,'yt').replace(/igh/g,'eye');
+  p=p.replace(/eigh/g,'ay').replace(/ight/g,'ayt').replace(/igh/g,'eye');
   p=p.replace(/aught/g,'awt').replace(/ought/g,'awt').replace(/ough/g,'oh');
   // Vowel digraphs
   p=p.replace(/oo/g,'oo').replace(/ee/g,'ee').replace(/ea/g,'ee');
@@ -593,7 +602,8 @@ function phonetize(w){
   p=p.replace(/ew/g,'yoo').replace(/aw/g,'aw').replace(/au/g,'aw');
   p=p.replace(/ue/g,'oo').replace(/ui/g,'oo');
   p=p.replace(/ie/g,'ee').replace(/ei/g,'ay');
-  p=p.replace(/ou/g,'ow').replace(/ow/g,'oh');
+  p=p.replace(/ow/g,'oh');  // know, show, grow → oh (BEFORE ou)
+  p=p.replace(/ou/g,'ow');  // found, sound, out → ow
   // Consonant patterns
   p=p.replace(/tch/g,'ch').replace(/ck/g,'k').replace(/ph/g,'f');
   p=p.replace(/gh/g,'').replace(/kn/g,'n').replace(/wr/g,'r');
@@ -716,13 +726,14 @@ function wordByWordHTML(eng,phon){
     }
   });
 
-  // ── Render stressed syllable helper ──
+  // ── Render stressed syllable helper (Google style: same size, lowercase, dot sep) ──
   function sylHTML(syl,showDot){
-    var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
-    var dot=showDot?'<span style="color:#ccc;font-size:9px;font-family:monospace"> · </span>':'';
+    var st=/[A-Z]{2,}/.test(syl);
+    var dot=showDot?'<span style="color:#bbb;font-size:13px"> · </span>':'';
+    var txt=syl.toLowerCase();
     return dot+(st
-      ?'<b style="color:#1a1a1a;font-size:13px;font-family:monospace">'+syl+'</b>'
-      :'<span style="color:#666;font-size:11px;font-family:monospace">'+syl+'</span>');
+      ?'<b style="color:#111;font-size:13px;font-family:monospace;letter-spacing:0.3px">'+txt+'</b>'
+      :'<span style="color:#777;font-size:13px;font-family:monospace;letter-spacing:0.3px">'+txt+'</span>');
   }
 
   // ── Full sentence pronunciation bar ──
@@ -1603,10 +1614,12 @@ function checkGrammarFree(text){
 
 // ── Pollinations AI: free, no key, no account ──
 function callFreeAI(text){
-  var prompt='다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON으로만 반환해. 마크다운 없이 JSON만:\n'
-    +'{"grammar":[{"icon":"이모지","label":"표현명 (영어)","color":"#hex","detail":"한국어 설명. 이 텍스트에서 어떻게 쓰였는지 구체적으로."}]}\n'
+  var prompt='[필수 규칙: detail 필드는 반드시 한국어로만 작성. 영어 절대 금지]\n'
+    +'다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON만 반환해. 마크다운 없이:\n'
+    +'{"grammar":[{"icon":"이모지","label":"표현명 — 한국어뜻","color":"#hex","detail":"한국어로만 설명. 이 문장에서 어떻게 쓰였는지."}]}\n'
+    +'예시 형식: {"icon":"🔧","label":"bring back — 되돌리다","color":"#2563EB","detail":"\'bring back\'은 무언가를 이전 상태로 되돌린다는 구동사예요. 예: bring it back into Photoshop = 포토샵으로 다시 가져오다."}\n'
     +'규칙: 실제로 텍스트에 있는 표현만. 구동사/숙어/관용구 우선. 최대 4개.\n'
-    +'금지: 소유격, 진행형, be동사처럼 너무 기본적인 건 절대 넣지 마.\n'
+    +'금지: 소유격·진행형·be동사 같은 기초 문법, detail에 영어 문장.\n'
     +'color: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2 중 하나.\n\n'
     +'영어 텍스트:\n'+text;
   return fetch('https://text.pollinations.ai/',{
