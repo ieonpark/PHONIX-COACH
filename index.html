@@ -13,6 +13,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" async></script>
 <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+<script src="https://w.soundcloud.com/player/api.js" async></script>
 </head>
 <body>
 <div id="app"></div>
@@ -1253,6 +1254,23 @@ function _resetCal(){
 }
 var MUSIC_DATA=[
   {
+    title:'Your Back',artist:'IØN',
+    searchQ:'your back ion soundcloud',
+    soundcloudUrl:'https://soundcloud.com/ion-807282022/your-back',
+    badge:'INDIE · EMOTIONAL',
+    intro:'IØN의 자작 인디곡. 시적인 문장과 감정 표현을 자연스럽게 익혀요. 타이밍 캘리브레이션으로 맞춰 사용하세요.',
+    lyrics:[
+      {t:3.0,eng:"I left that place, it had a name",note:"<b>I left that place</b>=그 장소를 떠났다. 과거시제 직접 표현. <b>it had a name</b>=이름이 있었다",highlights:["left that place","had a name"]},
+      {t:22.0,eng:"I woke up and the ocean was already there",note:"<b>woke up</b>=잠에서 깨다. <b>was already there</b>=이미 거기 있었다. 과거진행 상황 묘사",highlights:["woke up","already there"]},
+      {t:40.0,eng:"The water kept coming in, it never pulled back",note:"<b>kept coming in</b>=계속 밀려왔다. <b>pulled back</b>=물러났다. keep+동명사 패턴 연습",highlights:["kept coming in","pulled back"]},
+      {t:64.0,eng:"Then I saw someone walking like you",note:"<b>saw someone walking</b>=지각동사+목적어+현재분사 구조. <b>walking like you</b>=너처럼 걷는",highlights:["saw someone","walking like you"]},
+      {t:80.0,eng:"I watched you go, said goodbye to your back",note:"<b>watched you go</b>=떠나는 걸 지켜봤다. <b>said goodbye to your back</b>=등에 대고 작별인사. 타이틀 핵심 라인",highlights:["watched you go","to your back"]},
+      {t:96.0,eng:"I watched you go, and you didn't know",note:"<b>you didn't know</b>=넌 몰랐다. 과거 부정문. 상대방이 모르는 채 떠났다는 비극적 표현",highlights:["you didn't know"]},
+      {t:138.0,eng:"I should've said something, anything, but I didn't",note:"<b>should've said</b>=말했어야 했는데. 과거 후회 표현. <b>anything</b>=무엇이든. but I didn't=하지만 안 했다",highlights:["should've said","but I didn't"]},
+      {t:180.0,eng:"I still think of you, sometimes",note:"<b>think of</b>=~을 생각하다(구동사). <b>still</b>=아직도. <b>sometimes</b>=가끔. 여운 있는 마무리",highlights:["think of","sometimes"]}
+    ]
+  },
+  {
     title:'Cruel Summer',artist:'Taylor Swift',
     searchQ:'cruel summer taylor swift',
     spotifyId:'1BxfuPKGuaTgP7aM0Bbdwr',
@@ -1732,6 +1750,7 @@ var _previewStartPos=null;
 var _lastLyricIdx=-1;
 var _timingOffset=0;
 var _looping=false;
+var _scWidget=null;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
@@ -1815,11 +1834,29 @@ function goMusic(){
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
 }
 
+function _initSoundCloudPlayer(container,song){
+  if(_scWidget){try{_scWidget.pause();}catch(e){}_scWidget=null;}
+  _previewStartPos=0;
+  var enc=encodeURIComponent(song.soundcloudUrl);
+  var src='https://w.soundcloud.com/player/?url='+enc+'&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false';
+  container.innerHTML='<iframe id="sc-iframe" width="100%" height="120" scrolling="no" frameborder="no" allow="autoplay" src="'+src+'"></iframe>';
+  setTimeout(function(){
+    var iframe=document.getElementById('sc-iframe');
+    if(!iframe||!window.SC) return;
+    _scWidget=SC.Widget(iframe);
+    _scWidget.bind(SC.Widget.Events.PLAY_PROGRESS,function(e){
+      if(e&&typeof e.currentPosition==='number') _updateLyricHighlight(e.currentPosition/1000);
+    });
+  },600);
+}
+
 function _initSpotifyPlayer(){
   var container=document.getElementById('music-player-container');
-  if(!container||!_spotifyApi) return;
-  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
+  if(!container) return;
   var song=MUSIC_DATA[S.musicSongIdx||0];
+  if(song.soundcloudUrl){_initSoundCloudPlayer(container,song);return;}
+  if(!_spotifyApi) return;
+  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   var opts={uri:'spotify:track:'+song.spotifyId,width:'100%',height:80};
   _spotifyApi.createController(container,opts,function(ctrl){
     _spotifyController=ctrl;
