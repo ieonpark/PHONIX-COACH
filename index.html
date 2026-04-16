@@ -904,40 +904,89 @@ function wordByWordHTML(eng,phon){
       :'<span style="color:#777;font-size:13px;font-family:monospace;letter-spacing:0.3px">'+txt+'</span>');
   }
 
-  // ── Full sentence pronunciation bar ──
-  var sentParts=wordPhons.map(function(ph){
-    if(!ph) return '';
-    return ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
-  });
+  function phHTML(ph){
+    return ph.split('-').map(function(s,j){return sylHTML(s,j>0);}).join('');
+  }
 
+  // Extract trailing consonant(s) after last vowel nucleus in a phonetic string
+  function getLinkCons(ph){
+    var lastSyl=ph.split('-').pop().toLowerCase();
+    var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+    var lastNucEnd=-1,i=0;
+    while(i<lastSyl.length){
+      var found=false;
+      for(var n=0;n<VNUC.length;n++){
+        var nl=VNUC[n].length;
+        if(lastSyl.slice(i,i+nl)===VNUC[n]){lastNucEnd=i+nl;i+=nl;found=true;break;}
+      }
+      if(!found){if('aeiou'.indexOf(lastSyl[i])>=0) lastNucEnd=i+1; i++;}
+    }
+    if(lastNucEnd<0||lastNucEnd>=lastSyl.length) return '';
+    var trail=lastSyl.slice(lastNucEnd);
+    var DIGRAPHS=['ng','sh','th','ch','zh'];
+    for(var d=0;d<DIGRAPHS.length;d++) if(trail.endsWith(DIGRAPHS[d])) return DIGRAPHS[d];
+    return trail.slice(-1);
+  }
+
+  // ── Rhythm / linking ──
+  var rh=getRhythmHints(words);
+  var linkSet={};
+  rh.linking.forEach(function(li){linkSet[li]=true;});
+
+  // ── Full sentence pronunciation bar — with linked consonants shown ──
   var html='<div style="background:#f8f8f8;border-radius:10px;padding:10px 14px;margin-bottom:14px">'
     +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">전체 문장 발음</div>'
-    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;line-height:2.2">';
-  sentParts.forEach(function(part){if(part) html+='<span>'+part+'</span>';});
+    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;line-height:2.4">';
+  var sentConsumed={};
+  wordPhons.forEach(function(ph,i){
+    if(!ph||sentConsumed[i]) return;
+    if(linkSet[i]&&wordPhons[i+1]){
+      var lc=getLinkCons(ph);
+      if(lc){
+        var base=ph.slice(0,ph.length-lc.length);
+        var nextPh=wordPhons[i+1];
+        html+='<span style="display:inline-flex;align-items:baseline;background:rgba(255,107,53,.07);border-radius:5px;padding:1px 5px;border:1px solid rgba(255,107,53,.15)">'
+          +(base?phHTML(base):'')
+          +'<span style="color:#FF6B35;font-weight:800;font-size:12px;font-family:monospace;margin:0 0px">'+lc+'</span>'
+          +phHTML(nextPh)
+          +'</span>';
+        sentConsumed[i+1]=true;
+        return;
+      }
+    }
+    html+='<span>'+phHTML(ph)+'</span>';
+  });
   html+='</div></div>';
 
   // ── Word cards ──
-  // Compute rhythm hints for this sentence
-  var rh=getRhythmHints(words);
-
   html+='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
-    var isStr=rh.stressed[i]||hasStress;
     var phDisp='';
     if(ph){
-      phDisp=ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
+      if(linkSet[i]){
+        var lc=getLinkCons(ph);
+        if(lc){
+          var base=ph.slice(0,ph.length-lc.length);
+          phDisp=(base?phHTML(base):'')+'<span style="color:#FF6B35;font-weight:800;font-size:11px;font-family:monospace">'+lc+'⌒</span>';
+        } else {
+          phDisp=phHTML(ph);
+        }
+      } else {
+        phDisp=phHTML(ph);
+      }
     }
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:8px;">'
-      +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'+word+'</span>'
+      +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'
+      +word+(linkSet[i]?'<span style="font-size:8px;color:#FF6B35;vertical-align:super">⌒</span>':'')
+      +'</span>'
       +(phDisp
         ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phDisp+'</div>'
         :'<div style="height:20px;"></div>')
       +'</div>';
   });
   html+='</div>';
-
 
   // ── Connected speech / reduction hints ──
   var hints=[];
@@ -946,11 +995,14 @@ function wordByWordHTML(eng,phon){
     hints.push('"'+orig+'" → <b>'+red.result+'</b> 로 줄여 발음해요');
   });
   if(rh.linking.length){
-    var ex=rh.linking.slice(0,2).map(function(i){return '"'+words[i]+' '+words[i+1]+'"';}).join(', ');
-    hints.push('연음: '+ex+' → 단어를 이어서 한 덩어리로');
+    var linkDesc=rh.linking.map(function(li){
+      var lc=getLinkCons(wordPhons[li]||'');
+      return '"'+words[li]+' '+words[li+1]+'" → <b>'+words[li].replace(/[^a-z]/gi,'')+'</b>의 <b style="color:#FF6B35">'+lc+'</b> 발음이 다음 단어로 넘어가요';
+    }).slice(0,3).join('<br>');
+    hints.push(linkDesc);
   }
   if(hints.length){
-    html+='<div style="font-size:11px;color:#555;margin-top:0;margin-bottom:4px;background:#f8f8f8;border-radius:7px;padding:7px 12px;line-height:2;border-left:3px solid #1a1a1a">'
+    html+='<div style="font-size:11px;color:#555;margin-top:0;margin-bottom:4px;background:#f8f8f8;border-radius:7px;padding:7px 12px;line-height:2;border-left:3px solid #FF6B35">'
       +hints.join('<br>')+'</div>';
   }
 
@@ -961,14 +1013,43 @@ function wordByWordHTML(eng,phon){
 function musicWordPhon(eng){
   if(!eng) return '';
   var words=eng.trim().split(/\s+/);
+  // Detect linking pairs
+  var lw=words.map(function(w){return w.toLowerCase().replace(/[^a-z]/g,'');});
+  var musicLinkSet={};
+  for(var li=0;li<lw.length-1;li++){
+    var la=lw[li],lb=lw[li+1];
+    if(la&&lb&&'bcdfghjklmnpqrstvwxyz'.indexOf(la[la.length-1])>=0&&'aeiou'.indexOf(lb[0])>=0)
+      musicLinkSet[li]=true;
+  }
+  function musicGetLinkCons(ph){
+    var lastSyl=ph.split('-').pop().toLowerCase();
+    var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+    var lastNucEnd=-1,i=0;
+    while(i<lastSyl.length){
+      var found=false;
+      for(var n=0;n<VNUC.length;n++){
+        var nl=VNUC[n].length;
+        if(lastSyl.slice(i,i+nl)===VNUC[n]){lastNucEnd=i+nl;i+=nl;found=true;break;}
+      }
+      if(!found){if('aeiou'.indexOf(lastSyl[i])>=0) lastNucEnd=i+1; i++;}
+    }
+    if(lastNucEnd<0||lastNucEnd>=lastSyl.length) return '';
+    var trail=lastSyl.slice(lastNucEnd);
+    var DIGRAPHS=['ng','sh','th','ch','zh'];
+    for(var d=0;d<DIGRAPHS.length;d++) if(trail.endsWith(DIGRAPHS[d])) return DIGRAPHS[d];
+    return trail.slice(-1);
+  }
+
   var html='<div style="display:flex;flex-wrap:wrap;gap:10px 16px;padding:4px 0">';
-  words.forEach(function(word){
+  words.forEach(function(word,wi){
     var k=word.toLowerCase().replace(/[^a-z]/g,'');
     if(!k) return;
     var ph=wordPhon(k)||phonetize(k)||k.toUpperCase();
     var hasStress=/[A-Z]{2,}/.test(ph);
     var isFunc=!!FUNC_SET[k];
-    var phTxt=ph.replace(/-/g,'·');
+    var lc=musicLinkSet[wi]?musicGetLinkCons(ph):'';
+    var phBase=lc?ph.slice(0,ph.length-lc.length):ph;
+    var phTxt=phBase.replace(/-/g,'·')+(lc?'<span style="color:#FF6B35;font-weight:800;font-size:9px">'+lc+'⌒</span>':'');
     html+='<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'
       +'<span style="font-size:10px;letter-spacing:.5px;color:'+(isFunc?'#ccc':(hasStress?'#FF6B35':'#999'))+';font-weight:'+(hasStress?'700':'400')+'">'+phTxt+'</span>'
       +'<span style="font-size:14px;font-weight:'+(hasStress?'700':'400')+';color:'+(isFunc?'#bbb':'#1a1a1a')+'">'+word+'</span>'
