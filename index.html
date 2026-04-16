@@ -1241,6 +1241,7 @@ var _musicPage=0;
 var _musicTab=1;
 var _calIdx=0;
 var _calTimes=[];
+var _userLyricClick=0; // 유저가 가사 클릭한 타임스탬프
 
 function _buildSongPickerHTML(){
   // ── 상단 카테고리 탭 ──
@@ -1284,7 +1285,24 @@ function _buildSongPickerHTML(){
   html+='</div>';
   return html;
 }
-function _rebuildSongPicker(){var el=document.getElementById('song-picker');if(el)el.innerHTML=_buildSongPickerHTML();}
+function _rebuildSongPicker(){
+  // 현재 탭에 맞는 곡이 선택돼 있는지 확인
+  var filtered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
+    return _musicTab===0?!!x.s.soundcloudUrl:!!x.s.spotifyId;
+  });
+  var inTab=filtered.some(function(x){return x.idx===(S.musicSongIdx||0);});
+  if(!inTab&&filtered.length>0){
+    // 탭에 맞는 첫 곡으로 교체 후 전체 재렌더
+    S.musicSongIdx=filtered[0].idx;
+    _previewStartPos=null;_lastLyricIdx=-1;
+    if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
+    if(_scWidget){try{_scWidget.pause();}catch(e){}_scWidget=null;}
+    render();
+    return;
+  }
+  var el=document.getElementById('song-picker');
+  if(el) el.innerHTML=_buildSongPickerHTML();
+}
 
 // Tap-to-calibrate: user plays preview and taps "마크" at each lyric's start
 function _markCalNext(){
@@ -1806,8 +1824,9 @@ function _calTap(i){
   if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
 }
 
-function _setLyricDisplay(idx){
+function _setLyricDisplay(idx,byUser){
   if(idx<0) return;
+  if(byUser) _userLyricClick=Date.now();
   _lastLyricIdx=idx;
   var cards=document.querySelectorAll('.lyric-card');
   for(var i=0;i<cards.length;i++){
@@ -1938,7 +1957,8 @@ function _updateLyricHighlight(pos){
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
   for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t+_timingOffset){activeIdx=i;break;}}
-  if(activeIdx!==_lastLyricIdx) _setLyricDisplay(activeIdx);
+  // 유저가 클릭한 지 3초 이내엔 자동 하이라이트 억제
+  if(activeIdx!==_lastLyricIdx&&Date.now()-_userLyricClick>3000) _setLyricDisplay(activeIdx);
 }
 
 function splitSentences(text){
@@ -2182,7 +2202,7 @@ function render(){
           '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
       });
       var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+')" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
+      return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+',true)" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
         +'<div style="display:flex;align-items:flex-start;gap:8px">'
         +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
         +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:1px">🔊</button>'
