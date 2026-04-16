@@ -765,7 +765,7 @@ function phonetize(w){
   p=p.replace(/ors$/, 'erz').replace(/or$/, 'er');
   // Multi-char patterns — longest first
   p=p.replace(/tion/g,'shun').replace(/sion/g,'zhun').replace(/ture/g,'cher');
-  p=p.replace(/eigh/g,'ay').replace(/ight/g,'ayt').replace(/igh/g,'eye');
+  p=p.replace(/eigh/g,'ay').replace(/ight/g,'ait').replace(/igh/g,'ai');
   p=p.replace(/aught/g,'awt').replace(/ought/g,'awt').replace(/ough/g,'oh');
   // Vowel digraphs
   p=p.replace(/oo/g,'oo').replace(/ee/g,'ee').replace(/ea/g,'ee');
@@ -2542,6 +2542,10 @@ function render(){
       // Pronunciation — sentence by sentence with individual play buttons
       var sentences=splitSentences(S.aiEng);
       window._aiSents=sentences;
+      // Fetch API phonetics for any uncached words, then re-render
+      var _aiUncached=[];
+      sentences.forEach(function(s){s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_aiUncached.indexOf(w)<0)_aiUncached.push(w);});});
+      if(_aiUncached.length){fetchPhonForWords(_aiUncached).then(function(){render();});return;}
       var pronCard='<div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
         +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase">발음 가이드</div>'
@@ -2725,7 +2729,11 @@ function render(){
     var sents=DATA[S.cat]||[];
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
-    var eng=s[0],kor=s[1],phon=s[2],tip=s[3];
+    var eng=s[0],kor=s[1],tip=s[3];
+    // Fetch API phonetics for uncached words, then re-render with best quality
+    var _drillUncached=[];
+    eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
+    if(_drillUncached.length){fetchPhonForWords(_drillUncached).then(function(){render();});}
     var saved=isSaved();
     var intoQ=eng.trim().endsWith('?');
     var into=intoQ?'↗ 상승 Rising':'↘ 하강 Falling';
@@ -2737,7 +2745,7 @@ function render(){
       +'<div style="font-size:18px;font-weight:800;line-height:1.4;margin-bottom:5px">'+eng+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">발음 가이드</div>'
-      +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,phon)+'</div>'
+      +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,'')+'</div>'
       +(function(){var se=eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");return '<button onclick="_openPronInput(\'p\',\''+se+'\')" style="margin-bottom:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'+'<div id="pron-result-p" style="display:none;margin-bottom:10px;background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #ebebeb"></div>';})()
 
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
