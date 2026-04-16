@@ -776,32 +776,6 @@ function wordByWordHTML(eng,phon){
   });
   html+='</div>';
 
-  // ── Sheet-music style rhythm bar chart ──────────────────────
-  (function(){
-    var SH=22,MH=12,LH=5;
-    var bars=words.map(function(word,i){
-      var ph=wordPhons[i]||'';
-      var syls=ph?ph.split('-'):[word];
-      var isFunc=!!FUNC_SET[word.toLowerCase().replace(/[^a-z]/g,'')];
-      var parts=syls.map(function(syl){
-        var isMain=/[A-Z]{2,}/.test(syl);
-        var isCap=!isMain&&/[A-Z]/.test(syl);
-        var h=isMain?SH:(isFunc?LH:(isCap?MH:LH));
-        var bg=isMain?'#1a1a1a':(isFunc?'#e0e0e0':(isCap?'#aaa':'#d0d0d0'));
-        return '<div style="width:10px;height:'+h+'px;background:'+bg+';border-radius:2px 2px 0 0;flex-shrink:0"></div>';
-      }).join('');
-      return '<div style="display:flex;align-items:flex-end;gap:2px">'+parts+'</div>';
-    }).join('');
-    html+='<div style="background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:10px 14px;margin-bottom:12px">'
-      +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">STRESS PATTERN</div>'
-      +'<div style="display:flex;align-items:flex-end;flex-wrap:wrap;gap:3px 8px;padding-bottom:5px;border-bottom:1px solid #f0f0f0">'+bars+'</div>'
-      +'<div style="display:flex;gap:14px;margin-top:6px">'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#1a1a1a;border-radius:1px 1px 0 0;vertical-align:middle"></span>강세</span>'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#aaa;border-radius:1px 1px 0 0;vertical-align:middle"></span>약세</span>'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#e0e0e0;border-radius:1px 1px 0 0;vertical-align:middle"></span>기능어</span>'
-      +'</div>'
-      +'</div>';
-  })();
 
   // ── Connected speech / reduction hints ──
   var hints=[];
@@ -1247,6 +1221,73 @@ var _musicTab=1;
 var _calIdx=0;
 var _calTimes=[];
 var _userLyricClick=0; // 유저가 가사 클릭한 타임스탬프
+var _pronRec=null;
+var _pronTestIdx=-1;
+
+function _editDist(a,b){
+  var m=a.length,n=b.length,dp=[],i,j;
+  for(i=0;i<=m;i++){dp[i]=[i];}
+  for(j=0;j<=n;j++){dp[0][j]=j;}
+  for(i=1;i<=m;i++){for(j=1;j<=n;j++){dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);}}
+  return dp[m][n];
+}
+
+function _startPronTest(idx,engText){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('이 브라우저에서는 음성 인식을 지원하지 않아요 (Chrome 권장).');return;}
+  if(_pronRec){try{_pronRec.stop();}catch(e){}  _pronRec=null;}
+  _pronTestIdx=idx;
+  var micBtn=document.getElementById('pron-mic-'+idx);
+  if(micBtn){micBtn.textContent='🔴';micBtn.style.background='#fee2e2';}
+  var rec=new SR();
+  rec.lang='en-US';rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=1;
+  _pronRec=rec;
+  rec.onresult=function(e){
+    var spoken=e.results[0][0].transcript;
+    _showPronResult(idx,spoken,engText);
+    _pronRec=null;_pronTestIdx=-1;
+  };
+  rec.onerror=function(){
+    var mb=document.getElementById('pron-mic-'+idx);
+    if(mb){mb.textContent='🎤';mb.style.background='#f0f0f0';}
+    var re=document.getElementById('pron-result-'+idx);
+    if(re){re.style.display='block';re.innerHTML='<span style="color:#e74c3c;font-size:11px">인식 실패. 다시 시도해주세요.</span>';}
+    _pronRec=null;_pronTestIdx=-1;
+  };
+  rec.onend=function(){
+    if(_pronTestIdx===idx){var mb=document.getElementById('pron-mic-'+idx);if(mb){mb.textContent='🎤';mb.style.background='#f0f0f0';}_pronTestIdx=-1;}
+  };
+  rec.start();
+}
+
+function _showPronResult(idx,spoken,target){
+  var mb=document.getElementById('pron-mic-'+idx);
+  if(mb){mb.textContent='🎤';mb.style.background='#f0f0f0';}
+  function normW(w){return w.toLowerCase().replace(/[^a-z']/g,'');}
+  var sw=spoken.trim().split(/\s+/).map(normW).filter(Boolean);
+  var tw=target.trim().split(/\s+/).map(normW).filter(Boolean);
+  var mistakes=[];
+  var parts=tw.map(function(t,i){
+    var s=sw[i]||'';
+    if(!s){mistakes.push({e:t,s:'(말 안 함)'});return '<span style="color:#e74c3c;font-weight:700;background:#fee2e2;border-radius:3px;padding:1px 5px">'+t+'</span>';}
+    var d=_editDist(s,t);
+    var thresh=Math.max(1,Math.floor(t.length/4));
+    if(s===t) return '<span style="color:#16a34a;font-weight:600">'+t+'</span>';
+    mistakes.push({e:t,s:s});
+    return '<span style="color:'+(d<=thresh?'#ea580c':'#e74c3c')+';font-weight:700;background:'+(d<=thresh?'#fff7ed':'#fee2e2')+';border-radius:3px;padding:1px 5px">'+t+'</span>';
+  }).join(' ');
+  var mHtml=mistakes.length===0
+    ?'<div style="color:#16a34a;font-size:11px;margin-top:5px;font-weight:600">✓ 완벽해요!</div>'
+    :'<div style="margin-top:6px">'+mistakes.map(function(m){
+      return '<div style="font-size:11px;color:#e74c3c"><b>'+m.e+'</b> → <span style="color:#888">"'+m.s+'"</span> 라고 발음했어요</div>';
+    }).join('')+'</div>';
+  var re=document.getElementById('pron-result-'+idx);
+  if(re){
+    re.style.display='block';
+    re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:5px">들린 발음: <i>'+spoken+'</i></div>'
+      +'<div style="font-size:13px;line-height:2.2">'+parts+'</div>'+mHtml;
+  }
+}
 
 function _buildSongPickerHTML(){
   // ── 상단 카테고리 탭 ──
@@ -2210,10 +2251,14 @@ function render(){
       return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+',true)" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
         +'<div style="display:flex;align-items:flex-start;gap:8px">'
         +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
-        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:1px">🔊</button>'
+        +'<div style="display:flex;gap:5px;flex-shrink:0;margin-top:1px">'
+        +'<button id="pron-mic-'+i+'" onclick="event.stopPropagation();_startPronTest('+i+',\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">🎤</button>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555">🔊</button>'
+        +'</div>'
         +'</div>'
         +'<div class="lc-phon" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:10px 12px">'
         +musicWordPhon(line.eng)
+        +'<div id="pron-result-'+i+'" style="display:none;border-top:1px solid #ebebeb;margin-top:8px;padding-top:8px"></div>'
         +'<div style="font-size:11px;color:#888;border-top:1px solid #efefef;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
         +'</div>'
         +'</div>';
