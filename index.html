@@ -447,7 +447,7 @@ function ipaConvert(s){
     .replace(/ɪər/g,'eer').replace(/ʊər/g,'oor').replace(/ɛər/g,'air').replace(/eər/g,'air')
     // Short vowels
     .replace(/ɒ/g,'ah').replace(/ɔ/g,'aw').replace(/ɑ/g,'ah')
-    .replace(/æ/g,'a').replace(/ɪ/g,'i').replace(/ʊ/g,'oo')
+    .replace(/æ/g,'a').replace(/ɪ/g,'ih').replace(/ʊ/g,'oo')
     .replace(/ʌ/g,'uh').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
     .replace(/ɛ/g,'e').replace(/ɐ/g,'uh')
     // Affricates (must come before single-consonant replacements)
@@ -475,7 +475,7 @@ function splitPhonSyllables(s){
   if(!s) return [s||''];
   var p=s.toLowerCase();
   // Vowel nuclei patterns, longest first
-  var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+  var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','ih','er','oh','aa','ah'];
   var vPos=[];
   var i=0;
   while(i<p.length){
@@ -517,20 +517,27 @@ function splitPhonSyllables(s){
 function ipaToPhon(ipa){
   var s=(ipa||'').replace(/^[\/\[]|[\/\]]$/g,'').replace(/ˌ/g,'').trim();
   if(!s) return '';
+  var result;
   if(s.includes('.')){
-    return s.split('.').map(function(syl){
+    result=s.split('.').map(function(syl){
       var st=syl.includes('ˈ');
       var c=ipaConvert(syl.replace(/ˈ/g,''));
       return st?c.toUpperCase():c;
     }).filter(Boolean).join('-');
+  } else {
+    var idx=s.indexOf('ˈ');
+    if(idx<0){
+      result=splitPhonSyllables(ipaConvert(s)).join('-');
+    } else {
+      var before=ipaConvert(s.slice(0,idx));
+      var after=ipaConvert(s.slice(idx+1));
+      var afterSyls=splitPhonSyllables(after);
+      result=(before?before+'-':'')+afterSyls.join('-');
+    }
   }
-  var idx=s.indexOf('ˈ');
-  if(idx<0) return splitPhonSyllables(ipaConvert(s)).join('-');
-  var before=ipaConvert(s.slice(0,idx));
-  var after=ipaConvert(s.slice(idx+1));
-  // ˈ in middle: before is unstressed prefix, after is stressed+rest
-  var afterSyls=splitPhonSyllables(after);
-  return (before?before+'-':'')+afterSyls.join('-');
+  // Word-final bare 'i' after consonant → 'ee' (tiny→TAI-nee, city→SIH-tee, happy→HAP-ee)
+  result=result.replace(/([bcdfghjklmnpqrstvwxyz])i$/i,'$1ee');
+  return result;
 }
 
 function fetchPhonForWords(words){
@@ -778,6 +785,8 @@ function phonetize(w){
   p=p.replace(/qu/g,'kw').replace(/wh/g,'w').replace(/mb$/g,'m');
   p=p.replace(/c([eiy])/g,'s$1').replace(/c/g,'k');
   p=p.replace(/g([ei])/g,'j$1').replace(/x/g,'ks');
+  // Word-final y after consonant → ee (tiny→tinee, happy→hapee, pretty→pritee)
+  p=p.replace(/([bcdfghjklmnpqrstvwxz])y$/,'$1ee');
   // Silent final e
   if(p.length>2&&/[^aeiouy]e$/.test(p)) p=p.slice(0,-1);
   // Final -s → z after vowel/voiced
@@ -976,7 +985,7 @@ function musicWordPhon(eng){
   }
   function musicGetLinkCons(ph){
     var lastSyl=ph.split('-').pop().toLowerCase();
-    var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+    var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','ih','er','oh','aa','ah'];
     var lastNucEnd=-1,i=0;
     while(i<lastSyl.length){
       var found=false;
