@@ -1243,10 +1243,20 @@ var _calIdx=0;
 var _calTimes=[];
 
 function _buildSongPickerHTML(){
-  var tabHtml='<div style="display:flex;gap:6px;margin-bottom:8px">'
-    +'<button onclick="_musicTab=0;_musicPage=0;_rebuildSongPicker()" style="flex:1;border:none;border-radius:10px;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;background:'+(_musicTab===0?'#1a1a1a':'#f0f0f0')+';color:'+(_musicTab===0?'#fff':'#888')+'">Full Version 🎶</button>'
-    +'<button onclick="_musicTab=1;_musicPage=0;_rebuildSongPicker()" style="flex:1;border:none;border-radius:10px;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;background:'+(_musicTab===1?'#1a1a1a':'#f0f0f0')+';color:'+(_musicTab===1?'#fff':'#888')+'">Daily 📚</button>'
+  // ── 상단 카테고리 탭 ──
+  var tabHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+    +'<button onclick="_musicTab=1;_musicPage=0;_rebuildSongPicker()" style="border:2px solid '+(_musicTab===1?'#1a1a1a':'#e8e8e8')+';border-radius:14px;padding:13px 8px;background:'+(_musicTab===1?'#1a1a1a':'#fff')+';cursor:pointer;text-align:center">'
+    +'<div style="font-size:18px;margin-bottom:4px">⏱️</div>'
+    +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===1?'#fff':'#1a1a1a')+'">30초 프리뷰</div>'
+    +'<div style="font-size:9px;color:'+(_musicTab===1?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">Spotify · 25곡</div>'
+    +'</button>'
+    +'<button onclick="_musicTab=0;_musicPage=0;_rebuildSongPicker()" style="border:2px solid '+(_musicTab===0?'#1a1a1a':'#e8e8e8')+';border-radius:14px;padding:13px 8px;background:'+(_musicTab===0?'#1a1a1a':'#fff')+';cursor:pointer;text-align:center">'
+    +'<div style="font-size:18px;margin-bottom:4px">🎶</div>'
+    +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===0?'#fff':'#1a1a1a')+'">Full Version</div>'
+    +'<div style="font-size:9px;color:'+(_musicTab===0?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">SoundCloud</div>'
+    +'</button>'
     +'</div>';
+  // ── 하단 곡 목록 ──
   var filtered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
     return _musicTab===0?!!x.s.soundcloudUrl:!!x.s.spotifyId;
   });
@@ -2106,113 +2116,23 @@ function render(){
     var _fvIdx=_fvItem?_fvItem.idx:0;
     var _fvSong=_fvItem?_fvItem.s:{title:'—',artist:''};
 
-    // Expanded action cards (3 cards: Practice / Music Coach / 오늘의 양)
+    // Expanded action cards (2 cards: Practice / Music Coach)
     var _expandHtml='';
     if(S.homeExpanded){
-      var _goal=getDailyGoal();
-      var _cnt=_ds.count||0;
-      var _pct=Math.min(100,Math.round(_cnt/_goal*100));
-      var _analysis=getWeakAnalysis();
-      var _isMusicOpen=S.homeSubExpanded===1;
-      var _isDailyOpen=S.homeSubExpanded===2;
-
-      // ── 3 top cards ──
       _expandHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">'
         // 1. Practice Course
-        +'<div onclick="goPCats()" style="background:#fff;border-radius:16px;padding:16px 14px;cursor:pointer">'
-        +'<div style="font-size:22px;margin-bottom:8px">📖</div>'
-        +'<div style="font-weight:700;font-size:12px;color:#1a1a1a;line-height:1.3">Practice<br>Course</div>'
-        +'<div style="font-size:10px;color:#888;margin-top:4px;line-height:1.4">카테고리별<br>발음·억양 연습</div>'
+        +'<div onclick="goPCats()" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer">'
+        +'<div style="font-size:24px;margin-bottom:10px">📖</div>'
+        +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;line-height:1.3">Practice<br>Course</div>'
+        +'<div style="font-size:10px;color:#888;margin-top:6px;line-height:1.5">카테고리별<br>발음·억양 연습</div>'
         +'</div>'
-        // 2. Music Coach (toggles sub-panel)
-        +'<div onclick="set({homeSubExpanded:S.homeSubExpanded===1?0:1})" style="background:'+(_isMusicOpen?'#1a1a1a':'#fff')+';border-radius:16px;padding:16px 14px;cursor:pointer">'
-        +'<div style="font-size:22px;margin-bottom:8px">🎵</div>'
-        +'<div style="font-weight:700;font-size:12px;color:'+(_isMusicOpen?'#fff':'#1a1a1a')+';line-height:1.3">Music<br>Coach</div>'
-        +'<div style="font-size:10px;color:'+(_isMusicOpen?'rgba(255,255,255,.5)':'#888')+';margin-top:4px;line-height:1.4">30초 프리뷰<br>· Full Version</div>'
-        +'</div>'
-        // 3. 오늘의 양 (full width, toggles sub-panel)
-        +'<div onclick="set({homeSubExpanded:S.homeSubExpanded===2?0:2})" style="grid-column:1/-1;background:'+(_isDailyOpen?'#1a1a1a':'#fff')+';border-radius:16px;padding:14px 16px;cursor:pointer">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between">'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-        +'<div style="font-size:24px">🎯</div>'
-        +'<div>'
-        +'<div style="font-weight:700;font-size:12px;color:'+(_isDailyOpen?'#fff':'#1a1a1a')+';line-height:1.3">오늘의 양</div>'
-        +'<div style="font-size:10px;color:'+(_isDailyOpen?'rgba(255,255,255,.5)':'#888')+';margin-top:2px">목표 설정 · 분석</div>'
-        +'</div>'
-        +'</div>'
-        +'<div style="text-align:right">'
-        +'<div style="font-size:16px;font-weight:800;color:'+(_isDailyOpen?'#fff':'#1a1a1a')+'">'+_cnt+' <span style="font-size:10px;font-weight:400;color:'+(_isDailyOpen?'rgba(255,255,255,.5)':'#aaa')+'">/ '+_goal+'</span></div>'
-        +'<div style="font-size:9px;color:'+(_isDailyOpen?'rgba(255,255,255,.4)':'#bbb')+';margin-top:2px">'+(_ds.streak||0)+' day streak</div>'
-        +'</div>'
-        +'</div>'
-        // mini progress bar
-        +'<div style="margin-top:10px;height:4px;background:'+(_isDailyOpen?'rgba(255,255,255,.15)':'#f0f0f0')+';border-radius:2px;overflow:hidden">'
-        +'<div style="width:'+_pct+'%;height:100%;background:'+(_isDailyOpen?'#fff':(_pct>=100?'#22c55e':'#FF6B35'))+';border-radius:2px;transition:width .4s"></div>'
-        +'</div>'
+        // 2. Music Coach → 바로 뮤직 화면으로
+        +'<div onclick="goMusic(1);" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer">'
+        +'<div style="font-size:24px;margin-bottom:10px">🎵</div>'
+        +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;line-height:1.3">Music<br>Coach</div>'
+        +'<div style="font-size:10px;color:#888;margin-top:6px;line-height:1.5">30초 프리뷰<br>· Full Version</div>'
         +'</div>'
         +'</div>';
-
-      // ── Music sub-panel ──
-      if(_isMusicOpen){
-        _expandHtml+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">'
-          // 30초 프리뷰 (Spotify)
-          +'<div onclick="set({musicSongIdx:'+_tmIdx+'});goMusic(1);" style="background:#fff;border-radius:14px;padding:14px 12px;cursor:pointer;border:2px solid #ebebeb">'
-          +'<div style="font-size:18px;margin-bottom:6px">⏱️</div>'
-          +'<div style="font-weight:700;font-size:11px;color:#1a1a1a;line-height:1.3">30초 프리뷰</div>'
-          +'<div style="font-size:9px;color:#888;margin-top:3px">Spotify · 25곡</div>'
-          +'<div style="font-size:9px;color:#FF6B35;font-weight:600;margin-top:4px">오늘: '+_tmSong.title+'</div>'
-          +'</div>'
-          // Full Version (SoundCloud)
-          +'<div onclick="set({musicSongIdx:'+_fvIdx+'});goMusic(0);" style="background:#fff;border-radius:14px;padding:14px 12px;cursor:pointer;border:2px solid #ebebeb">'
-          +'<div style="font-size:18px;margin-bottom:6px">🎶</div>'
-          +'<div style="font-weight:700;font-size:11px;color:#1a1a1a;line-height:1.3">Full Version</div>'
-          +'<div style="font-size:9px;color:#888;margin-top:3px">SoundCloud</div>'
-          +'<div style="font-size:9px;color:#f97316;font-weight:600;margin-top:4px">'+_fvSong.title+' · '+_fvSong.artist+'</div>'
-          +'</div>'
-          +'</div>';
-      }
-
-      // ── Daily Goal sub-panel ──
-      if(_isDailyOpen){
-        var _analysisHtml='';
-        if(!_analysis){
-          _analysisHtml='<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">연습을 더 해보면 약점 분석이 나타나요 📊</div>';
-        } else {
-          _analysisHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)">'
-            +'<div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">약점 분석</div>';
-          _analysis.cats.forEach(function(c){
-            _analysisHtml+='<div style="margin-bottom:7px">'
-              +'<div style="font-size:11px;font-weight:700;color:#FF6B35">⚠️ '+c.label+'</div>'
-              +'<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:2px;line-height:1.5">'+c.tip+'</div>'
-              +'</div>';
-          });
-          if(_analysis.words.length){
-            _analysisHtml+='<div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:4px">자주 틀린 단어: '
-              +_analysis.words.map(function(it){return '"'+it.word+'" ('+it.cnt+'번)';}).join(', ')+'</div>';
-          }
-          _analysisHtml+='</div>';
-        }
-        _expandHtml+='<div style="background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 16px;margin-top:8px">'
-          // Goal adjuster
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-          +'<div style="font-size:11px;color:rgba(255,255,255,.6)">일일 목표</div>'
-          +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<button onclick="event.stopPropagation();setDailyGoal(getDailyGoal()-1)" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1">−</button>'
-          +'<span style="font-size:16px;font-weight:800;color:#fff;min-width:24px;text-align:center">'+_goal+'</span>'
-          +'<button onclick="event.stopPropagation();setDailyGoal(getDailyGoal()+1)" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1">+</button>'
-          +'</div>'
-          +'</div>'
-          // progress detail
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-          +'<div style="font-size:11px;color:rgba(255,255,255,.5)">오늘 완료</div>'
-          +'<div style="font-size:11px;font-weight:700;color:'+(_cnt>=_goal?'#22c55e':'#fff')+'">'+_cnt+' / '+_goal+(_cnt>=_goal?' ✓':'')+' 회</div>'
-          +'</div>'
-          +'<div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">'
-          +'<div style="width:'+_pct+'%;height:100%;background:'+(_pct>=100?'#22c55e':'#FF6B35')+';border-radius:3px;transition:width .4s"></div>'
-          +'</div>'
-          +_analysisHtml
-          +'</div>';
-      }
     }
 
     app.innerHTML='<div style="background:#1a1a1a;min-height:100vh;display:flex;flex-direction:column">'
