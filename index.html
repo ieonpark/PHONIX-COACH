@@ -433,7 +433,7 @@ var PH={
 
 function wordPhon(w){
   var cl=w.toLowerCase().replace(/[^a-z]/g,'');
-  return PH[cl]||PHON_CACHE[cl]||null;
+  return PH[cl]||_PHON_EXCEPTIONS[cl]||PHON_CACHE[cl]||null;
 }
 
 // ── Free Dictionary API: IPA → kum-PLEET-lee format ──
@@ -555,15 +555,91 @@ function fetchPhonForWords(words){
 
 // ── Phonetic rules fallback for words not in PH dict ──
 var _PHON_EXCEPTIONS={
+  // Tech / media
   'pro':'PROH','pros':'PROHZ','photo':'FOH-toh','logo':'LOH-goh',
   'nano':'NAY-noh','macro':'MAK-roh','micro':'MY-kroh',
   'video':'VID-ee-oh','audio':'AW-dee-oh','studio':'STOO-dee-oh',
   'radio':'RAY-dee-oh','ratio':'RAY-shoh','patio':'PAY-tee-oh',
   'data':'DAY-tuh','beta':'BAY-tuh','alpha':'AL-fuh','sigma':'SIG-muh',
+  // -ity words
   'quality':'KWAHL-ih-tee','quantity':'KWAHN-tih-tee',
+  'ability':'uh-BIL-ih-tee','activity':'ak-TIV-ih-tee',
+  'opportunity':'ah-per-TOO-nih-tee','community':'kuh-MYOO-nih-tee',
+  'authority':'uh-THOR-ih-tee','security':'sih-KYOOR-ih-tee',
+  'priority':'pry-OR-ih-tee','majority':'muh-JOR-ih-tee',
+  'minority':'mih-NOR-ih-tee','identity':'eye-DEN-tih-tee',
+  'utility':'yoo-TIL-ih-tee','reality':'ree-AL-ih-tee',
+  'equality':'ee-KWAHL-ih-tee','penalty':'PEN-ul-tee',
+  'university':'yoo-nih-VER-sih-tee','diversity':'dih-VER-sih-tee',
+  'creativity':'kree-ay-TIV-ih-tee','productivity':'proh-duk-TIV-ih-tee',
+  'sensitivity':'sen-sih-TIV-ih-tee','responsibility':'rih-spahn-sih-BIL-ih-tee',
+  // -ary / -ory / -ery / -ency words
+  'vary':'VAIR-ee','varies':'VAIR-eez','varied':'VAIR-eed','varying':'VAIR-ee-ing',
+  'variable':'VAIR-ee-uh-bul','various':'VAIR-ee-us','variety':'vuh-RY-ih-tee',
+  'necessary':'NES-ih-ser-ee','secondary':'SEK-un-der-ee',
+  'primary':'PRY-mer-ee','temporary':'TEM-puh-rer-ee','military':'MIL-ih-ter-ee',
+  'vocabulary':'voh-KAB-yuh-ler-ee','library':'LY-brer-ee','ordinary':'OR-din-er-ee',
+  'extraordinary':'ek-STROR-dih-ner-ee','January':'JAN-yoo-er-ee',
+  'February':'FEB-roo-er-ee','secretary':'SEK-rih-ter-ee',
+  'story':'STOR-ee','history':'HIS-tor-ee','territory':'TER-ih-tor-ee',
+  'category':'KAT-ih-gor-ee','factory':'FAK-tor-ee','memory':'MEM-or-ee',
+  'directory':'dih-REK-tor-ee','inventory':'IN-ven-tor-ee',
+  'delivery':'dih-LIV-er-ee','discovery':'dih-SKUV-er-ee',
+  'recovery':'rih-KUV-er-ee','surgery':'SER-jer-ee',
+  'efficiency':'ih-FISH-un-see','efficient':'ih-FISH-unt',
+  'deficiency':'dih-FISH-un-see','proficiency':'pruh-FISH-un-see',
+  'agency':'AY-jun-see','emergency':'ih-MER-jun-see',
+  'currency':'KER-un-see','frequency':'FREE-kwun-see',
+  'tendency':'TEN-dun-see','presidency':'PREZ-ih-dun-see',
+  'fluency':'FLOO-un-see','consistency':'kun-SIS-tun-see',
+  'transparency':'trans-PAIR-un-see','dependency':'dih-PEN-dun-see',
+  // -tion / -sion / -ure
+  'jurisdiction':'jur-is-DIK-shun','regulation':'reg-yuh-LAY-shun',
+  'regulations':'reg-yuh-LAY-shunz','situation':'sit-yoo-AY-shun',
+  'education':'ej-yoo-KAY-shun','information':'in-fer-MAY-shun',
+  'organization':'or-guh-nih-ZAY-shun','organizations':'or-guh-nih-ZAY-shunz',
+  'application':'ap-lih-KAY-shun','communication':'kuh-myoo-nih-KAY-shun',
+  'administration':'ad-min-is-TRAY-shun','transportation':'trans-por-TAY-shun',
+  'population':'pahp-yuh-LAY-shun','recommendation':'rek-uh-men-DAY-shun',
+  'accommodation':'uh-kahm-uh-DAY-shun','determination':'dih-ter-mih-NAY-shun',
+  'consideration':'kun-sid-er-AY-shun','presentation':'prez-un-TAY-shun',
+  'representation':'rep-rih-zen-TAY-shun','participation':'par-tis-ih-PAY-shun',
+  'implementation':'im-pluh-men-TAY-shun','foundation':'fown-DAY-shun',
+  'generation':'jen-er-AY-shun','conversation':'kahn-ver-SAY-shun',
+  'observation':'ahb-zer-VAY-shun','investigation':'in-ves-tih-GAY-shun',
+  'combination':'kahm-bih-NAY-shun','destination':'des-tih-NAY-shun',
+  'imagination':'ih-maj-ih-NAY-shun','association':'uh-soh-see-AY-shun',
+  'celebration':'sel-ih-BRAY-shun','concentration':'kahn-sun-TRAY-shun',
+  'demonstration':'dem-un-STRAY-shun','exaggeration':'ig-zaj-er-AY-shun',
+  'fascination':'fas-ih-NAY-shun','interpretation':'in-ter-prih-TAY-shun',
+  'pronunciation':'pruh-nun-see-AY-shun','transformation':'trans-for-MAY-shun',
+  'requirement':'rih-KWYRE-munt','requirements':'rih-KWYRE-munts',
+  'environment':'en-VY-run-munt','environments':'en-VY-run-munts',
+  'achievement':'uh-CHEEV-munt','adjustment':'uh-JUST-munt',
+  'advertisement':'ad-VER-tis-munt','announcement':'uh-NOWNS-munt',
+  'appointment':'uh-POYNT-munt','arrangement':'uh-RAYNJ-munt',
+  'assessment':'uh-SES-munt','assignment':'uh-SYN-munt',
+  'commitment':'kuh-MIT-munt','department':'dih-PART-munt',
+  'development':'dih-VEL-up-munt','disagreement':'dis-uh-GREE-munt',
+  'entertainment':'en-ter-TAYN-munt','establishment':'ih-STAB-lish-munt',
+  'government':'GUV-ern-munt','improvement':'im-PROOV-munt',
+  'investment':'in-VEST-munt','management':'MAN-ij-munt',
+  'measurement':'MEZH-er-munt','movement':'MOOV-munt',
+  'punishment':'PUN-ish-munt','replacement':'rih-PLAYS-munt',
+  'statement':'STAYT-munt','treatment':'TREET-munt',
+  // -ment/-ness/-ful/-less
+  'beautiful':'BYOO-tih-ful','beauty':'BYOO-tee','grateful':'GRAYT-ful',
+  'powerful':'POW-er-ful','wonderful':'WUN-der-ful','successful':'suk-SES-ful',
+  'careful':'KAIR-ful','helpful':'HELP-ful','peaceful':'PEES-ful',
+  'thoughtful':'THAWT-ful','useful':'YOOS-ful','stressful':'STRES-ful',
+  'happiness':'HAP-ee-nes','sadness':'SAD-nes','kindness':'KYND-nes',
+  'darkness':'DARK-nes','weakness':'WEEK-nes','illness':'IL-nes',
+  'business':'BIZ-nis','awareness':'uh-WAIR-nes','consciousness':'KAHN-shus-nes',
+  'effectiveness':'ih-FEK-tiv-nes','readiness':'RED-ee-nes',
+  // Common tricky words
   'image':'IM-ij','images':'IM-ih-jiz','imagine':'ih-MAJ-in',
   'reach':'REECH','reached':'REECHT','reaches':'REECH-iz',
-  'achieve':'uh-CHEEV','achieved':'uh-CHEEVD',
+  'achieve':'uh-CHEEV','achieved':'uh-CHEEVD','achievement':'uh-CHEEV-munt',
   'people':'PEE-pul','other':'UH-ther','another':'uh-NUH-ther',
   'water':'WAW-ter','world':'WERLD','school':'SKOOL',
   'thought':'THAWT','through':'THROO','though':'THOH',
@@ -573,22 +649,88 @@ var _PHON_EXCEPTIONS={
   'their':'thair','there':'thair','they\'re':'thair',
   'hour':'OW-er','hours':'OW-erz',
   'whole':'HOHL','whose':'HOOZ',
-  'beautiful':'BYOO-tih-ful','beauty':'BYOO-tee',
-  'special':'SPESH-ul','usually':'YOO-zhoo-uh-lee',
-  'different':'DIF-er-unt','difficult':'DIF-ih-kult',
-  'important':'im-POR-tunt','possible':'PAH-sih-bul',
-  'question':'KWES-chun','answer':'AN-ser',
-  'because':'bih-KUZ','something':'SUM-thing',
-  'everything':'EV-ree-thing','anything':'EN-ee-thing',
-  'together':'tuh-GETH-er','whether':'WETH-er',
-  'pretty':'PRIT-ee','city':'SIT-ee','body':'BAH-dee',
+  'special':'SPESH-ul','usually':'YOO-zhoo-uh-lee','usual':'YOO-zhoo-ul',
+  'different':'DIF-er-unt','difficult':'DIF-ih-kult','difficulty':'DIF-ih-kul-tee',
+  'important':'im-POR-tunt','possible':'PAH-sih-bul','impossible':'im-PAH-sih-bul',
+  'question':'KWES-chun','answer':'AN-ser','knowledge':'NAH-lij',
+  'because':'bih-KUZ','something':'SUM-thing','everything':'EV-ree-thing',
+  'anything':'EN-ee-thing','nothing':'NUH-thing','together':'tuh-GETH-er',
+  'whether':'WETH-er','pretty':'PRIT-ee','city':'SIT-ee','body':'BAH-dee',
   'only':'OHN-lee','really':'REE-lee','already':'awl-RED-ee',
   'family':'FAM-uh-lee','money':'MUN-ee','country':'KUN-tree',
-  'company':'KUM-puh-nee','community':'kuh-MYOO-nih-tee',
-  'government':'GUV-ern-munt','national':'NASH-uh-nul',
+  'company':'KUM-puh-nee','national':'NASH-uh-nul',
   'language':'LANG-gwij','example':'ig-ZAM-pul',
-  'business':'BIZ-nis','system':'SIS-tum','problem':'PRAH-blum',
-  'information':'in-fer-MAY-shun','technology':'tek-NAH-luh-jee'
+  'system':'SIS-tum','problem':'PRAH-blum','technology':'tek-NAH-luh-jee',
+  'area':'AIR-ee-uh','areas':'AIR-ee-uhz','idea':'eye-DEE-uh','ideas':'eye-DEE-uhz',
+  'apartment':'uh-PART-munt','apartments':'uh-PART-munts',
+  'minimum':'MIN-ih-mum','maximum':'MAK-sih-mum',
+  'medium':'MEE-dee-um','premium':'PREE-mee-um',
+  'county':'KOWN-tee','counties':'KOWN-teez',
+  'salary':'SAL-er-ee','gallery':'GAL-er-ee','celery':'SEL-er-ee',
+  'energy':'EN-er-jee','strategy':'STRAT-ih-jee','category':'KAT-ih-gor-ee',
+  'average':'AV-er-ij','coverage':'KUV-er-ij','marriage':'MAIR-ij',
+  'damage':'DAM-ij','manage':'MAN-ij','package':'PAK-ij','village':'VIL-ij',
+  'college':'KAH-lij','knowledge':'NAH-lij','language':'LANG-gwij',
+  'message':'MES-ij','passage':'PAS-ij','storage':'STOR-ij','courage':'KER-ij',
+  'encourage':'en-KER-ij','percentage':'per-SEN-tij',
+  'challenge':'CHAL-unj','change':'CHAYNJ','range':'RAYNJ','strange':'STRAYNJ',
+  'exchange':'eks-CHAYNJ','arrange':'uh-RAYNJ',
+  'schedule':'SKEJ-ool','vehicle':'VEE-uh-kul','muscle':'MUH-sul',
+  'island':'EYE-lund','sign':'SYN','design':'dih-ZYN','assign':'uh-SYN',
+  'campaign':'kam-PAYN','maintain':'mayn-TAYN','contain':'kun-TAYN',
+  'explain':'ek-SPLAYN','certain':'SER-tun','captain':'KAP-tun',
+  'mountain':'MOWN-tun','fountain':'FOWN-tun','curtain':'KER-tun',
+  'sentence':'SEN-tunts','distance':'DIS-tunts','difference':'DIF-er-unts',
+  'experience':'ek-SPEER-ee-unts','ience':'ee-unts',
+  'science':'SY-unts','patience':'PAY-shunts','ancient':'AYN-shunt',
+  'present':'PREZ-unt','pleasant':'PLEZ-unt','student':'STOO-dunt',
+  'president':'PREZ-ih-dunt','resident':'REZ-ih-dunt','accident':'AK-sih-dunt',
+  'excellent':'EK-suh-lunt','confident':'KAHN-fih-dunt','independent':'in-dih-PEN-dunt',
+  'dependent':'dih-PEN-dunt','evident':'EV-ih-dunt','intelligent':'in-TEL-ih-junt',
+  'relevant':'REL-uh-vunt','significant':'sig-NIH-fih-kunt',
+  'appropriate':'uh-PROH-pree-it','separate':'SEP-er-it',
+  'desperate':'DES-per-it','elaborate':'ih-LAB-er-it',
+  'moderate':'MAH-der-it','accurate':'AK-yur-it','adequate':'AD-ih-kwit',
+  'candidate':'KAN-dih-dayt','climate':'KLY-mit','estimate':'ES-tih-mit',
+  'favorite':'FAY-ver-it','minute':'MIH-nit','opposite':'AH-puh-zit',
+  'private':'PRY-vit','ultimate':'UL-tih-mit','intimate':'IN-tih-mit',
+  'graduate':'GRAJ-oo-it','chocolate':'CHAH-klut','temperature':'TEM-pruh-cher',
+  'literature':'LIT-er-uh-cher','adventure':'ad-VEN-cher','culture':'KUL-cher',
+  'future':'FYOO-cher','mixture':'MIKS-cher','nature':'NAY-cher',
+  'picture':'PIK-cher','structure':'STRUK-cher','texture':'TEKS-cher',
+  'feature':'FEE-cher','creature':'KREE-cher','gesture':'JES-cher',
+  'lecture':'LEK-cher','posture':'PAH-scher','rupture':'RUP-cher',
+  'nurture':'NER-cher','capture':'KAP-cher','fracture':'FRAK-cher',
+  'manufacture':'man-yuh-FAK-cher',
+  // Power/flower words (ow = ow not oh)
+  'power':'POW-er','powers':'POW-erz','powerful':'POW-er-ful',
+  'flower':'FLOW-er','flowers':'FLOW-erz',
+  'tower':'TOW-er','shower':'SHOW-er','hour':'OW-er',
+  'allow':'uh-LOW','allowed':'uh-LOWD','allowing':'uh-LOW-ing',
+  'follow':'FAH-loh','hollow':'HAH-loh','swallow':'SWAH-loh',
+  'below':'bih-LOH','fellow':'FEL-oh','yellow':'YEL-oh','elbow':'EL-boh',
+  'window':'WIN-doh','shadow':'SHAD-oh','narrow':'NAIR-oh','arrow':'AIR-oh',
+  'borrow':'BOR-oh','sorrow':'SOR-oh','tomorrow':'tuh-MOR-oh',
+  'know':'NOH','known':'NOHN','show':'SHOH','shown':'SHOHN',
+  'grow':'GROH','grown':'GROHN','flow':'FLOH','blow':'BLOH',
+  'slow':'SLOH','snow':'SNOH','throw':'THROH','own':'OHN',
+  'now':'NOW','cow':'KOW','how':'HOW','wow':'WOW',
+  'down':'DOWN','town':'TOWN','brown':'BROWN','crown':'KROWN',
+  'found':'FOWND','sound':'SOWND','round':'ROWND','ground':'GROWND',
+  'around':'uh-ROWND','about':'uh-BOWT','out':'OWT','loud':'LOWD',
+  // Common -ough/-augh
+  'though':'THOH','through':'THROO','thought':'THAWT',
+  'bought':'BAWT','brought':'BRAWT','fought':'FAWT',
+  'caught':'KAWT','taught':'TAWT','daughter':'DAW-ter',
+  'laughter':'LAF-ter','slaughter':'SLAW-ter',
+  // Geography
+  'georgia':'JOR-juh','florida':'FLAWR-ih-duh','texas':'TEK-sus',
+  'california':'kal-ih-FORN-yuh','arizona':'air-ih-ZOH-nuh',
+  'virginia':'ver-JIN-yuh','carolina':'kair-uh-LY-nuh',
+  'washington':'WAH-shing-tun','colorado':'kah-luh-RAD-oh',
+  'chicago':'shih-KAH-goh','angeles':'AN-jih-les',
+  'francisco':'fran-SIS-koh','avenue':'AV-ih-nyoo',
+  'boulevard':'BOO-luh-vard','district':'DIS-trikt'
 };
 
 function phonetize(w){
@@ -596,6 +738,24 @@ function phonetize(w){
   var lower=w.toLowerCase();
   if(_PHON_EXCEPTIONS[lower]) return _PHON_EXCEPTIONS[lower];
   var p=lower;
+  // Word-end suffix patterns — before general rules
+  p=p.replace(/ations$/, 'ayshunz').replace(/ation$/, 'ayshun');
+  p=p.replace(/iences$/, 'ee-untsiz').replace(/ience$/, 'ee-unts');
+  p=p.replace(/encies$/, 'un-seez').replace(/ency$/, 'un-see');
+  p=p.replace(/ancies$/, 'un-seez').replace(/ancy$/, 'un-see');
+  p=p.replace(/ities$/, 'ih-teez').replace(/ity$/, 'ih-tee');
+  p=p.replace(/aries$/, 'air-eez').replace(/ary$/, 'air-ee');
+  p=p.replace(/ories$/, 'or-eez').replace(/ory$/, 'or-ee');
+  p=p.replace(/eries$/, 'er-eez').replace(/ery$/, 'er-ee');
+  p=p.replace(/ifies$/, 'ih-fyz').replace(/ify$/, 'ih-fy');
+  p=p.replace(/ively$/, 'iv-lee').replace(/ivity$/, 'IV-ih-tee');
+  p=p.replace(/ments$/, 'munts').replace(/ment$/, 'munt');
+  p=p.replace(/nesses$/, 'nes-iz').replace(/ness$/, 'nes');
+  p=p.replace(/lessly$/, 'les-lee').replace(/lessly$/, 'les-lee');
+  p=p.replace(/fully$/, 'ful-ee').replace(/ful$/, 'ful');
+  p=p.replace(/ings$/, 'ingz').replace(/ing$/, 'ing');
+  p=p.replace(/ers$/, 'erz').replace(/er$/, 'er');
+  p=p.replace(/ors$/, 'erz').replace(/or$/, 'er');
   // Multi-char patterns — longest first
   p=p.replace(/tion/g,'shun').replace(/sion/g,'zhun').replace(/ture/g,'cher');
   p=p.replace(/eigh/g,'ay').replace(/ight/g,'ayt').replace(/igh/g,'eye');
@@ -608,7 +768,9 @@ function phonetize(w){
   p=p.replace(/ew/g,'yoo').replace(/aw/g,'aw').replace(/au/g,'aw');
   p=p.replace(/ue/g,'oo').replace(/ui/g,'oo');
   p=p.replace(/ie/g,'ee').replace(/ei/g,'ay');
-  p=p.replace(/ow/g,'oh');  // know, show, grow → oh (BEFORE ou)
+  // ow: word-final or before consonant → oh (know, show); before vowel → ow (power)
+  p=p.replace(/own\b/g,'ohn').replace(/ow([bcdfghjklmnpqrstvwxyz]{2})/g,'ow$1');
+  p=p.replace(/ow$/g,'oh').replace(/ow(?=[^aeiou])/g,'oh').replace(/ow/g,'ow');
   p=p.replace(/ou/g,'ow');  // found, sound, out → ow
   // Consonant patterns
   p=p.replace(/tch/g,'ch').replace(/ck/g,'k').replace(/ph/g,'f');
@@ -2350,6 +2512,10 @@ function render(){
           +'<button onclick="speakEng(window._aiSents['+i+'])" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:#444">▶</button>'
           +'</div>';
         pronCard+=wordByWordHTML(sent,'');
+        var safeS=sent.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        pronCard+='<button onclick="_openPronInput(\'a'+i+'\',\''+safeS+'\')" '
+          +'style="margin-top:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'
+          +'<div id="pron-result-a'+i+'" style="display:none;margin-top:8px;background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #ebebeb"></div>';
         pronCard+='</div>';
       });
       pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px"><span><b style="color:#1a1a1a">대문자</b>=강세 음절</span><span>·=음절 구분</span></div>';
@@ -2516,7 +2682,8 @@ function render(){
       +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">발음 가이드</div>'
       +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,phon)+'</div>'
-      
+      +(function(){var se=eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");return '<button onclick="_openPronInput(\'p\',\''+se+'\')" style="margin-bottom:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'+'<div id="pron-result-p" style="display:none;margin-bottom:10px;background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #ebebeb"></div>';})()
+
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
       +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">발음 팁</div>'
