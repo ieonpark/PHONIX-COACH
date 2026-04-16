@@ -446,22 +446,27 @@ function ipaConvert(s){
     .replace(/eɪ/g,'ay').replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/aɪ/g,'eye').replace(/aʊ/g,'ow').replace(/ɔɪ/g,'oy')
     .replace(/ɪər/g,'eer').replace(/ʊər/g,'oor').replace(/ɛər/g,'air').replace(/eər/g,'air')
     // Short vowels
-    .replace(/ɒ/g,'ah')   // British short-o: quality, hot, lot
-    .replace(/ɔ/g,'aw')   // plain ɔ without length mark: off, on
-    .replace(/ɑ/g,'ah')
-    .replace(/æ/g,'a')
-    .replace(/ɪ/g,'i')
-    .replace(/ʊ/g,'oo')
-    .replace(/ʌ/g,'uh')
-    .replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
+    .replace(/ɒ/g,'ah').replace(/ɔ/g,'aw').replace(/ɑ/g,'ah')
+    .replace(/æ/g,'a').replace(/ɪ/g,'i').replace(/ʊ/g,'oo')
+    .replace(/ʌ/g,'uh').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
     .replace(/ɛ/g,'e').replace(/ɐ/g,'uh')
+    // Affricates (must come before single-consonant replacements)
+    .replace(/d͡ʒ/g,'j').replace(/t͡ʃ/g,'ch')  // with combining tie
+    .replace(/d͡z/g,'j').replace(/t͡s/g,'ts')   // with combining tie
+    .replace(/dʒ/g,'j').replace(/tʃ/g,'ch')    // without tie
+    .replace(/dz/g,'dz')
     // Consonants
-    .replace(/dʒ/g,'j').replace(/tʃ/g,'ch')
+    .replace(/ɹ/g,'r')   // ← 영어 R (핵심 누락)
+    .replace(/ɾ/g,'d')   // flap R (water, better의 t→d 소리)
     .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh')
     .replace(/θ/g,'th').replace(/ð/g,'th')
     .replace(/ŋ/g,'ng').replace(/j/g,'y')
-    // Strip remaining IPA marks
-    .replace(/[ˈˌːˑ()\[\]\/]/g,'');
+    .replace(/ʔ/g,'')    // glottal stop (삭제)
+    .replace(/ʍ/g,'w').replace(/ɬ/g,'l').replace(/x/g,'k')
+    .replace(/ʁ/g,'r').replace(/χ/g,'k')
+    // Strip IPA marks + any remaining non-ASCII
+    .replace(/[ˈˌːˑ()\[\]\/]/g,'')
+    .replace(/[\u0080-\uFFFF]/g,''); // 변환 못한 IPA 기호 제거
 }
 
 // Split a phonetic string into syllables; uppercase first (stressed)
