@@ -1340,11 +1340,17 @@ function speakEng(txt){
   // <audio> elements are not subject to CORS restrictions for playback
   var q=encodeURIComponent(txt.substring(0,200));
   var url='https://translate.google.com/translate_tts?ie=UTF-8&q='+q+'&tl=en-US&client=tw-ob&ttsspeed=0.87';
+  // iOS Safari often blocks Google TTS — skip directly to Web Speech API on iOS
+  var isIOS=/iP(hone|ad|od)/.test(navigator.userAgent||'');
+  if(isIOS){_speakWebAPI(txt,onDone);return;}
   _ttsAudio=new Audio(url);
   _ttsAudio.onended=onDone;
   _ttsAudio.onerror=function(){_ttsAudio=null;_speakWebAPI(txt,onDone);};
+  // Fallback timeout: if no audio within 2.5s, use Web Speech API
+  var _ttsFallbackTimer=setTimeout(function(){if(_ttsAudio){_ttsAudio=null;_speakWebAPI(txt,onDone);}},2500);
+  _ttsAudio.onplay=function(){clearTimeout(_ttsFallbackTimer);};
   var p=_ttsAudio.play();
-  if(p&&p.catch) p.catch(function(){if(_ttsAudio){_ttsAudio=null;_speakWebAPI(txt,onDone);}});
+  if(p&&p.catch) p.catch(function(){clearTimeout(_ttsFallbackTimer);if(_ttsAudio){_ttsAudio=null;_speakWebAPI(txt,onDone);}});
 }
 
 // Fallback: Web Speech API (device-bundled voices)
@@ -2418,8 +2424,11 @@ function _updateLyricHighlight(pos){
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
   for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t+_timingOffset){activeIdx=i;break;}}
-  // 유저가 클릭한 지 3초 이내엔 자동 하이라이트 억제
-  if(activeIdx!==_lastLyricIdx&&Date.now()-_userLyricClick>3000) _setLyricDisplay(activeIdx);
+  // 유저 클릭 후 2초 억제. 복귀 시 1줄 이상 점프 방지
+  if(activeIdx!==_lastLyricIdx&&Date.now()-_userLyricClick>2000){
+    var nextIdx=_lastLyricIdx>=0?Math.min(activeIdx,_lastLyricIdx+1):activeIdx;
+    _setLyricDisplay(nextIdx);
+  }
 }
 
 function splitSentences(text){
@@ -2654,6 +2663,12 @@ function render(){
 
   // MUSIC COACH
   if(S.screen==='music'){
+    // 탭과 현재 곡이 맞는지 확인 — 안 맞으면 자동 교체
+    var _tabFiltered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
+      return _musicTab===0?!!x.s.soundcloudUrl:!!x.s.spotifyId;
+    });
+    var _inTab=_tabFiltered.some(function(x){return x.idx===(S.musicSongIdx||0);});
+    if(!_inTab&&_tabFiltered.length>0){S.musicSongIdx=_tabFiltered[0].idx;}
     var song=MUSIC_DATA[S.musicSongIdx||0];
     var _musicUncached=[];
     (song.lyrics||[]).forEach(function(line){line.eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_musicUncached.indexOf(w)<0)_musicUncached.push(w);});});
