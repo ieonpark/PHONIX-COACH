@@ -13,6 +13,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" async></script>
 <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+<script src="https://w.soundcloud.com/player/api.js" async></script>
 </head>
 <body>
 <div id="app"><div style="padding:30px;text-align:center;color:#888;font-size:14px">로딩 중...</div></div>
@@ -22,18 +23,18 @@ window.onerror=function(msg,src,line,col,err){
   if(app) app.innerHTML='<div style="padding:20px;color:#DC2626;font-size:12px;font-family:monospace;white-space:pre-wrap">JS Error (line '+line+'):\n'+msg+'</div>';
 };
 var CATS=[
-  {id:"daily",    name:"일상 회화",     color:"#FF6B35",bg:"#FFF0EB",desc:"인사·감정·일상"},
-  {id:"travel",   name:"여행",          color:"#059669",bg:"#ECFDF5",desc:"공항·호텔·관광"},
-  {id:"tricky",   name:"까다로운 발음", color:"#7C3AED",bg:"#F5F3FF",desc:"TH·R/L·묵음"},
-  {id:"slang",    name:"슬랭·구어체",   color:"#DB2777",bg:"#FDF2F8",desc:"원어민 캐주얼"},
-  {id:"food",     name:"음식·식당",     color:"#D97706",bg:"#FFFBEB",desc:"주문·레시피"},
-  {id:"news",     name:"뉴스·미디어",   color:"#0891B2",bg:"#ECFEFF",desc:"시사·앵커"},
-  {id:"academic", name:"학술·발표",     color:"#65A30D",bg:"#F7FEE7",desc:"토론·논문"},
-  {id:"interview",name:"인터뷰·협상",   color:"#1D4ED8",bg:"#EFF6FF",desc:"채용·연봉"},
-  {id:"architect",name:"건축·현장",     color:"#92400E",bg:"#FEF3C7",desc:"설계·현장"},
-  {id:"cs",       name:"컴퓨터사이언스",color:"#0F766E",bg:"#F0FDF4",desc:"코딩·개발"},
-  {id:"realestate",name:"부동산개발",   color:"#6D28D9",bg:"#F5F3FF",desc:"개발·취득"},
-  {id:"tax",      name:"회계·세무", color:"#1F2937",bg:"#F9FAFB",desc:"회계·세무·재무"}
+  {id:"daily",    name:"일상 회화",     color:"#1a1a1a",bg:"#ffffff",desc:"인사·감정·일상"},
+  {id:"travel",   name:"여행",          color:"#1a1a1a",bg:"#ffffff",desc:"공항·호텔·관광"},
+  {id:"tricky",   name:"까다로운 발음", color:"#1a1a1a",bg:"#ffffff",desc:"TH·R/L·묵음"},
+  {id:"slang",    name:"슬랭·구어체",   color:"#1a1a1a",bg:"#ffffff",desc:"원어민 캐주얼"},
+  {id:"food",     name:"음식·식당",     color:"#1a1a1a",bg:"#ffffff",desc:"주문·레시피"},
+  {id:"news",     name:"뉴스·미디어",   color:"#1a1a1a",bg:"#ffffff",desc:"시사·앵커"},
+  {id:"academic", name:"학술·발표",     color:"#1a1a1a",bg:"#ffffff",desc:"토론·논문"},
+  {id:"interview",name:"인터뷰·협상",   color:"#1a1a1a",bg:"#ffffff",desc:"채용·연봉"},
+  {id:"architect",name:"건축·현장",     color:"#1a1a1a",bg:"#ffffff",desc:"설계·현장"},
+  {id:"cs",       name:"컴퓨터사이언스",color:"#1a1a1a",bg:"#ffffff",desc:"코딩·개발"},
+  {id:"realestate",name:"부동산개발",   color:"#1a1a1a",bg:"#ffffff",desc:"개발·취득"},
+  {id:"tax",      name:"회계·세무",     color:"#1a1a1a",bg:"#ffffff",desc:"회계·세무·재무"}
 ];
 
 var DATA = {"daily": [["How's your day going so far?", "오늘 하루 어때요?", "HOWZ-yer-DAY-goh-ing", "'How's your' HOWZ-yer 연음"], ["I haven't seen you in ages!", "정말 오랜만이에요!", "HAY-vnt-SEEN-AY-jiz", "'ages' AY-jiz: 이중모음 AY를 길게 발음. 'haven't' HAY-vnt, t는 연음으로 발음해요"], ["Mind if I sit here?", "여기 앉아도 될까요?", "MYND-SIT-HEER", "'here' HEER: 이중모음을 길게. 끝 R은 혀를 살짝 뒤로 말아요"], ["Could you do me a favor?", "부탁 하나 들어줄 수 있어요?", "kud-yuh-DOO-FAY-ver", "'Could you' kud-yuh 연음"], ["I'm absolutely exhausted today.", "오늘 완전히 지쳤어요.", "AB-suh-loot-lee-ig-ZAWST-id", "'exhausted' → ex 는 'ig+z' 로 발음해요 ('AB-suh-loot-lee-ig-ZAWST-id')"], ["Let me know if you need anything.", "필요하면 알려줘요.", "LET-mee-NOH-EN-ee-thing", "'anything'의 '-thing' → TH는 혀를 이 사이에 대고 발음해요"], ["What are you up to this weekend?", "이번 주말에 뭐 해요?", "WUHT-er-yuh-UP-WEEK-end", "'What are you' 빠르게"], ["I really appreciate your help.", "도움 정말 감사해요.", "uh-PREE-shee-ayt", "'appreciate' uh-PREE-shee-ayt: 2번째 음절 PREE에 강세를 줘요"], ["Sorry, I didn't mean to bother you.", "방해할 의도가 아니었어요.", "BOH-ther", "'bother' 유성 TH"], ["We should catch up sometime soon.", "조만간 연락하고 지내요.", "KACH-up-SUM-tym", "'catch'(KACH) + 'sometime'(up-SUM-tym) 두 단어 모두 강하게"], ["It completely slipped my mind.", "완전히 잊어버렸어요.", "kum-PLEET-lee-SLIPT", "'completely' kum-PLEET-lee: 2번째 음절 PLEET에 강세를 줘요"], ["That's exactly what I was thinking.", "그게 정확히 제가 생각하던 거예요.", "ig-ZAKT-lee", "'exactly' → ex 는 'ig+z' 로 발음해요 ('ig-ZAKT-lee')"], ["Can you believe it? That's crazy!", "믿어져? 완전 미쳤다!", "bih-LEEV-KRAY-zee", "'believe' bih-LEEV"], ["Long time no see! How have you been?", "오랜만이에요!", "LONG-tym-noh-SEE", "'Long time no' 이어서 한 번에 발음하세요"], ["Make yourself at home.", "편하게 있어요.", "MAYK-yer-SELF", "'yourself' 연음"], ["Keep me posted.", "계속 알려줘요.", "KEEP-mee-POHST-id", "'posted' POHST-id"], ["I'm running a bit late.", "좀 늦을 것 같아요.", "RUN-ing-uh-bit-LAYT", "'running a bit' → RUN-ing-uh-bit 이어서 발음해요"], ["That sounds like a plan.", "좋은 계획이네요.", "SOWNDZ-lyk-uh-PLAN", "'sounds like' 연음"], ["I can't thank you enough.", "정말 감사해요.", "KAANT-THANGK-yuh", "'thank' 무성 TH"], ["What time works for you?", "몇 시가 편하세요?", "WUHT-TYM-WERKS", "'works' WERKS r 굴려서"], ["I'll have to take a rain check.", "다음에 해요.", "TAYK-RAYN-chek", "'I'll have to take a rain check' → 통째로 외워두세요!"], ["You're a lifesaver!", "정말 고마워요!", "LYF-say-ver", "'lifesaver' → LYF-say-ver 로 발음해요"], ["I'm swamped with work.", "일이 너무 많아요.", "SWOMPT-with-WERK", "'swamped' SWOMPT"], ["Let's split the bill.", "더치페이 해요.", "SPLIT-thuh-BIL", "'the bill' 연음"], ["I'm just kidding.", "농담이에요.", "just-KID-ing", "'kidding' → KID-ing 로 발음해요"], ["That makes total sense.", "완전히 이해돼요.", "MAYKS-TOH-tul-SENS", "'TOH-tul' 로 발음해요"], ["I totally forgot about that.", "완전히 잊고 있었어요.", "TOH-tuh-lee-fer-GOT", "'forgot' fer-GOT"], ["Can we reschedule?", "다시 잡을 수 있을까요?", "ree-SKEJ-ool", "SKEJ-ool 미국식"], ["I'm on my way.", "가고 있어요.", "im-on-my-WAY", "'im·on·my·WAY' 이어서 한 번에"], ["I owe you one.", "신세 졌어요.", "eye-OH-yuh-WUN", "'owe' OH: 오·우 처럼 이중모음을 길게 발음해요"], ["I'm so proud of you.", "정말 자랑스러워요.", "PROWD-uv-yuh", "'PROWD·uv·yuh' 이어서 한 번에"], ["Don't be so hard on yourself.", "너무 자책하지 마세요.", "HARD-on-yer-SELF", "'yourself' 연음"], ["My pleasure.", "천만에요.", "my-PLEZH-er", "'pleasure' → PLEZH-er 로 발음해요"], ["Have you heard the news?", "소식 들었어요?", "HERD-thuh-NOOZ", "'the' → thuh, 유성 TH (목청 진동 있음)"], ["I'll be right back.", "금방 올게요.", "RYT-BAK", "'I'll'(RYT) + 'right'(BAK) 두 단어 모두 강하게"], ["Do you want to grab some coffee?", "커피 마실래요?", "GRAB-KAW-fee", "'want to' wanna"], ["How's everything going?", "요즘 어때요?", "EV-ree-thing-GOH-ing", "'everything' → EV-ree-thing (3음절 단어!)"], ["I had a blast!", "정말 즐거웠어요!", "had-uh-BLAST", "'had·uh·BLAST' 이어서 한 번에"], ["Fingers crossed!", "잘 되길 바라요!", "FING-gerz-KRAWST", "'Fingers'(FING-gerz) + 'crossed'(KRAWST) 두 단어 모두 강하게"], ["You made my day!", "덕분에 기분 좋아졌어요!", "MAYD-my-DAY", "'MAYD·my·DAY' 이어서 한 번에"], ["No worries at all.", "전혀 걱정 마세요.", "NOH-WUR-eez", "'WUR-eez' 로 발음해요"], ["Catch you later!", "나중에 봐요!", "KACH-yuh-LAY-ter", "'KACH·yuh·LAY·ter' 이어서 한 번에"], ["Same here.", "저도요.", "SAYM-HEER", "'Same here' 짧고 강하게 발음해요"], ["Take care of yourself.", "몸 조심해요.", "TAYK-KAIR-yer-SELF", "'TAYK·KAIR·yer·SELF' 이어서 한 번에"], ["It was nice running into you.", "우연히 만나서 반가웠어요.", "RUN-ing-IN-tuh-yuh", "'RUN·ing·IN·tuh·yuh' 이어서 한 번에"], ["I was up all night.", "밤을 새웠어요.", "up-AWL-NYT", "'up·AWL·NYT' 이어서 한 번에"], ["Let's touch base later.", "나중에 연락해요.", "TUCH-BAYS-LAY-ter", "'Let's'(TUCH) + 'touch'(BAYS) 두 단어 모두 강하게"], ["I'm looking forward to it.", "기대하고 있어요.", "LUK-ing-FOR-werd", "'LUK·ing·FOR·werd' 이어서 한 번에"], ["We should do this again sometime.", "다음에 또 이렇게 해요.", "uh-GEN-SUM-tym", "'uh·GEN·SUM·tym' 이어서 한 번에"], ["I feel like we haven't talked in forever.", "진짜 오랫동안 못 얘기한 것 같아요.", "fer-EV-er", "'forever' fer-EV-er"]], "travel": [["I'd like to check in, please.", "체크인 하고 싶습니다.", "id-LYK-tuh-CHEK-in", "'id·LYK·tuh·CHEK·in' 이어서 한 번에"], ["Could you tell me how to get to the station?", "역까지 어떻게 가나요?", "HOW-tuh-GET-STAY-shun", "'-tion' shun"], ["Is breakfast included in the room rate?", "조식이 포함되나요?", "BREK-fust-in-KLOOD-id", "'breakfast' BREK-fust"], ["I think I left my bag on the bus.", "버스에 가방을 두고 내렸어요.", "LEFT-my-BAG-BUS", "'think' → TH 혀를 이 사이에 대고, 바람만 나와야 해요"], ["Can I get a window seat?", "창가 자리로 주실 수 있나요?", "WIN-doh-SEET", "'window' WIN-doh: 첫 음절 WIN에 강세, doh는 이중모음으로 발음해요"], ["What time does the last train leave?", "막차가 몇 시에 출발하나요?", "LAST-TRAYN-LEEV", "'last'(LAST) + 'train'(TRAYN) 두 단어 모두 강하게"], ["Do you accept credit cards?", "신용카드 받으시나요?", "ak-SEPT-KRED-it", "'accept' → ak-SEPT, 두 번째 음절에 강세 (a-CCEPT)"], ["I'd like to exchange some currency.", "환전을 하고 싶습니다.", "iks-CHAYNJ-KER-en-see", "'currency' KER-en-see: 첫 번째 음절 KER에 강세를 줘요"], ["My luggage didn't arrive with my flight.", "짐이 도착하지 않았어요.", "LUG-ij-uh-RYV", "'luggage' LUG-ij"], ["What's the Wi-Fi password?", "와이파이 비밀번호가 뭐예요?", "WY-fy-PAS-werd", "'What's' → WY 첫 음절에 강세"], ["Could I get a receipt for this?", "영수증 받을 수 있을까요?", "rih-SEET", "'receipt' → 'p' 묵음, 안 읽어요! (rih-SEET)"], ["How far is it from here to the airport?", "여기서 공항까지 얼마나 걸리나요?", "HOW-FAR-AIR-port", "'how'(HOW) + 'far'(FAR) 두 단어 모두 강하게"], ["I have a reservation under the name Kim.", "김 이름으로 예약이 되어 있어요.", "rez-er-VAY-shun", "'reservation' → rez-er-VAY-shun (4음절 단어!)"], ["Could you recommend a good local restaurant?", "현지 식당을 추천해 주시겠어요?", "rek-uh-MEND", "'recommend' → rek-uh-MEND (3음절 단어!)"], ["Is this seat taken?", "이 자리 비어 있나요?", "SEET-TAY-kun", "TAY-kun 이중모음"], ["Where can I find the baggage claim?", "수하물 찾는 곳이 어디인가요?", "BAG-ij-KLAYM", "'baggage'(BAG-ij) + 'claim'(KLAYM) 두 단어 모두 강하게"], ["I need to report a stolen wallet.", "지갑을 도난당했다고 신고해야 해요.", "rih-PORT-STOH-lun", "'report' → rih-PORT 로 발음해요 (강세는 PORT에)"], ["Can I get a map of the city?", "도시 지도를 받을 수 있나요?", "MAP-SIT-ee", "'MAP·SIT·ee' 이어서 한 번에"], ["Is there a pharmacy nearby?", "근처에 약국이 있나요?", "FAR-muh-see-NEER-by", "'pharmacy' → FAR-muh-see (3음절 단어!)"], ["Could you call me a taxi, please?", "택시를 불러주실 수 있나요?", "KAWL-mee-TAK-see", "'KAWL·mee·TAK·see' 이어서 한 번에"], ["What's the check-out time?", "체크아웃 시간이 어떻게 되나요?", "CHEK-owt-TYM", "'check-out' → CHEK-owt 첫 음절에 강세"], ["The air conditioning isn't working.", "에어컨이 작동하지 않아요.", "air-kun-DISH-un-ing", "'conditioning' → kun-DISH-un-ing (5음절 단어!)"], ["Is there a shuttle to the airport?", "공항행 셔틀이 있나요?", "SHUT-ul-AIR-port", "'shuttle' → SHUT-ul 로 발음해요"], ["I'd like to book a tour.", "투어를 예약하고 싶어요.", "BUK-uh-TUR", "'BUK·uh·TUR' 이어서 한 번에"], ["What's included in the ticket price?", "티켓 가격에 무엇이 포함되나요?", "in-KLOOD-id-TIK-it", "'in·KLOOD·id·TIK·it' 이어서 한 번에"], ["How long does the tour take?", "투어가 얼마나 걸리나요?", "HOW-LONG-TUR", "'long'(HOW) + 'tour'(LONG) 두 단어 모두 강하게"], ["Is tipping expected here?", "여기서 팁을 줘야 하나요?", "TIP-ing-ik-SPEK-tid", "'tipping'(TIP-ing) + 'expected'(ik-SPEK-tid) 두 단어 모두 강하게"], ["I missed my connecting flight.", "환승편을 놓쳤어요.", "kuh-NEK-ting-FLYT", "'connecting' → kuh-NEK-ting (3음절 단어!)"], ["Where is the nearest ATM?", "가장 가까운 ATM이 어디 있나요?", "NEER-est-AY-tee-em", "'NEER-est' 로 발음해요"], ["I'd like to upgrade my seat.", "좌석을 업그레이드하고 싶어요.", "UP-grayd-my-SEET", "'I'd' → UP 첫 음절에 강세"], ["Can I leave my luggage here?", "여기에 짐을 맡길 수 있나요?", "LEEV-LUG-ij-HEER", "'LEEV·LUG·ij·HEER' 이어서 한 번에"], ["Is the museum open on Sundays?", "박물관이 일요일에 열어요?", "myoo-ZEE-um-OH-pun", "'museum' → myoo-ZEE-um (3음절 단어!)"], ["I need to change my reservation.", "예약을 변경해야 해요.", "CHAYNJ-rez-er-VAY-shun", "'reservation' → VAY-shun (4음절 단어!)"], ["What's the local currency?", "현지 화폐가 무엇인가요?", "LOH-kul-KER-en-see", "'currency' → KER-en-see (3음절 단어!)"], ["Is there free parking available?", "무료 주차가 가능한가요?", "FREE-PAR-king-uh-VAY-luh-bul", "'available' → uh-VAY-luh-bul (5음절 단어!)"], ["Can I get a wake-up call at six?", "6시에 모닝콜을 받을 수 있나요?", "WAYK-up-KAWL-SIKS", "'WAYK·up·KAWL·SIKS' 이어서 한 번에"], ["I need directions to the embassy.", "대사관 가는 방향을 알고 싶어요.", "dih-REK-shunz-EM-buh-see", "'directions' → dih-REK-shunz (3음절 단어!)"], ["Where's the nearest subway station?", "가장 가까운 지하철역이 어디예요?", "NEER-est-SUB-way-STAY-shun", "'-tion' → '-shun' 으로 발음 (예: NEER-est-SUB-way-STAY-shun)"], ["Do you have any vegetarian options?", "채식 옵션이 있나요?", "vej-uh-TAIR-ee-un-OP-shunz", "'vegetarian' → vej-uh-TAIR-ee (5음절 단어!)"], ["I'd like to extend my stay by one more night.", "하루 더 연장하고 싶어요.", "ik-STEND-my-STAY", "'ik-STEND' 로 발음해요"], ["What time does check-in start?", "체크인은 몇 시부터 시작하나요?", "CHEK-in-START", "'CHEK·in·START' 이어서 한 번에"], ["Can I have a room with a view?", "전망 좋은 방으로 주실 수 있나요?", "ROOM-with-uh-VYOO", "'ROOM·with·uh·VYOO' 이어서 한 번에"], ["What's the cancellation policy?", "취소 정책이 어떻게 되나요?", "kan-suh-LAY-shun-POL-ih-see", "'cancellation' → kan-suh-LAY-shun (4음절 단어!)"], ["I'd like a non-smoking room, please.", "금연실로 주세요.", "non-SMOH-king-ROOM", "'SMOH-king' 에 강세"], ["Can you store my luggage?", "짐을 맡아주실 수 있나요?", "STOR-my-LUG-ij", "'STOR·my·LUG·ij' 이어서 한 번에"], ["How do I get to the city center?", "시내 중심부로 어떻게 가나요?", "SIT-ee-SEN-ter", "'city'(SIT-ee) + 'center'(SEN-ter) 두 단어 모두 강하게"], ["Is the hotel near the beach?", "호텔이 해변 근처인가요?", "hoh-TEL-NEER-BEECH", "'hoh-TEL' 로 발음해요"], ["What voltage are the outlets here?", "여기 콘센트 전압이 얼마예요?", "VOHL-tij-OWT-lets", "'OWT-lets' 로 발음해요"], ["Can I get an extra blanket?", "담요 하나 더 받을 수 있나요?", "EKS-truh-BLANG-kit", "'extra'(EKS-truh) + 'blanket'(BLANG-kit) 두 단어 모두 강하게"]], "tricky": [["The thought of breathing through the thick cloth.", "두꺼운 천을 통해 숨쉬는 생각.", "THAWT-BREE-thing-THROO-THIK-KLAWTH", "무성TH: thought/thick/cloth 유성TH: the/breathing"], ["Really rural roads require rare bravery.", "시골 길은 드문 용기를 요구한다.", "REE-lee-ROOR-ul-ROHDZ-rih-KWYR", "R: 혀 어디에도 닿지 않게"], ["She specifically asked for a light flight.", "그녀는 가벼운 비행편을 특별히 요청했다.", "spuh-SIF-ik-lee-LYT-FLYT", "L 혀 앞쪽, R 혀 안 닿음"], ["She sells seashells by the seashore.", "그녀는 해변에서 조개껍데기를 판다.", "SEE-shelz-SEE-shor", "s 혀 앞, sh 혀 뒤"], ["Would you rather walk or take a comfortable bus?", "편안한 버스 중 어느 쪽이 좋아요?", "RATH-er-WAWK-KUMF-ter-bul", "'comfortable' KUMF-ter-bul 3음절"], ["His colleague thoroughly rehearsed the procedure.", "그의 동료는 절차를 철저히 리허설했다.", "THER-uh-lee-rih-HERST-pruh-SEE-jer", "'thoroughly' → THER-uh-lee, TH + ɜː 모음 함께 연습"], ["The world's worst weather was in Worcester.", "세계 최악의 날씨는 우스터에 있었다.", "WORLDZ-WERST-WOOS-ter", "'Worcester' WOOS-ter 철자와 다름"], ["I specifically need a statistics textbook.", "통계학 교재가 특히 필요합니다.", "spuh-SIF-ik-lee-stuh-TIS-tiks", "'specifically' → spuh-SIF-ik-lee (4음절 단어!)"], ["He thought the thing thoroughly through.", "그는 그 일을 철저히 생각했다.", "THAWT-THING-THER-uh-lee-THROO", "'thought', 'the', 'thing', 'thoroughly' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Please pull the purple curtain to the right.", "보라색 커튼을 오른쪽으로 당겨주세요.", "PUL-PER-pul-KER-tin-RYT", "'pull', 'purple' → p 발음 입술 모아 바람 두 번"], ["Whether the weather is fine or not.", "날씨가 좋든 나쁘든.", "WETH-er-WETH-er", "'Whether', 'the', 'weather' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Red lorry, yellow lorry.", "빨간 트럭, 노란 트럭.", "RED-LOR-ee-YEL-oh-LOR-ee", "L/R: L 혀 잇몸 닿음"], ["The colonel carefully reviewed the documents.", "대령은 서류를 신중하게 검토했다.", "KER-nul-KAIR-fuh-lee", "'colonel' KER-nul 철자 달라"], ["Sixth sheep's sixth sheep is sick.", "여섯 번째 양이 아파요.", "SIKSTH-SHEEPS-SIKSTH-SIK", "'Sixth', 'sixth' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Unique New York, unique New York.", "독특한 뉴욕 발음 연습.", "yoo-NEEK-NOO-YORK", "'unique' yoo-NEEK"], ["The refrigerator repair requires a specialist.", "냉장고 수리에는 전문가가 필요합니다.", "rih-FRIJ-er-ay-ter-SPESH-uh-list", "'refrigerator' → rih-FRIJ-er-ay-ter (5음절 단어!)"], ["The rhythm of the music was difficult to follow.", "음악의 리듬을 따라가기 어려웠어요.", "RITH-um-MYOO-zik-DIF-ih-kult", "'rhythm' h 묵음"], ["Thirty thousand feathers fell through the sky.", "삼만 개의 깃털이 하늘로 떨어졌다.", "THER-tee-THOW-zund-FETH-erz", "'Thirty', 'thousand', 'feathers', 'through' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Library or bookstore? Either works for me.", "도서관이나 서점? 둘 다 괜찮아요.", "LY-brer-ee-EE-ther-WERKS", "'library' LY-brer-ee: 첫 번째 음절 LY에 강세를 줘요"], ["February has the fewest days.", "2월은 날이 가장 적어요.", "FEB-yoo-ehr-ee", "'February' → FEB-yoo (4음절 단어!)"], ["The knight knew the answer.", "기사는 답을 알고 있었다.", "NYT-NOO-AN-ser", "kn→N wr→R 묵음 — 앞 자음 묵음, NYT-NOO-AN-ser 로 발음"], ["Psychology is a fascinating subject.", "심리학은 매혹적인 과목이에요.", "sy-KOL-uh-jee", "'Psychology' → 'p' 묵음, 안 읽어요! (sy-KOL-uh-jee)"], ["The receipt showed the wrong amount.", "영수증에 금액이 잘못 나왔어요.", "rih-SEET-RONG", "'receipt' → 'p' 묵음, 안 읽어요! (rih-SEET-RONG)"], ["The debt caused enormous stress.", "빚이 엄청난 스트레스를 야기했어요.", "DET-ih-NOR-mus", "'debt' → 'b' 묵음, 안 읽어요! (DET-ih-NOR-mus)"], ["Every Wednesday we exercise.", "매주 수요일마다 운동해요.", "EV-ree-WEN-zdee", "'Wednesday' WEN-zdee"], ["The island had a beautiful lighthouse.", "그 섬에는 아름다운 등대가 있었어요.", "EY-lund-LYT-hows", "'island' → 's' 묵음, 안 읽어요! (EY-lund-LYT-hows)"], ["A subtle hint changed everything.", "미묘한 힌트 하나가 모든 것을 바꿨어요.", "SUT-ul-HINT", "'subtle' → 'b' 묵음, 안 읽어요! (SUT-ul-HINT)"], ["Iron the wrinkles out of your shirt.", "셔츠의 주름을 다려서 펴세요.", "EYE-ern-RING-kulz", "'Iron' → 'r' 묵음, 안 읽어요! (EYE-ern-RING-kulz)"], ["The pneumonia diagnosis was difficult.", "폐렴 진단이 어려웠어요.", "nyoo-MOH-nyuh", "'pneumonia' → 'p' 묵음, 안 읽어요! (nyoo-MOH-nyuh)"], ["The beautiful bouquet arrived yesterday.", "아름다운 꽃다발이 어제 도착했다.", "BYOO-tih-ful-boh-KAY", "'bouquet' → boh-KAY, 프랑스어 차용어라 2음절이에요"], ["Length and strength require breath control.", "길이와 힘은 호흡 조절이 필요해요.", "LENGKTH-STRENKTH-BRETH", "ngth 비음+k+th"], ["Scissors and tissues are in the drawer.", "가위와 티슈는 서랍 안에 있어요.", "SIZ-erz-TISH-ooz-DROR", "'drawer' → 'w' 묵음, 안 읽어요! (SIZ-erz-TISH-ooz-DROR)"], ["The foreign minister resigned.", "외무장관이 사임했습니다.", "FOR-in-MIN-ih-ster-rih-ZYND", "'foreign' → 'g' 묵음, 안 읽어요! (FOR-in-MIN-ih-ster-rih-ZYND)"], ["Through thorough thought he achieved the goal.", "철저한 생각으로 목표 달성.", "THROO-THER-uh-THAWT", "'Through', 'thorough', 'thought', 'the' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["The psychiatrist prescribed the medication.", "정신과 의사가 약을 처방했어요.", "sy-KY-uh-trist", "'psychiatrist' → 'p' 묵음, 안 읽어요! (sy-KY-uh-trist)"], ["Choir practice is scheduled for Thursday.", "합창단 연습이 목요일로 잡혀 있어요.", "KWYR-PRAK-tis-SKEJ-ooled", "'choir' KWYR ch=k"], ["The vehicle's engine made a peculiar noise.", "자동차 엔진이 특이한 소리를 냈어요.", "VEE-ih-kul-pih-KYOO-lee-er", "'vehicle's' → VEE-ih-kul (3음절 단어!)"], ["I'd rather have chocolate than vanilla.", "바닐라보다 초콜릿이 더 좋아요.", "CHOK-lit-vuh-NIL-uh", "'chocolate' CHOK-lit 2음절"], ["She would have could have should have.", "조건절 연습.", "wud-uv-kud-uv-shud-uv", "have → -uv 약화"], ["Worcestershire sauce is delicious.", "우스터셔 소스는 맛있어요.", "WUS-ter-sheer-SAWSS", "'WUS-ter-sheer' 로 발음해요"], ["The kneel before the gnarly knight.", "발음 연습용 문장.", "NEEL-NAR-lee-NYT", "'kneel'→NEEL, 'gnarly'→NAR-lee, kn/gn은 n만 발음해요"], ["I'm thoroughly exhausted after that rehearsal.", "리허설 후에 완전히 지쳤어요.", "THER-uh-lee-ig-ZAWST-id-rih-HER-sul", "'exhausted' → ig-ZAWST-id (3음절 단어!)"], ["An honest hour of thorough thought.", "정직한 한 시간의 철저한 생각.", "ON-ist-OWR-THER-uh-THAWT", "'honest' → 'h' 묵음, 안 읽어요! (ON-ist-OWR-THER-uh-THAWT)"], ["The whole world should know the truth.", "온 세상이 진실을 알아야 해요.", "HOHL-WERLD-TROOTH", "'The', 'the', 'truth' → 혀를 이 사이에 살짝 대고 바람 (TH)"], ["Wren wrapped the wrong package.", "잘못된 패키지를 포장했어요.", "REN-RAPT-RONG", "'Wren'→REN, 'wrapped'→RAPT, wr은 r만 발음해요"], ["He knit a neat knitted knot.", "깔끔한 뜨개질 매듭.", "NIT-NEET-NIT-id-NOT", "'knit'→NIT, 'knot'→NOT, kn은 n만 발음해요"], ["Two witches watched two wristwatches.", "두 마녀가 두 손목시계를 봤어요.", "WICH-iz-WOCHT-RIST-woch-iz", "'wristwatches'→RIST-woch-iz, wr는 r만 발음해요"], ["Pneumatic tools are absolutely necessary.", "공압 도구는 절대적으로 필요합니다.", "nyoo-MAT-ik-AB-suh-loot-lee", "'Pneumatic' → 'p' 묵음, 안 읽어요! (nyoo-MAT-ik-AB-suh-loot-lee)"], ["Psychological phenomena fascinate scientists.", "심리적 현상은 과학자들을 매혹시킵니다.", "sy-kuh-LOJ-ih-kul-fih-NOM-ih-nuh", "'Psychological' → 'p' 묵음, 안 읽어요! (sy-kuh-LOJ-ih-kul-fih-NOM-ih-nuh)"]], "slang": [["That's totally lit, no cap!", "그거 완전 쩐다, 진짜로!", "TOH-tuh-lee-LIT-noh-KAP", "'lit' 짧고 강하게"], ["She's lowkey obsessed with that show.", "걔 그 드라마에 은근 빠졌어.", "LOH-kee-ub-SEST", "LOH-kee 이중모음"], ["I'm not gonna lie, that slaps.", "솔직히 말하면, 그거 완전 좋다.", "GUN-uh-LY-SLAPS", "'gonna'=going to"], ["No way, that's actually insane.", "말도 안 돼, 그거 진짜 미쳤다.", "NOH-WAY-AK-choo-uh-lee-in-SAYN", "'insane' → uh-lee-in (4음절 단어!)"], ["This is giving main character energy.", "이거 완전 주인공 에너지.", "GIV-ing-MAYN-KAIR-ik-ter", "'character' KER-ik-ter: 첫 번째 음절 KER에 강세를 줘요"], ["That hit different, honestly.", "그거 왠지 다르게 와닿더라.", "HIT-DIF-rent-ON-ist-lee", "DIF-rent 2음절처럼"], ["I'm so here for this.", "이거 완전 내 취향이야.", "SOH-HEER-THISS", "'SO'와 'THIS' 강하게 강조해요"], ["She ate and left no crumbs.", "완벽하게 해냈어.", "AYT-LEFT-KRUMZ", "'crumbs' → 'b' 묵음, 안 읽어요! (AYT-LEFT-KRUMZ)"], ["It's giving very much elegant.", "완전 고급스러운 느낌.", "GIV-ing-VER-ee-EL-ih-gunt", "'giving' · 'very' · 'elegant' 강하게 강조해요"], ["I'm literally dead right now.", "진짜 지금 죽겠어.", "LIT-er-uh-lee-DED", "'literally' → er-uh-lee (4음절 단어!)"], ["That's rent-free living in my head.", "머릿속에서 떠나지 않아.", "RENT-free-LIV-ing-HED", "'RENT·free·LIV·ing·HED' 이어서 한 번에"], ["The plot twist though.", "반전이 진짜.", "PLOT-TWIST-thoh", "'though' → thoh, 유성 TH (목청 진동)"], ["Main character behavior, honestly.", "완전 주인공 행동이야.", "MAYN-KAIR-ik-ter-bih-HAYV-yer", "'character' → KAIR-ik-ter (3음절 단어!)"], ["I'm in my flop era, not gonna lie.", "나 지금 슬럼프야.", "FLOP-EE-ruh-GUN-uh-LY", "'era' EE-ruh"], ["That's such a vibe.", "분위기 완전 좋다.", "SUCH-uh-VYB", "'vibe' → VYB, 짧고 강하게 끝내요"], ["We love to see it.", "완전 좋다 이거.", "LUV-tuh-SEE", "'LOVE'와 'SEE' 강하게 강조해요"], ["She's absolutely unhinged.", "걔 완전 미쳤어.", "AB-suh-loot-lee-un-HINJD", "'un-HINJD' 로 발음해요"], ["I'm living my best life.", "나 요즘 인생 최고야.", "LIV-ing-BEST-LYF", "'I'm'(LIV) + 'living'(ing-BEST) 두 단어 모두 강하게"], ["That came out of nowhere.", "그건 완전 뜬금없었어.", "KAYM-owt-NOH-wair", "'NOH-wair' 로 발음해요"], ["I can't even right now.", "지금 진짜 아무것도 못 하겠어.", "KAANT-EE-vun-RYT-NOW", "'even' → EE-vun, 강조해서 길게 늘려요"], ["You're really out here doing that?", "진짜 그러고 있어?", "owt-HEER-DOO-ing", "'owt·HEER·DOO·ing' 이어서 한 번에"], ["It's giving chaos energy.", "완전 혼돈 그 자체.", "GIV-ing-KAY-os", "'KAY-os' 로 발음해요"], ["I'm deceased.", "완전 죽겠어 (웃겨).", "dih-SEEST", "'dih-SEEST' 로 발음해요"], ["That's lowkey the move.", "그게 사실 제일 좋은 선택이야.", "LOH-kee-MOOV", "'move' → MOOV, oo 이중모음으로 길게"], ["Hard pass on that one.", "그건 완전 패스.", "HARD-PASS", "'Hard'(HARD) + 'pass'(PASS) 두 단어 모두 강하게"], ["We're not gonna gatekeep this.", "이건 독점 안 해.", "GUN-uh-GAYT-keep", "'gonna' → GUN-uh 첫 음절에 강세"], ["I'm obsessed, I'm not even sorry.", "푹 빠졌어, 전혀 미안하지 않아.", "ub-SEST-SOR-ee", "'ub-SEST' 로 발음해요"], ["That's a whole mood.", "그게 딱 내 기분이야.", "HOHL-MOOD", "'whole' → HOHL, wh는 W 발음, oo 길게"], ["No thoughts, head empty.", "아무 생각 없어.", "NOH-THAWTS-HED", "'thoughts' → THAWTS, 무성 TH (바람만, 목청 X)"], ["This era is serving looks.", "이 시기는 외모 면에서 진짜.", "EE-ruh-SER-ving-LUKS", "'era'(EE-ruh) + 'serving'(SER-ving) 두 단어 모두 강하게"], ["Okay but that actually goes hard.", "근데 그거 진짜 쩐다.", "AK-choo-uh-lee-GOHZ-HARD", "'actually'(AK-choo-uh-lee) + 'hard'(HARD) 두 단어 모두 강하게"], ["That's sending me.", "그거 때문에 진짜 미치겠어.", "SEN-ding-mee", "'SEN·ding·mee' 이어서 한 번에"], ["Respectfully, that's a terrible idea.", "죄송하지만, 그건 최악의 생각이야.", "rih-SPEK-tfuh-lee", "'Respectfully' → rih-SPEK-tfuh (5음절 단어!)"], ["It's not giving what it's supposed to give.", "기대한 느낌이 아니야.", "GIV-ing-suh-POHZD-GIV", "'giving'이 두 번 반복 — 자연스러운 리듬 익히세요"], ["That's the tea.", "그게 진짜야.", "thats-thuh-TEE", "'That's tea' 짧고 강하게 발음해요"], ["We're absolutely unwell.", "우리 완전 미쳤어.", "AB-suh-loot-lee-un-WEL", "'unwell' → un-WEL, 슬랭으로 '미쳤어'란 뜻이에요"], ["That's sending me to another dimension.", "완전 미치게 만들어.", "uh-NUTH-er-dih-MEN-shun", "'another' → dih-MEN-shun (3음절 단어!)"], ["We're in our villain arc.", "우리 지금 악당 모드야.", "VIL-un-ARK", "'villain' → VIL-un 로 발음해요"], ["Main character moment!", "주인공 순간!", "MAYN-KAIR-ik-ter-MOH-munt", "'MOH-munt' 로 발음해요"], ["The audacity.", "이 뻔뻔함이란.", "aw-DAS-ih-tee", "'audacity' → aw-DAS-ih (4음절 단어!)"], ["Slay, honestly.", "진짜 완전 잘했어.", "SLAY-ON-ist-lee", "'honestly' → ON-ist (3음절 단어!)"], ["I was today years old when I learned that.", "오늘에야 그걸 알았어.", "tuh-DAY-YEERZ-OHLD", "'I was today years old when I learned that' → 통째로 외워두세요!"], ["She ate that up, no crumbs left.", "완벽하게 해냈어.", "AYT-that-UP-KRUMZ", "'crumbs' → 'b' 묵음, 안 읽어요! (AYT-that-UP-KRUMZ)"], ["I really said what I said.", "나 진짜 그 말 그대로야.", "REE-lee-SED-wut-eye-SED", "'said what I said' → 강한 반복 강조 패턴이에요"], ["That's iconic, not gonna lie.", "그거 진짜 전설이야.", "eye-KON-ik-GUN-uh-LY", "'iconic' → KON-ik-GUN (3음절 단어!)"], ["It's giving everything.", "완전 다 갖췄어.", "GIV-ing-EV-ree-thing", "'everything' → EV-ree-thing (3음절 단어!)"], ["That's absolutely sending me.", "그거 완전 미치게 만들어.", "AB-suh-loot-lee-SEN-ding-mee", "'absolutely' → suh-loot-lee-SEN (4음절 단어!)"], ["We don't do that here.", "여기선 그런 거 안 해.", "DOHNT-doo-that-HEER", "'don't here' 짧고 강하게 발음해요"], ["I'm in my main character era.", "나 지금 주인공 모드야.", "MAYN-KAIR-ik-ter-EE-ruh", "'I'm'(MAYN) + 'main'(KAIR) 두 단어 모두 강하게"]], "food": [["I'll have the grilled salmon with a side salad.", "그릴드 연어에 사이드 샐러드로 주세요.", "GRILD-SAM-un-SYD-SAL-ud", "'I'll' → 'l' 묵음, 안 읽어요! (GRILD-SAM-un-SYD-SAL-ud)"], ["Does this dish contain any nuts or dairy?", "이 요리에 견과류나 유제품이 들어가나요?", "kun-TAYN-NUTS-DAIR-ee", "DAIR-ee 이중모음"], ["Could I get this medium-rare, please?", "미디엄 레어로 주실 수 있나요?", "MEE-dee-um-RAIR", "'medium-rare' → dee-um-RAIR (3음절 단어!)"], ["I'm allergic to shellfish and peanuts.", "갑각류와 땅콩 알레르기가 있어요.", "uh-LER-jik-SHEL-fish-PEE-nuts", "'shellfish' → fish-PEE (2음절 단어!)"], ["This is way too spicy for me.", "이거 너무 매워요.", "WAY-TOO-SPY-see", "'way' · 'too' · 'spicy' 강하게 강조해요"], ["What do you recommend for a first-timer?", "처음 오신 분께 뭘 추천해 주시겠어요?", "rek-uh-MEND-FERST-ty-mer", "'recommend' → uh-MEND-FERST (3음절 단어!)"], ["Can I substitute the fries for a salad?", "감자튀김 대신 샐러드로 바꿀 수 있나요?", "SUB-stih-toot-FRYZ", "'substitute' → SUB-stih-toot-FRYZ (4음절 단어!)"], ["Could I have the bill, please?", "계산서 주시겠어요?", "BIL-PLEEZ", "BIL-PLEEZ → 대문자=강세, 소문자=약하게"], ["Is there a vegetarian option on the menu?", "메뉴에 채식 옵션이 있나요?", "vej-uh-TAIR-ee-un-OP-shun", "'vegetarian' → vej-uh-TAIR-ee (5음절 단어!)"], ["This is absolutely delicious, compliments to the chef.", "정말 맛있어요, 셰프에게 칭찬 전해주세요.", "dih-LISH-us-KOM-plih-ments-SHEF", "dih-LISH-us-KOM-plih-ments-SHEF → 대문자=강세, 소문자=약하게"], ["I'd like my steak well done, please.", "스테이크 웰던으로 주세요.", "STAYK-WEL-DUN", "'STAYK-WEL-DUN' — 이중모음을 자연스럽게 이어서"], ["Can I get a doggy bag for the leftovers?", "남은 음식 포장해 주실 수 있나요?", "DOG-ee-BAG-LEFT-oh-verz", "'leftovers' → LEFT-oh-verz (3음절 단어!)"], ["We'd like separate checks, please.", "계산서 따로 주세요.", "SEP-uh-rit-CHEKS", "'separate' → CHEKS (3음절 단어!)"], ["Is this dish gluten-free?", "이 요리 글루텐 프리인가요?", "GLOO-tun-FREE", "'GLOO-tun' 로 발음해요"], ["Could you ask the chef to hold the onions?", "셰프에게 양파를 빼달라고 해주시겠어요?", "SHEF-HOHLD-UN-yunz", "'UN-yunz' 로 발음해요"], ["The sauce has a rich, velvety texture.", "소스가 풍부하고 벨벳같은 질감이에요.", "VEL-vih-tee-TEKS-cher", "VEL-vih-tee-TEKS-cher → 대문자=강세, 소문자=약하게"], ["I'd love to try the tasting menu.", "코스 요리를 먹어보고 싶어요.", "LUV-TRY-TAYST-ing-MEN-yoo", "'I'd'(LUV) + 'love'(TRY-TAYST) 두 단어 모두 강하게"], ["How do you like your eggs?", "달걀을 어떻게 해드릴까요?", "HOW-LYK-yer-EGZ", "'HOW·LYK·yer·EGZ' 이어서 한 번에"], ["I'm on a gluten-free diet.", "글루텐 프리 다이어트 중이에요.", "GLOO-tun-free-DY-ut", "GLOO-tun-free-DY-ut → 대문자=강세, 소문자=약하게"], ["Can we get a table for four?", "4인용 테이블을 주실 수 있나요?", "TAY-bul-fer-FOR", "'TAY·bul·fer·FOR' 이어서 한 번에"], ["I'd like the dressing on the side.", "드레싱은 따로 주세요.", "DRES-ing-on-thuh-SYD", "'DRES·ing·on·thuh·SYD' 이어서 한 번에"], ["Can I see the dessert menu?", "디저트 메뉴를 볼 수 있을까요?", "dih-ZERT-MEN-yoo", "dih-ZERT-MEN-yoo → 대문자=강세, 소문자=약하게"], ["The portion size is huge!", "양이 엄청나게 많아요!", "POR-shun-SYZ-HYOOJ", "'huge' → HYOOJ 로 발음해요 (뒤 e는 묵음)"], ["How spicy is this dish?", "이 요리는 얼마나 맵나요?", "HOW-SPY-see-DISH", "'how'(HOW) + 'spicy'(SPY-see) 두 단어 모두 강하게"], ["I'd like to make a reservation for two.", "2명으로 예약하고 싶어요.", "rez-er-VAY-shun-fer-TOO", "'reservation' → TOO (4음절 단어!)"], ["Is this organic?", "이거 유기농인가요?", "or-GAN-ik", "'organic' → or-GAN-ik (2음절 단어!)"], ["Could you make this less salty?", "이걸 덜 짜게 해주실 수 있나요?", "less-SAWL-tee", "'SAWL-tee' 로 발음해요"], ["I'll have whatever the chef recommends.", "셰프 추천 요리로 할게요.", "wut-EV-er-SHEF-rek-uh-MENDZ", "'wut-EV-er' 로 발음해요"], ["Can I get extra napkins?", "냅킨을 더 주실 수 있나요?", "EKS-truh-NAP-kinz", "'EKS-truh' 로 발음해요"], ["What's the soup of the day?", "오늘의 수프는 무엇인가요?", "SOOP-uv-thuh-DAY", "'SOOP·uv·thuh·DAY' 이어서 한 번에"], ["Could I have a glass of water?", "물 한 잔 주시겠어요?", "GLAS-uv-WAW-ter", "'GLAS·uv·WAW·ter' 이어서 한 번에"], ["Is there a daily special?", "오늘의 특별 요리가 있나요?", "DAY-lee-SPESH-ul", "'special' → SPESH-ul 로 발음해요"], ["I'd like to order the chef's special.", "오늘의 셰프 특별 요리로 주세요.", "OR-der-SHEFS-SPESH-ul", "'chef's' → SHEFS 로 발음해요 (ch = SH 소리)"], ["Can I have this to go?", "포장해 주실 수 있나요?", "hav-this-tuh-GOH", "'hav·this·tuh·GOH' 이어서 한 번에"], ["The ambiance here is wonderful.", "여기 분위기가 정말 좋아요.", "AM-bee-uns-WUN-der-ful", "'AM-bee-uns' 로 발음해요"], ["We're celebrating a special occasion.", "특별한 날을 축하하러 왔어요.", "sel-uh-BRAY-ting-uh-KAY-zhun", "'a' → uh-KAY-zhun 로 발음해요"], ["Is this dish vegan?", "이 요리는 비건인가요?", "DISH-VEE-gun", "'VEE-gun' 로 발음해요"], ["Can I have more bread, please?", "빵 더 주실 수 있나요?", "MOR-BRED-PLEEZ", "'MOR·BRED·PLEEZ' 이어서 한 번에"], ["What's the house specialty?", "이 집 특선 요리가 뭐예요?", "HOWS-SPESH-ul-tee", "'specialty' → SPESH-ul-tee 로 발음해요"], ["Could we move to a quieter table?", "더 조용한 테이블로 옮길 수 있을까요?", "KWYE-uh-ter-TAY-bul", "'KWYE-uh-ter' 로 발음해요"], ["The flavor profile is incredible.", "맛의 프로필이 놀라워요.", "FLAY-ver-PROH-fyl-in-KRED-ih-bul", "'incredible' → KRED-ih-bul (4음절 단어!)"], ["I'm vegan, not vegetarian.", "저는 비건이에요.", "VEE-gun-vej-uh-TAIR-ee-un", "VEE-gun-vej-uh-TAIR-ee-un → 대문자=강세, 소문자=약하게"], ["The food here is to die for.", "여기 음식은 정말 최고예요.", "FOOD-HEER-tuh-DY-fer", "'The food here is to die for' → 통째로 외워두세요!"], ["Could I get a refill on my coffee?", "커피 리필 해주실 수 있나요?", "REE-fil-KAW-fee", "'refill' → REE-fil 첫 음절에 강세"], ["I have a nut allergy.", "저는 견과류 알레르기가 있어요.", "NUT-AL-er-jee", "'allergy' → AL-er (3음절 단어!)"], ["Is there a service charge included?", "서비스 요금이 포함되어 있나요?", "SER-vis-CHARJ-in-KLOOD-id", "'service charge'(SER-vis-CHARJ) + 'included'(in-KLOOD-id) 두 단어 모두 강하게"], ["Could I see the wine list?", "와인 리스트를 볼 수 있을까요?", "WYN-LIST", "'wine'(WYN) + 'list'(LIST) 두 단어 모두 강하게"], ["The presentation was stunning.", "플레이팅이 정말 아름다웠어요.", "prez-un-TAY-shun-STUN-ing", "'presentation' → prez-un-TAY-shun (4음절 단어!)"], ["I'd like a table by the window.", "창가 자리로 주세요.", "TAY-bul-by-thuh-WIN-doh", "'TAY·bul·by·thuh·WIN·doh' 이어서 한 번에"]], "news": [["Authorities are investigating the incident.", "당국이 사건을 조사 중입니다.", "uh-THOR-ih-teez-in-VES-tih-gay-ting", "'investigating' → in-VES-tih-gay-ting (2음절 단어!)"], ["Markets responded sharply to the announcement.", "시장은 발표에 급격히 반응했습니다.", "rih-SPOND-id-SHARP-lee-uh-NOWNS-ment", "'responded' → id-SHARP-lee (3음절 단어!)"], ["The summit resulted in a historic agreement.", "정상회담은 역사적인 합의로 이어졌습니다.", "SUM-it-rih-ZUL-tid-hih-STOR-ik", "SUM-it-rih-ZUL-tid-hih-STOR-ik → 대문자=강세, 소문자=약하게"], ["Inflation has reached a decade-long high.", "인플레이션이 10년 최고치에 달했습니다.", "in-FLAY-shun-REECHT-DEK-ayd", "'reached' → REECHT-DEK (2음절 단어!)"], ["Officials have yet to comment on the allegations.", "관계자들은 혐의에 논평하지 않았습니다.", "uh-FISH-ulz-al-ih-GAY-shunz", "'Officials' → uh-FISH-ulz (3음절 단어!)"], ["Scientists have made a breakthrough discovery.", "과학자들이 획기적인 발견을 했습니다.", "BRAYK-throo-dih-SKUV-er-ee", "BRAYK-throo-dih-SKUV-er-ee → 대문자=강세, 소문자=약하게"], ["Rescue teams are working around the clock.", "구조대가 24시간 작업하고 있습니다.", "RES-kyoo-TEEMZ-uh-ROWND-KLOK", "'Rescue' → RES-kyoo (2음절 단어!)"], ["The environmental impact remains under review.", "환경적 영향은 아직 검토 중입니다.", "in-vy-run-MEN-tul-IM-pakt", "'environmental' → in-vy-run-MEN-tul (6음절 단어!)"], ["Negotiations between the two parties have stalled.", "양측 협상이 교착 상태에 빠졌습니다.", "nih-goh-shee-AY-shunz-STAWLD", "'Negotiations' → nih-goh-shee-AY (5음절 단어!)"], ["Tech stocks surged following the earnings report.", "실적 보고서 이후 기술주가 급등했습니다.", "SERJD-ER-ningz-rih-PORT", "'surged' → SERJD 로 발음해요 (급격히 올랐다는 표현)"], ["The suspect was taken into custody this morning.", "용의자가 오늘 아침 구금되었습니다.", "SUS-pekt-KUS-tuh-dee", "'suspect' → SUS-pekt (3음절 단어!)"], ["Voters head to the polls on Tuesday.", "유권자들이 화요일에 투표소로 향합니다.", "VOH-terz-POHLZ-TOOZ-dee", "'to' → TOOZ-dee 로 발음해요"], ["The new legislation takes effect next month.", "새 법안이 다음 달부터 발효됩니다.", "lej-is-LAY-shun-ih-FEKT", "'legislation' → is-LAY-shun-ih (4음절 단어!)"], ["The CEO resigned amid growing controversy.", "CEO가 커지는 논란 속에 사임했습니다.", "SEE-ee-OH-rih-ZYND-KON-truh-ver-see", "'resigned' → ee-OH-rih (4음절 단어!)"], ["A major earthquake struck the region overnight.", "강진이 하룻밤 사이에 그 지역을 강타했습니다.", "ERTH-kwayk-STRUK-oh-ver-NYT", "ERTH-kwayk-STRUK-oh-ver-NYT → 대문자=강세, 소문자=약하게"], ["Experts warn of potential long-term consequences.", "전문가들이 잠재적 장기적 결과에 경고합니다.", "puh-TEN-shul-KON-sih-kwens-iz", "'consequences' → puh-TEN-shul-KON-sih-kwens-iz (4음절 단어!)"], ["Emergency services were called to the scene.", "응급대가 현장에 출동했습니다.", "ih-MER-jun-see-SER-vis-iz", "'Emergency' → ih-MER-jun (4음절 단어!)"], ["The international community is calling for sanctions.", "국제 사회가 제재를 요구하고 있습니다.", "in-ter-NASH-un-ul-SANGK-shunz", "'international' → in-ter-NASH-un-ul (5음절 단어!)"], ["The prime minister addressed the nation.", "총리가 국민에게 연설했습니다.", "PRYM-MIN-ih-ster-NAY-shun", "'-tion' → '-shun' 으로 발음 (예: PRYM-MIN-ih-ster-NAY-shun)"], ["Witnesses described the scene as chaotic.", "목격자들은 현장이 혼란스러웠다고 묘사했습니다.", "WIT-nes-iz-dih-SKRYBD-kay-OT-ik", "'kay-OT-ik' 로 발음해요"], ["The government announced a new economic policy.", "정부가 새로운 경제 정책을 발표했습니다.", "GUV-ern-munt-uh-NOWNSED-ek-uh-NOM-ik", "'government' → GUV-ern-munt (3음절 단어!)"], ["Relief efforts are underway in the affected areas.", "피해 지역에서 구호 활동이 진행 중입니다.", "rih-LEEF-EF-erts-UN-der-way", "'UN-der-way' 로 발음해요"], ["Citizens are urged to remain indoors.", "시민들은 실내에 있을 것을 촉구받고 있습니다.", "SIT-ih-zunz-URJD-in-DORZ", "'SIT-ih-zunz' 로 발음해요"], ["The trial begins next week.", "재판이 다음 주에 시작됩니다.", "TRYE-ul-bih-GINZ", "'begins' → ul-bih (2음절 단어!)"], ["Analysts predict a slowdown in growth.", "분석가들은 성장 둔화를 예측합니다.", "AN-uh-lists-prih-DIKT-SLOH-down", "'Analysts' → AN-uh (3음절 단어!)"], ["The merger was approved by regulators.", "합병이 규제 당국에 의해 승인됐습니다.", "MER-jer-uh-PROOVD-REG-yuh-lay-terz", "'regulators' → yuh-lay-terz (4음절 단어!)"], ["Thousands gathered for the annual demonstration.", "수천 명이 연례 시위를 위해 모였습니다.", "THOW-zunz-DEM-un-STRAY-shun", "'demonstration' → DEM-un-STRAY-shun (4음절 단어!)"], ["The policy will take effect immediately.", "이 정책은 즉시 발효됩니다.", "POL-ih-see-ih-MEE-dee-it-lee", "'immediately' → it-lee (5음절 단어!)"], ["Critics have questioned the administration's approach.", "비평가들은 행정부의 접근 방식에 의문을 제기했습니다.", "KRIT-iks-ad-min-ih-STRAY-shun", "'administration's' → STRAY-shun (5음절 단어!)"], ["The budget deficit has reached a record level.", "예산 적자가 기록적인 수준에 달했습니다.", "BUJ-it-DEF-ih-sit-REK-erd", "'deficit' → DEF-ih-sit (3음절 단어!)"], ["A ceasefire agreement was reached overnight.", "하룻밤 사이에 휴전 협정이 체결됐습니다.", "SEES-fyre-uh-GREE-munt-oh-ver-NYT", "SEES-fyre-uh-GREE-munt-oh-ver-NYT → 대문자=강세, 소문자=약하게"], ["The outbreak has spread to neighboring countries.", "발병이 이웃 국가들로 퍼졌습니다.", "OWT-brayk-NAY-ber-ing", "'NAY-ber-ing' 로 발음해요"], ["Officials confirmed at least a dozen casualties.", "관계자들은 최소 12명의 사상자를 확인했습니다.", "uh-FISH-ulz-KAZH-oo-ul-teez", "'Officials' → uh-FISH-ulz (4음절 단어!)"], ["International observers monitored the election.", "국제 참관인들이 선거를 감시했습니다.", "in-ter-NASH-un-ul-MON-ih-terd", "'International' → in-ter-NASH-un-ul 첫 음절에 강세"], ["The company faces potential bankruptcy.", "회사가 잠재적 파산 위기에 처해 있습니다.", "BANGK-rupt-see", "'potential' → BANGK-rupt-see (3음절 단어!)"], ["Residents are being evacuated from the flood zone.", "주민들이 홍수 지역에서 대피하고 있습니다.", "REZ-ih-dunts-ih-VAK-yoo-ay-tid", "'evacuated' → VAK-yoo-ay-tid (5음절 단어!)"], ["The treaty has been ratified by both nations.", "조약이 양국에 의해 비준되었습니다.", "TREE-tee-RAT-ih-fyed", "'ratified' → RAT-ih-fyed 로 발음해요"], ["A record number of voters turned out.", "기록적인 투표율을 기록했습니다.", "REK-erd-VOH-terz", "'record' → REK-erd 첫 음절에 강세"], ["The suspect pleaded not guilty.", "용의자는 무죄를 주장했습니다.", "SUS-pekt-PLEED-id-GIL-tee", "'GIL-tee' 로 발음해요"], ["Sanctions have been lifted following negotiations.", "협상 이후 제재가 해제되었습니다.", "SANGK-shunz-nih-GOH-shee-AY-shunz", "'negotiations' → SANGK-shunz-nih-GOH-shee-AY-shunz (5음절 단어!)"], ["The coalition government has collapsed.", "연립 정부가 붕괴되었습니다.", "koh-ih-LISH-un-kuh-LAPST", "'coalition' → koh-ih-LISH (4음절 단어!)"], ["Infrastructure spending will increase next year.", "인프라 지출이 내년에 증가할 것입니다.", "IN-fruh-struk-cher-SPEND-ing", "'Infrastructure' → IN-fruh-struk-cher-SPEND (4음절 단어!)"], ["The whistleblower revealed classified documents.", "내부고발자가 기밀 문서를 공개했습니다.", "WIS-ul-bloh-er-rih-VEELD", "'whistleblower' → WIS-ul-bloh-er 첫 음절에 강세"], ["Preliminary results suggest a narrow victory.", "예비 결과는 박빙의 승리를 시사합니다.", "prih-LIM-ih-ner-ee-NAR-oh-VIK-ter-ee", "'Preliminary' → prih-LIM-ih-ner (4음절 단어!)"], ["The legislation has sparked widespread debate.", "이 법안이 광범위한 논쟁을 촉발했습니다.", "lej-is-LAY-shun-dih-BAYT", "'dih-BAYT' 로 발음해요"], ["Authorities are appealing for witnesses.", "당국은 목격자들에게 제보를 호소하고 있습니다.", "uh-THOR-ih-teez-uh-PEEL-ing-WIT-nes-iz", "'uh·THOR·ih·teez·uh·PEEL·ing·WIT·nes·iz' 이어서 한 번에"], ["The investigation remains ongoing.", "조사는 계속 진행 중입니다.", "in-VES-tih-GAY-shun-ON-goh-ing", "'ON-goh-ing' 로 발음해요"], ["Tech giants face new antitrust regulations.", "기술 대기업들이 새로운 반독점 규정에 직면했습니다.", "TEK-JY-unts-an-tee-TRUST", "'an-tee-TRUST' 로 발음해요"], ["The central bank raised interest rates.", "중앙은행이 금리를 인상했습니다.", "SEN-trul-BANGK-IN-trest-RAYTS", "'central'(SEN-trul) + 'bank'(BANGK) 두 단어 모두 강하게"], ["Thousands of protesters took to the streets.", "수천 명의 시위대가 거리로 나섰습니다.", "THOW-zunz-PROH-tes-terz-STREETS", "'protesters' → PROH-tes-terz (3음절 단어!)"]]};
@@ -391,7 +392,47 @@ var PH={
   "through":"THROO","throughout":"throo-OWT","following":"FOL-oh-ing","against":"uh-GENST",
   "themselves":"them-SELVZ","ourselves":"owr-SELVZ","yourself":"yer-SELF","myself":"my-SELF",
   "already":"awl-RED-ee","always":"AWL-wayz","usually":"YOO-zhoo-uh-lee","actually":"AK-choo-uh-lee",
-  "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee"
+  "probably":"PROB-uh-blee","certainly":"SER-tun-lee","recently":"REE-sunt-lee","finally":"FY-nuh-lee",
+  "reach":"REECH","reached":"REECHT","reaching":"REECH-ing","reaches":"REECH-iz",
+  "quality":"KWAHL-ih-tee","image":"IM-ij","images":"IM-ih-jiz",
+  "toward":"tuh-WORD","towards":"tuh-WORDZ","forward":"FOR-werd",
+  "down":"DOWN","downtown":"DOWN-town","downstairs":"DOWN-stairz","download":"DOWN-lohd",
+  "town":"TOWN","brown":"BROWN","crown":"KROWN","crowd":"KROWD","frown":"FROWN",
+  "found":"FOWND","sound":"SOWND","ground":"GROWND","round":"ROWND","bound":"BOWND","wound":"WOWND",
+  "count":"KOWNT","mount":"MOWNT","mouth":"MOWTH","south":"SOWTH","couch":"KOWCH","pouch":"POWCH",
+  "power":"POW-er","flower":"FLOW-er","tower":"TOW-er","shower":"SHOW-er","hour":"OW-er",
+  "vowel":"VOW-ul","towel":"TOW-ul","owl":"OWL","howl":"HOWL","growl":"GROWL",
+  "plow":"PLOW","brow":"BROW","vow":"VOW","cow":"KOW","bow":"BOW","wow":"WOW",
+  "bowl":"BOHL","soul":"SOHL","roll":"ROHL","toll":"TOHL","pole":"POHL",
+  "follow":"FAH-loh","following":"FAH-loh-ing","followed":"FAH-lohd",
+  "allow":"uh-LOW","allows":"uh-LOWZ","allowed":"uh-LOWD",
+  "believe":"bih-LEEV","believed":"bih-LEEVD","believes":"bih-LEEVZ",
+  "receive":"rih-SEEV","received":"rih-SEEVD",
+  "achieve":"uh-CHEEV","achieved":"uh-CHEEVD",
+  "increase":"in-KREES","decrease":"dee-KREES",
+  "focus":"FOH-kus","local":"LOH-kul","vocal":"VOH-kul",
+  "total":"TOH-tul","final":"FY-nul","global":"GLOH-bul",
+  "create":"kree-AYT","created":"kree-AY-tid",
+  "relate":"rih-LAYT","related":"rih-LAY-tid",
+  "minute":"MIN-it","second":"SEK-und","moment":"MOH-munt",
+  "pretty":"PRIT-ee","heavy":"HEV-ee","ready":"RED-ee","steady":"STED-ee",
+  "body":"BAH-dee","copy":"KAH-pee","happy":"HAP-ee","carry":"KAR-ee",
+  "early":"ER-lee","clearly":"KLEER-lee","nearly":"NEER-lee",
+  "behind":"bih-HYND","beyond":"bee-OND","beside":"bih-SYD",
+  "together":"tuh-GETH-er","another":"uh-NUH-ther",
+  "whether":"WETH-er","either":"EE-ther","neither":"NEE-ther",
+  "often":"AW-fun","listen":"LIS-un","written":"RIT-un","button":"BUT-un",
+  "mountain":"MOWN-tun","certain":"SER-tun","captain":"KAP-tun",
+  "different":"DIF-er-unt","important":"im-POR-tunt","current":"KER-unt",
+  "present":"PREZ-unt","student":"STOO-dunt","moment":"MOH-munt",
+  "manage":"MAN-ij","damage":"DAM-ij","package":"PAK-ij","language":"LANG-gwij",
+  "message":"MES-ij","passage":"PAS-ij","village":"VIL-ij","college":"KAHL-ij",
+  "knowledge":"NAH-lij","acknowledge":"ak-NAH-lij",
+  "challenge":"CHAL-unj","change":"CHAYNJ","strange":"STRAYNJ","arrange":"uh-RAYNJ",
+  "choose":"CHOOZ","chosen":"CHOH-zun","loose":"LOOS","lose":"LOOZ","lost":"LAWST",
+  "cause":"KAWZ","pause":"PAWZ","clause":"KLAWZ",
+  "though":"THOH","through":"THROO","thought":"THAWT","bought":"BAWT","brought":"BRAWT",
+  "enough":"ih-NUF","rough":"RUF","tough":"TUF","cough":"KAWF"
 };
 
 function wordPhon(w){
@@ -472,6 +513,8 @@ function _loadCMUDict(){
 }
 _loadCMUDict();
 
+// ── Free Dictionary API: IPA → kum-PLEET-lee format ──
+// PHON_CACHE persists across page reloads via localStorage
 var PHON_CACHE=(function(){
   try{return JSON.parse(localStorage.getItem('phonix_phon_cache')||'{}');}
   catch(e){return {};}
@@ -484,27 +527,46 @@ var _PHON_EXCEPTIONS={};
 
 function ipaConvert(s){
   return s
-    .replace(/ɑː/g,'aa').replace(/ɑ/g,'ah').replace(/æ/g,'a')
-    .replace(/eɪ/g,'ay').replace(/ɪər/g,'eer').replace(/ɛər/g,'air').replace(/eər/g,'air')
-    .replace(/iː/g,'ee').replace(/ɪ/g,'ih')
-    .replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/ɔɪ/g,'oy').replace(/ɔː/g,'aw').replace(/ɔ/g,'aw')
-    .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'u')
-    .replace(/ʌ/g,'uh').replace(/ɜː/g,'er').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
-    .replace(/aɪ/g,'eye').replace(/aʊ/g,'ow')
-    .replace(/ɛ/g,'eh')
-    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh').replace(/tʃ/g,'ch')
-    .replace(/θ/g,'th').replace(/ð/g,'th').replace(/ŋ/g,'ng').replace(/j/g,'y')
-    .replace(/dʒ/g,'j')
-    .replace(/[ˈˌːˑ()]/g,'');
+    // Diphthongs and long vowels — longest first
+    .replace(/ɑː/g,'ah').replace(/ɔː/g,'aw').replace(/uː/g,'oo').replace(/iː/g,'ee').replace(/ɜː/g,'er')
+    .replace(/eɪ/g,'ay').replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/aɪ/g,'ai').replace(/aʊ/g,'ow').replace(/ɔɪ/g,'oy')
+    .replace(/ɪər/g,'eer').replace(/ʊər/g,'oor').replace(/ɛər/g,'air').replace(/eər/g,'air')
+    // Short vowels
+    .replace(/ɒ/g,'ah').replace(/ɔ/g,'aw').replace(/ɑ/g,'ah')
+    .replace(/æ/g,'a').replace(/ɪ/g,'ih').replace(/ʊ/g,'oo')
+    .replace(/ʌ/g,'uh').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
+    .replace(/ɛ/g,'eh').replace(/ɐ/g,'uh')
+    // Affricates (must come before single-consonant replacements)
+    .replace(/d͡ʒ/g,'j').replace(/t͡ʃ/g,'ch')  // with combining tie
+    .replace(/d͡z/g,'j').replace(/t͡s/g,'ts')   // with combining tie
+    .replace(/dʒ/g,'j').replace(/tʃ/g,'ch')    // without tie
+    .replace(/dz/g,'dz')
+    // Consonants
+    .replace(/ɹ/g,'r')   // ← 영어 R (핵심 누락)
+    .replace(/ɾ/g,'d')   // flap R (water, better의 t→d 소리)
+    .replace(/ʃ/g,'sh').replace(/ʒ/g,'zh')
+    .replace(/θ/g,'th').replace(/ð/g,'th')
+    .replace(/ŋ/g,'ng').replace(/j/g,'y')
+    .replace(/ʔ/g,'')    // glottal stop (삭제)
+    .replace(/ʍ/g,'w').replace(/ɬ/g,'l').replace(/x/g,'k')
+    .replace(/ʁ/g,'r').replace(/χ/g,'k')
+    // Strip IPA marks + any remaining non-ASCII
+    .replace(/[ˈˌːˑ()\[\]\/]/g,'')
+    .replace(/[\u0080-\uFFFF]/g,''); // 변환 못한 IPA 기호 제거
 }
 
 // Split a phonetic string into syllables; uppercase first (stressed)
 // e.g. "bawldnuhs" → ["BAWLD","nuhs"], "hapin" → ["HAP","in"]
 function splitPhonSyllables(s){
   if(!s) return [s||''];
+  // If string already has hyphens (from phonetize suffix rules), use them directly
+  if(s.indexOf('-')>=0){
+    var _pts=s.split('-').filter(Boolean);
+    if(_pts.length){_pts[0]=_pts[0].toUpperCase();return _pts;}
+  }
   var p=s.toLowerCase();
   // Vowel nuclei patterns, longest first
-  var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','ih','eh','er','oh','aa','ah'];
+  var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','ih','eh','er','oh','aa','ah'];
   var vPos=[];
   var i=0;
   while(i<p.length){
@@ -539,6 +601,30 @@ function splitPhonSyllables(s){
     if(end>start) result.push(s.slice(start,end));
   }
   if(!result.length) return [s.toUpperCase()];
+  // Short-vowel closed syllable fix: stressed syllable ending in short vowel
+  // claims following consonant as coda (FISH not FI, HAP not HA, BET not BE)
+  var DIGRAPHS=['sh','th','ch','ng','zh'];
+  if(result.length>=2){
+    var r0l=result[0].toLowerCase();
+    var r0last2=r0l.slice(-2), r0last1=r0l.slice(-1);
+    // ih/uh = 2-char short vowels; bare a/e after consonant = short /æ//ɛ/
+    var r0prev=r0l[r0l.length-2]||'';
+    var isShortV=r0last2==='ih'||r0last2==='uh'||
+      (r0last1==='a'&&'aeiou'.indexOf(r0prev)<0)||
+      (r0last1==='e'&&'aeiou'.indexOf(r0prev)<0&&r0last2!=='ee');
+    if(isShortV){
+      var r1=result[1], coda='';
+      for(var di=0;di<DIGRAPHS.length;di++){
+        if(r1.slice(0,2).toLowerCase()===DIGRAPHS[di]){coda=r1.slice(0,2);break;}
+      }
+      if(!coda&&r1.length>1&&'aeiouAEIOU'.indexOf(r1[0])<0) coda=r1[0];
+      if(coda&&coda.length<r1.length){
+        result[0]=result[0]+coda;
+        result[1]=r1.slice(coda.length);
+        if(!result[1]) result.splice(1,1);
+      }
+    }
+  }
   result[0]=result[0].toUpperCase();
   return result;
 }
@@ -546,20 +632,31 @@ function splitPhonSyllables(s){
 function ipaToPhon(ipa){
   var s=(ipa||'').replace(/^[\/\[]|[\/\]]$/g,'').replace(/ˌ/g,'').trim();
   if(!s) return '';
+  var result;
   if(s.includes('.')){
-    return s.split('.').map(function(syl){
+    result=s.split('.').map(function(syl){
       var st=syl.includes('ˈ');
       var c=ipaConvert(syl.replace(/ˈ/g,''));
       return st?c.toUpperCase():c;
     }).filter(Boolean).join('-');
+  } else {
+    var idx=s.indexOf('ˈ');
+    if(idx<0){
+      result=splitPhonSyllables(ipaConvert(s)).join('-');
+    } else {
+      var before=ipaConvert(s.slice(0,idx));
+      var after=ipaConvert(s.slice(idx+1));
+      var afterSyls=splitPhonSyllables(after);
+      result=(before?before+'-':'')+afterSyls.join('-');
+    }
   }
-  var idx=s.indexOf('ˈ');
-  if(idx<0) return splitPhonSyllables(ipaConvert(s)).join('-');
-  var before=ipaConvert(s.slice(0,idx));
-  var after=ipaConvert(s.slice(idx+1));
-  // ˈ in middle: before is unstressed prefix, after is stressed+rest
-  var afterSyls=splitPhonSyllables(after);
-  return (before?before+'-':'')+afterSyls.join('-');
+  // Word-final bare 'i' → 'ee': fix last syllable (handles both 'ni' and bare '-i')
+  var _rp=result.split('-');
+  var _last=_rp[_rp.length-1];
+  _last=_last.replace(/^([bcdfghjklmnpqrstvwxyz]*)i$/,function(m,c){return c+'ee';});
+  _rp[_rp.length-1]=_last;
+  result=_rp.join('-');
+  return result;
 }
 
 function fetchPhonForWords(words){
@@ -579,68 +676,248 @@ function fetchPhonForWords(words){
       })
       .catch(function(){PHON_CACHE[w]=phonetize(w);});
   });
-  return Promise.all(promises);
+  return Promise.all(promises).then(_savePhonCache);
 }
 
 // ── Phonetic rules fallback for words not in PH dict ──
+var _PHON_EXCEPTIONS={
+  // Tech / media
+  'pro':'PROH','pros':'PROHZ','photo':'FOH-toh','logo':'LOH-goh',
+  'nano':'NAY-noh','macro':'MAK-roh','micro':'MY-kroh',
+  'video':'VID-ee-oh','audio':'AW-dee-oh','studio':'STOO-dee-oh',
+  'radio':'RAY-dee-oh','ratio':'RAY-shoh','patio':'PAY-tee-oh',
+  'data':'DAY-tuh','beta':'BAY-tuh','alpha':'AL-fuh','sigma':'SIG-muh',
+  // -ity words
+  'quality':'KWAHL-ih-tee','quantity':'KWAHN-tih-tee',
+  'ability':'uh-BIL-ih-tee','activity':'ak-TIV-ih-tee',
+  'opportunity':'ah-per-TOO-nih-tee','community':'kuh-MYOO-nih-tee',
+  'authority':'uh-THOR-ih-tee','security':'sih-KYOOR-ih-tee',
+  'priority':'pry-OR-ih-tee','majority':'muh-JOR-ih-tee',
+  'minority':'mih-NOR-ih-tee','identity':'eye-DEN-tih-tee',
+  'utility':'yoo-TIL-ih-tee','reality':'ree-AL-ih-tee',
+  'equality':'ee-KWAHL-ih-tee','penalty':'PEN-ul-tee',
+  'university':'yoo-nih-VER-sih-tee','diversity':'dih-VER-sih-tee',
+  'creativity':'kree-ay-TIV-ih-tee','productivity':'proh-duk-TIV-ih-tee',
+  'sensitivity':'sen-sih-TIV-ih-tee','responsibility':'rih-spahn-sih-BIL-ih-tee',
+  // -ary / -ory / -ery / -ency words
+  'vary':'VAIR-ee','varies':'VAIR-eez','varied':'VAIR-eed','varying':'VAIR-ee-ing',
+  'variable':'VAIR-ee-uh-bul','various':'VAIR-ee-us','variety':'vuh-RY-ih-tee',
+  'necessary':'NES-ih-ser-ee','secondary':'SEK-un-der-ee',
+  'primary':'PRY-mer-ee','temporary':'TEM-puh-rer-ee','military':'MIL-ih-ter-ee',
+  'vocabulary':'voh-KAB-yuh-ler-ee','library':'LY-brer-ee','ordinary':'OR-din-er-ee',
+  'extraordinary':'ek-STROR-dih-ner-ee','January':'JAN-yoo-er-ee',
+  'February':'FEB-roo-er-ee','secretary':'SEK-rih-ter-ee',
+  'story':'STOR-ee','history':'HIS-tor-ee','territory':'TER-ih-tor-ee',
+  'category':'KAT-ih-gor-ee','factory':'FAK-tor-ee','memory':'MEM-or-ee',
+  'directory':'dih-REK-tor-ee','inventory':'IN-ven-tor-ee',
+  'delivery':'dih-LIV-er-ee','discovery':'dih-SKUV-er-ee',
+  'recovery':'rih-KUV-er-ee','surgery':'SER-jer-ee',
+  'efficiency':'ih-FISH-un-see','efficient':'ih-FISH-unt',
+  'deficiency':'dih-FISH-un-see','proficiency':'pruh-FISH-un-see',
+  'agency':'AY-jun-see','emergency':'ih-MER-jun-see',
+  'currency':'KER-un-see','frequency':'FREE-kwun-see',
+  'tendency':'TEN-dun-see','presidency':'PREZ-ih-dun-see',
+  'fluency':'FLOO-un-see','consistency':'kun-SIS-tun-see',
+  'transparency':'trans-PAIR-un-see','dependency':'dih-PEN-dun-see',
+  // -tion / -sion / -ure
+  'jurisdiction':'jur-is-DIK-shun','regulation':'reg-yuh-LAY-shun',
+  'regulations':'reg-yuh-LAY-shunz','situation':'sit-yoo-AY-shun',
+  'education':'ej-yoo-KAY-shun','information':'in-fer-MAY-shun',
+  'organization':'or-guh-nih-ZAY-shun','organizations':'or-guh-nih-ZAY-shunz',
+  'application':'ap-lih-KAY-shun','communication':'kuh-myoo-nih-KAY-shun',
+  'administration':'ad-min-is-TRAY-shun','transportation':'trans-por-TAY-shun',
+  'population':'pahp-yuh-LAY-shun','recommendation':'rek-uh-men-DAY-shun',
+  'accommodation':'uh-kahm-uh-DAY-shun','determination':'dih-ter-mih-NAY-shun',
+  'consideration':'kun-sid-er-AY-shun','presentation':'prez-un-TAY-shun',
+  'representation':'rep-rih-zen-TAY-shun','participation':'par-tis-ih-PAY-shun',
+  'implementation':'im-pluh-men-TAY-shun','foundation':'fown-DAY-shun',
+  'generation':'jen-er-AY-shun','conversation':'kahn-ver-SAY-shun',
+  'observation':'ahb-zer-VAY-shun','investigation':'in-ves-tih-GAY-shun',
+  'combination':'kahm-bih-NAY-shun','destination':'des-tih-NAY-shun',
+  'imagination':'ih-maj-ih-NAY-shun','association':'uh-soh-see-AY-shun',
+  'celebration':'sel-ih-BRAY-shun','concentration':'kahn-sun-TRAY-shun',
+  'demonstration':'dem-un-STRAY-shun','exaggeration':'ig-zaj-er-AY-shun',
+  'fascination':'fas-ih-NAY-shun','interpretation':'in-ter-prih-TAY-shun',
+  'pronunciation':'pruh-nun-see-AY-shun','transformation':'trans-for-MAY-shun',
+  'requirement':'rih-KWYRE-munt','requirements':'rih-KWYRE-munts',
+  'environment':'en-VY-run-munt','environments':'en-VY-run-munts',
+  'achievement':'uh-CHEEV-munt','adjustment':'uh-JUST-munt',
+  'advertisement':'ad-VER-tis-munt','announcement':'uh-NOWNS-munt',
+  'appointment':'uh-POYNT-munt','arrangement':'uh-RAYNJ-munt',
+  'assessment':'uh-SES-munt','assignment':'uh-SYN-munt',
+  'commitment':'kuh-MIT-munt','department':'dih-PART-munt',
+  'development':'dih-VEL-up-munt','disagreement':'dis-uh-GREE-munt',
+  'entertainment':'en-ter-TAYN-munt','establishment':'ih-STAB-lish-munt',
+  'government':'GUV-ern-munt','improvement':'im-PROOV-munt',
+  'investment':'in-VEST-munt','management':'MAN-ij-munt',
+  'measurement':'MEZH-er-munt','movement':'MOOV-munt',
+  'punishment':'PUN-ish-munt','replacement':'rih-PLAYS-munt',
+  'statement':'STAYT-munt','treatment':'TREET-munt',
+  // -ment/-ness/-ful/-less
+  'beautiful':'BYOO-tih-ful','beauty':'BYOO-tee','grateful':'GRAYT-ful',
+  'powerful':'POW-er-ful','wonderful':'WUN-der-ful','successful':'suk-SES-ful',
+  'careful':'KAIR-ful','helpful':'HELP-ful','peaceful':'PEES-ful',
+  'thoughtful':'THAWT-ful','useful':'YOOS-ful','stressful':'STRES-ful',
+  'happiness':'HAP-ee-nes','sadness':'SAD-nes','kindness':'KYND-nes',
+  'darkness':'DARK-nes','weakness':'WEEK-nes','illness':'IL-nes',
+  'business':'BIZ-nis','awareness':'uh-WAIR-nes','consciousness':'KAHN-shus-nes',
+  'effectiveness':'ih-FEK-tiv-nes','readiness':'RED-ee-nes',
+  // Common tricky words
+  'image':'IM-ij','images':'IM-ih-jiz','imagine':'ih-MAJ-in',
+  'reach':'REECH','reached':'REECHT','reaches':'REECH-iz',
+  'achieve':'uh-CHEEV','achieved':'uh-CHEEVD','achievement':'uh-CHEEV-munt',
+  'people':'PEE-pul','other':'UH-ther','another':'uh-NUH-ther',
+  'water':'WAW-ter','world':'WERLD','school':'SKOOL',
+  'thought':'THAWT','through':'THROO','though':'THOH',
+  'enough':'ih-NUF','laugh':'LAF','rough':'RUF',
+  'women':'WIM-in','woman':'WUM-un',
+  'friend':'FREND','friends':'FRENDZ',
+  'their':'thair','there':'thair','they\'re':'thair',
+  'hour':'OW-er','hours':'OW-erz',
+  'whole':'HOHL','whose':'HOOZ',
+  'special':'SPESH-ul','usually':'YOO-zhoo-uh-lee','usual':'YOO-zhoo-ul',
+  'different':'DIF-er-unt','difficult':'DIF-ih-kult','difficulty':'DIF-ih-kul-tee',
+  'important':'im-POR-tunt','possible':'PAH-sih-bul','impossible':'im-PAH-sih-bul',
+  'question':'KWES-chun','answer':'AN-ser','knowledge':'NAH-lij',
+  'because':'bih-KUZ','something':'SUM-thing','everything':'EV-ree-thing',
+  'anything':'EN-ee-thing','nothing':'NUH-thing','together':'tuh-GETH-er',
+  'whether':'WETH-er','pretty':'PRIT-ee','city':'SIT-ee','body':'BAH-dee',
+  'only':'OHN-lee','really':'REE-lee','already':'awl-RED-ee',
+  'family':'FAM-uh-lee','money':'MUN-ee','country':'KUN-tree',
+  'company':'KUM-puh-nee','national':'NASH-uh-nul',
+  'language':'LANG-gwij','example':'ig-ZAM-pul',
+  'system':'SIS-tum','problem':'PRAH-blum','technology':'tek-NAH-luh-jee',
+  'area':'AIR-ee-uh','areas':'AIR-ee-uhz','idea':'eye-DEE-uh','ideas':'eye-DEE-uhz',
+  'apartment':'uh-PART-munt','apartments':'uh-PART-munts',
+  'minimum':'MIN-ih-mum','maximum':'MAK-sih-mum',
+  'medium':'MEE-dee-um','premium':'PREE-mee-um',
+  'county':'KOWN-tee','counties':'KOWN-teez',
+  'salary':'SAL-er-ee','gallery':'GAL-er-ee','celery':'SEL-er-ee',
+  'energy':'EN-er-jee','strategy':'STRAT-ih-jee','category':'KAT-ih-gor-ee',
+  'average':'AV-er-ij','coverage':'KUV-er-ij','marriage':'MAIR-ij',
+  'damage':'DAM-ij','manage':'MAN-ij','package':'PAK-ij','village':'VIL-ij',
+  'college':'KAH-lij','knowledge':'NAH-lij','language':'LANG-gwij',
+  'message':'MES-ij','passage':'PAS-ij','storage':'STOR-ij','courage':'KER-ij',
+  'encourage':'en-KER-ij','percentage':'per-SEN-tij',
+  'challenge':'CHAL-unj','change':'CHAYNJ','range':'RAYNJ','strange':'STRAYNJ',
+  'exchange':'eks-CHAYNJ','arrange':'uh-RAYNJ',
+  'schedule':'SKEJ-ool','vehicle':'VEE-uh-kul','muscle':'MUH-sul',
+  'island':'EYE-lund','sign':'SYN','design':'dih-ZYN','assign':'uh-SYN',
+  'campaign':'kam-PAYN','maintain':'mayn-TAYN','contain':'kun-TAYN',
+  'explain':'ek-SPLAYN','certain':'SER-tun','captain':'KAP-tun',
+  'mountain':'MOWN-tun','fountain':'FOWN-tun','curtain':'KER-tun',
+  'sentence':'SEN-tunts','distance':'DIS-tunts','difference':'DIF-er-unts',
+  'experience':'ek-SPEER-ee-unts','ience':'ee-unts',
+  'science':'SY-unts','patience':'PAY-shunts','ancient':'AYN-shunt',
+  'present':'PREZ-unt','pleasant':'PLEZ-unt','student':'STOO-dunt',
+  'president':'PREZ-ih-dunt','resident':'REZ-ih-dunt','accident':'AK-sih-dunt',
+  'excellent':'EK-suh-lunt','confident':'KAHN-fih-dunt','independent':'in-dih-PEN-dunt',
+  'dependent':'dih-PEN-dunt','evident':'EV-ih-dunt','intelligent':'in-TEL-ih-junt',
+  'relevant':'REL-uh-vunt','significant':'sig-NIH-fih-kunt',
+  'appropriate':'uh-PROH-pree-it','separate':'SEP-er-it',
+  'desperate':'DES-per-it','elaborate':'ih-LAB-er-it',
+  'moderate':'MAH-der-it','accurate':'AK-yur-it','adequate':'AD-ih-kwit',
+  'candidate':'KAN-dih-dayt','climate':'KLY-mit','estimate':'ES-tih-mit',
+  'favorite':'FAY-ver-it','minute':'MIH-nit','opposite':'AH-puh-zit',
+  'private':'PRY-vit','ultimate':'UL-tih-mit','intimate':'IN-tih-mit',
+  'graduate':'GRAJ-oo-it','chocolate':'CHAH-klut','temperature':'TEM-pruh-cher',
+  'literature':'LIT-er-uh-cher','adventure':'ad-VEN-cher','culture':'KUL-cher',
+  'future':'FYOO-cher','mixture':'MIKS-cher','nature':'NAY-cher',
+  'picture':'PIK-cher','structure':'STRUK-cher','texture':'TEKS-cher',
+  'feature':'FEE-cher','creature':'KREE-cher','gesture':'JES-cher',
+  'lecture':'LEK-cher','posture':'PAH-scher','rupture':'RUP-cher',
+  'nurture':'NER-cher','capture':'KAP-cher','fracture':'FRAK-cher',
+  'manufacture':'man-yuh-FAK-cher',
+  // Power/flower words (ow = ow not oh)
+  'power':'POW-er','powers':'POW-erz','powerful':'POW-er-ful',
+  'flower':'FLOW-er','flowers':'FLOW-erz',
+  'tower':'TOW-er','shower':'SHOW-er','hour':'OW-er',
+  'allow':'uh-LOW','allowed':'uh-LOWD','allowing':'uh-LOW-ing',
+  'follow':'FAH-loh','hollow':'HAH-loh','swallow':'SWAH-loh',
+  'below':'bih-LOH','fellow':'FEL-oh','yellow':'YEL-oh','elbow':'EL-boh',
+  'window':'WIN-doh','shadow':'SHAD-oh','narrow':'NAIR-oh','arrow':'AIR-oh',
+  'borrow':'BOR-oh','sorrow':'SOR-oh','tomorrow':'tuh-MOR-oh',
+  'know':'NOH','known':'NOHN','show':'SHOH','shown':'SHOHN',
+  'grow':'GROH','grown':'GROHN','flow':'FLOH','blow':'BLOH',
+  'slow':'SLOH','snow':'SNOH','throw':'THROH','own':'OHN',
+  'now':'NOW','cow':'KOW','how':'HOW','wow':'WOW',
+  'down':'DOWN','town':'TOWN','brown':'BROWN','crown':'KROWN',
+  'found':'FOWND','sound':'SOWND','round':'ROWND','ground':'GROWND',
+  'around':'uh-ROWND','about':'uh-BOWT','out':'OWT','loud':'LOWD',
+  // Common -ough/-augh
+  'though':'THOH','through':'THROO','thought':'THAWT',
+  'bought':'BAWT','brought':'BRAWT','fought':'FAWT',
+  'caught':'KAWT','taught':'TAWT','daughter':'DAW-ter',
+  'laughter':'LAF-ter','slaughter':'SLAW-ter',
+  // Geography
+  'georgia':'JOR-juh','florida':'FLAWR-ih-duh','texas':'TEK-sus',
+  'california':'kal-ih-FORN-yuh','arizona':'air-ih-ZOH-nuh',
+  'virginia':'ver-JIN-yuh','carolina':'kair-uh-LY-nuh',
+  'washington':'WAH-shing-tun','colorado':'kah-luh-RAD-oh',
+  'chicago':'shih-KAH-goh','angeles':'AN-jih-les',
+  'francisco':'fran-SIS-koh','avenue':'AV-ih-nyoo',
+  'boulevard':'BOO-luh-vard','district':'DIS-trikt'
+};
+
 function phonetize(w){
   if(!w) return '';
-  var p=w;
-  if(p.indexOf('-')>=0){var _pts=p.split('-').filter(Boolean);_pts[0]=_pts[0].toUpperCase();return _pts.join('-');}
-  // Multi-char digraph patterns (order: longest first)
-  p=p.replace(/tion/g,'shun');
-  p=p.replace(/sion/g,'zhun');
-  p=p.replace(/ture/g,'cher');
-  p=p.replace(/through/g,'throo');
-  p=p.replace(/though/g,'thoh');
-  p=p.replace(/enough/g,'ih-NUF');
-  p=p.replace(/cough/g,'kawf');
-  p=p.replace(/rough/g,'ruf');
-  p=p.replace(/tough/g,'tuf');
-  p=p.replace(/aught/g,'awt');
-  p=p.replace(/ought/g,'awt');
-  p=p.replace(/ight/g,'ite');
-  p=p.replace(/igh/g,'eye');
-  p=p.replace(/eigh/g,'ay');
-  p=p.replace(/ough/g,'oh');
+  var lower=w.toLowerCase();
+  if(lower.indexOf('-')>=0){var _pts=lower.split('-').filter(Boolean);_pts[0]=_pts[0].toUpperCase();return _pts.join('-');}
+  if(_PHON_EXCEPTIONS[lower]) return _PHON_EXCEPTIONS[lower];
+  var p=lower;
+  // Word-end suffix patterns — before general rules
+  p=p.replace(/ations$/, 'ayshunz').replace(/ation$/, 'ayshun');
+  p=p.replace(/iences$/, 'ee-untsiz').replace(/ience$/, 'ee-unts');
+  p=p.replace(/encies$/, 'un-seez').replace(/ency$/, 'un-see');
+  p=p.replace(/ancies$/, 'un-seez').replace(/ancy$/, 'un-see');
+  p=p.replace(/ities$/, 'ih-teez').replace(/ity$/, 'ih-tee');
+  p=p.replace(/aries$/, 'air-eez').replace(/ary$/, 'air-ee');
+  p=p.replace(/ories$/, 'or-eez').replace(/ory$/, 'or-ee');
+  p=p.replace(/eries$/, 'er-eez').replace(/ery$/, 'er-ee');
+  p=p.replace(/ifies$/, 'ih-fyz').replace(/ify$/, 'ih-fy');
+  p=p.replace(/ively$/, 'iv-lee').replace(/ivity$/, 'IV-ih-tee');
+  p=p.replace(/ments$/, 'munts').replace(/ment$/, 'munt');
+  p=p.replace(/nesses$/, 'nes-iz').replace(/ness$/, 'nes');
+  p=p.replace(/lessly$/, 'les-lee').replace(/lessly$/, 'les-lee');
+  p=p.replace(/fully$/, 'ful-ee').replace(/ful$/, 'ful');
+  p=p.replace(/ings$/, 'ingz').replace(/ing$/, 'ing');
+  p=p.replace(/ers$/, 'erz').replace(/er$/, 'er');
+  p=p.replace(/ors$/, 'erz').replace(/or$/, 'er');
+  // Multi-char patterns — longest first
+  p=p.replace(/tion/g,'shun').replace(/sion/g,'zhun').replace(/ture/g,'cher');
+  p=p.replace(/eigh/g,'ay').replace(/ight/g,'ait').replace(/igh/g,'ai');
+  p=p.replace(/aught/g,'awt').replace(/ought/g,'awt').replace(/ough/g,'oh');
   // Vowel digraphs
-  p=p.replace(/oo/g,'oo');
-  p=p.replace(/ee/g,'ee');
-  p=p.replace(/ea/g,'ee');
-  p=p.replace(/ai/g,'ay');
-  p=p.replace(/ay/g,'ay');
-  p=p.replace(/oa/g,'oh');
-  p=p.replace(/oe/g,'oh');
-  p=p.replace(/oi/g,'oy');
-  p=p.replace(/oy/g,'oy');
-  p=p.replace(/ow/g,'oh');
-  p=p.replace(/ou/g,'ow');
-  p=p.replace(/ew/g,'yoo');
-  p=p.replace(/aw/g,'aw');
-  p=p.replace(/au/g,'aw');
-  p=p.replace(/ue/g,'oo');
-  p=p.replace(/ui/g,'oo');
-  p=p.replace(/ie/g,'ee');
-  p=p.replace(/ei/g,'ay');
+  p=p.replace(/oo/g,'oo').replace(/ee/g,'ee').replace(/ea/g,'ee');
+  p=p.replace(/ai/g,'ay').replace(/ay/g,'ay');
+  p=p.replace(/oa/g,'oh').replace(/oe/g,'oh');
+  p=p.replace(/oi/g,'oy').replace(/oy/g,'oy');
+  p=p.replace(/ew/g,'yoo').replace(/aw/g,'aw').replace(/au/g,'aw');
+  p=p.replace(/ue/g,'oo').replace(/ui/g,'oo');
+  p=p.replace(/ie/g,'ee').replace(/ei/g,'ay');
+  // ow: word-final or before consonant → oh (know, show); before vowel → ow (power)
+  p=p.replace(/own\b/g,'ohn').replace(/ow([bcdfghjklmnpqrstvwxyz]{2})/g,'ow$1');
+  p=p.replace(/ow$/g,'oh').replace(/ow(?=[^aeiou])/g,'oh').replace(/ow/g,'ow');
+  p=p.replace(/ou/g,'ow');  // found, sound, out → ow
   // Consonant patterns
-  p=p.replace(/tch/g,'ch');
-  p=p.replace(/ck/g,'k');
-  p=p.replace(/ph/g,'f');
-  p=p.replace(/gh/g,'');
-  p=p.replace(/kn/g,'n');
-  p=p.replace(/wr/g,'r');
-  p=p.replace(/qu/g,'kw');
-  p=p.replace(/wh/g,'w');
-  p=p.replace(/mb$/,'m');
-  p=p.replace(/c([ei])/g,'s$1');
-  p=p.replace(/c/g,'k');
-  p=p.replace(/g([ei])/g,'j$1');
-  p=p.replace(/x/g,'ks');
-  // Silent final e (magic e: consonant + e at end)
-  if(p.length>2&&/[^aeiou]e$/.test(p)) p=p.slice(0,-1);
-  // Final -s/-es → z if after vowel/voiced consonant
-  p=p.replace(/([aeioulmnr])s$/,'$1z');
-  // Syllabify and stress first syllable
+  p=p.replace(/tch/g,'ch').replace(/ck/g,'k').replace(/ph/g,'f');
+  p=p.replace(/gh/g,'').replace(/kn/g,'n').replace(/wr/g,'r');
+  p=p.replace(/qu/g,'kw').replace(/wh/g,'w').replace(/mb$/g,'m');
+  p=p.replace(/c([eiy])/g,'s$1').replace(/c/g,'k');
+  p=p.replace(/g([ei])/g,'j$1').replace(/x/g,'ks');
+  // Word-final y after consonant → ee (tiny→tinee, happy→hapee, pretty→pritee)
+  p=p.replace(/([bcdfghjklmnpqrstvwxz])y$/,'$1ee');
+  // Silent final e
+  if(p.length>2&&/[^aeiouy]e$/.test(p)) p=p.slice(0,-1);
+  // Final -s → z after vowel/voiced
+  p=p.replace(/([aeiooulmnr])s$/g,'$1z');
+  // Map remaining bare vowels to clearer sounds
+  p=p.replace(/\boh\b/g,'oh');
+  // If suffix rules already inserted hyphens, use them directly (avoid double-hyphen bug)
+  if(p.indexOf('-')>=0){
+    var pts=p.split('-').filter(Boolean);
+    if(pts.length){pts[0]=pts[0].toUpperCase();return pts.join('-');}
+  }
   return splitPhonSyllables(p).join('-');
 }
 
@@ -753,73 +1030,51 @@ function wordByWordHTML(eng,phon){
 
   // ── Render stressed syllable helper ──
   function sylHTML(syl,showDot){
-    var st=/[A-Z]/.test(syl)&&syl!==syl.toLowerCase();
-    var dot=showDot?'<span style="color:#ccc;font-size:9px;font-family:monospace"> · </span>':'';
+    var st=/[A-Z]{2,}/.test(syl);
+    var dot=showDot?'<span style="color:#bbb;font-size:13px"> · </span>':'';
+    var txt=syl.toLowerCase();
     return dot+(st
-      ?'<b style="color:#1a1a1a;font-size:13px;font-family:monospace">'+syl+'</b>'
-      :'<span style="color:#666;font-size:11px;font-family:monospace">'+syl+'</span>');
+      ?'<b style="color:#111;font-size:14px;font-family:monospace;letter-spacing:0.3px">'+txt+'</b>'
+      :'<span style="color:#777;font-size:13px;font-family:monospace;letter-spacing:0.3px">'+txt+'</span>');
   }
 
-  // ── Full sentence pronunciation bar ──
-  var sentParts=wordPhons.map(function(ph){
-    if(!ph) return '';
-    return ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
-  });
+  function phHTML(ph){
+    return ph.split('-').map(function(s,j){return sylHTML(s,j>0);}).join('');
+  }
 
+  // ── Rhythm / linking ──
+  var rh=getRhythmHints(words);
+  var linkSet={};
+  rh.linking.forEach(function(li){linkSet[li]=true;});
+
+  // ── Full sentence pronunciation bar — words stay separate, arc shows linking ──
   var html='<div style="background:#f8f8f8;border-radius:10px;padding:10px 14px;margin-bottom:14px">'
     +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">전체 문장 발음</div>'
-    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;line-height:2.2">';
-  sentParts.forEach(function(part){if(part) html+='<span>'+part+'</span>';});
+    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;line-height:2.4">';
+  wordPhons.forEach(function(ph,i){
+    if(!ph) return;
+    html+='<span>'+phHTML(ph)+'</span>';
+    if(linkSet[i]&&wordPhons[i+1]){
+      html+='<span style="color:#FF6B35;font-size:11px;font-weight:700;line-height:1;margin:0 -3px;position:relative;top:-2px">⌒</span>';
+    }
+  });
   html+='</div></div>';
 
   // ── Word cards ──
-  // Compute rhythm hints for this sentence
-  var rh=getRhythmHints(words);
-
   html+='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
-    var isStr=rh.stressed[i]||hasStress;
-    var phDisp='';
-    if(ph){
-      phDisp=ph.split('-').map(function(syl,j){return sylHTML(syl,j>0);}).join('');
-    }
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:8px;">'
-      +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'+word+'</span>'
-      +(phDisp
-        ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phDisp+'</div>'
+      +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'
+      +word+(linkSet[i]?'<span style="font-size:8px;color:#FF6B35;vertical-align:super">⌒</span>':'')
+      +'</span>'
+      +(ph
+        ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phHTML(ph)+'</div>'
         :'<div style="height:20px;"></div>')
       +'</div>';
   });
   html+='</div>';
-
-  // ── Sheet-music style rhythm bar chart ──────────────────────
-  (function(){
-    var SH=22,MH=12,LH=5;
-    var bars=words.map(function(word,i){
-      var ph=wordPhons[i]||'';
-      var syls=ph?ph.split('-'):[word];
-      var isFunc=!!FUNC_SET[word.toLowerCase().replace(/[^a-z]/g,'')];
-      var parts=syls.map(function(syl){
-        var isMain=/[A-Z]{2,}/.test(syl);
-        var isCap=!isMain&&/[A-Z]/.test(syl);
-        var h=isMain?SH:(isFunc?LH:(isCap?MH:LH));
-        var bg=isMain?'#1a1a1a':(isFunc?'#e0e0e0':(isCap?'#aaa':'#d0d0d0'));
-        return '<div style="width:10px;height:'+h+'px;background:'+bg+';border-radius:2px 2px 0 0;flex-shrink:0"></div>';
-      }).join('');
-      return '<div style="display:flex;align-items:flex-end;gap:2px">'+parts+'</div>';
-    }).join('');
-    html+='<div style="background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:10px 14px;margin-bottom:12px">'
-      +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">STRESS PATTERN</div>'
-      +'<div style="display:flex;align-items:flex-end;flex-wrap:wrap;gap:3px 8px;padding-bottom:5px;border-bottom:1px solid #f0f0f0">'+bars+'</div>'
-      +'<div style="display:flex;gap:14px;margin-top:6px">'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#1a1a1a;border-radius:1px 1px 0 0;vertical-align:middle"></span>강세</span>'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#aaa;border-radius:1px 1px 0 0;vertical-align:middle"></span>약세</span>'
-      +'<span style="font-size:9px;color:#bbb;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:10px;background:#e0e0e0;border-radius:1px 1px 0 0;vertical-align:middle"></span>기능어</span>'
-      +'</div>'
-      +'</div>';
-  })();
 
   // ── Connected speech / reduction hints ──
   var hints=[];
@@ -828,11 +1083,13 @@ function wordByWordHTML(eng,phon){
     hints.push('"'+orig+'" → <b>'+red.result+'</b> 로 줄여 발음해요');
   });
   if(rh.linking.length){
-    var ex=rh.linking.slice(0,2).map(function(i){return '"'+words[i]+' '+words[i+1]+'"';}).join(', ');
-    hints.push('연음: '+ex+' → 단어를 이어서 한 덩어리로');
+    var linkEx=rh.linking.slice(0,3).map(function(li){
+      return '"<b>'+words[li]+'</b> '+words[li+1]+'" → 이어서 발음해요';
+    }).join('  ');
+    hints.push(linkEx);
   }
   if(hints.length){
-    html+='<div style="font-size:11px;color:#555;margin-top:0;margin-bottom:4px;background:#f8f8f8;border-radius:7px;padding:7px 12px;line-height:2;border-left:3px solid #1a1a1a">'
+    html+='<div style="font-size:11px;color:#555;margin-top:0;margin-bottom:4px;background:#f8f8f8;border-radius:7px;padding:7px 12px;line-height:2;border-left:3px solid #FF6B35">'
       +hints.join('<br>')+'</div>';
   }
 
@@ -843,14 +1100,43 @@ function wordByWordHTML(eng,phon){
 function musicWordPhon(eng){
   if(!eng) return '';
   var words=eng.trim().split(/\s+/);
+  // Detect linking pairs
+  var lw=words.map(function(w){return w.toLowerCase().replace(/[^a-z]/g,'');});
+  var musicLinkSet={};
+  for(var li=0;li<lw.length-1;li++){
+    var la=lw[li],lb=lw[li+1];
+    if(la&&lb&&'bcdfghjklmnpqrstvwxyz'.indexOf(la[la.length-1])>=0&&'aeiou'.indexOf(lb[0])>=0)
+      musicLinkSet[li]=true;
+  }
+  function musicGetLinkCons(ph){
+    var lastSyl=ph.split('-').pop().toLowerCase();
+    var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','ih','er','oh','aa','ah'];
+    var lastNucEnd=-1,i=0;
+    while(i<lastSyl.length){
+      var found=false;
+      for(var n=0;n<VNUC.length;n++){
+        var nl=VNUC[n].length;
+        if(lastSyl.slice(i,i+nl)===VNUC[n]){lastNucEnd=i+nl;i+=nl;found=true;break;}
+      }
+      if(!found){if('aeiou'.indexOf(lastSyl[i])>=0) lastNucEnd=i+1; i++;}
+    }
+    if(lastNucEnd<0||lastNucEnd>=lastSyl.length) return '';
+    var trail=lastSyl.slice(lastNucEnd);
+    var DIGRAPHS=['ng','sh','th','ch','zh'];
+    for(var d=0;d<DIGRAPHS.length;d++) if(trail.endsWith(DIGRAPHS[d])) return DIGRAPHS[d];
+    return trail.slice(-1);
+  }
+
   var html='<div style="display:flex;flex-wrap:wrap;gap:10px 16px;padding:4px 0">';
-  words.forEach(function(word){
+  words.forEach(function(word,wi){
     var k=word.toLowerCase().replace(/[^a-z]/g,'');
     if(!k) return;
     var ph=wordPhon(k)||phonetize(k)||k.toUpperCase();
     var hasStress=/[A-Z]{2,}/.test(ph);
     var isFunc=!!FUNC_SET[k];
-    var phTxt=ph.replace(/-/g,'·');
+    var lc=musicLinkSet[wi]?musicGetLinkCons(ph):'';
+    var phBase=lc?ph.slice(0,ph.length-lc.length):ph;
+    var phTxt=phBase.replace(/-/g,'·')+(lc?'<span style="color:#FF6B35;font-weight:800;font-size:9px">'+lc+'⌒</span>':'');
     html+='<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'
       +'<span style="font-size:10px;letter-spacing:.5px;color:'+(isFunc?'#ccc':(hasStress?'#FF6B35':'#999'))+';font-weight:'+(hasStress?'700':'400')+'">'+phTxt+'</span>'
       +'<span style="font-size:14px;font-weight:'+(hasStress?'700':'400')+';color:'+(isFunc?'#bbb':'#1a1a1a')+'">'+word+'</span>'
@@ -885,26 +1171,63 @@ function isSaved(){
 function goSaved(){stopAll();set({screen:'saved'});}
 
 // ─── DAILY STUDY TRACKER ──────────────────────────────
-var DAILY_GOAL=5;
 function _todayKey(){return new Date().toISOString().slice(0,10);}
+function getDailyGoal(){return Math.max(1,parseInt(localStorage.getItem('phonix_goal')||'5'));}
+function setDailyGoal(n){localStorage.setItem('phonix_goal',String(Math.max(1,Math.min(50,n))));render();}
 function getDailyStats(){
   try{
+    var goal=getDailyGoal();
     var d=JSON.parse(localStorage.getItem('phonix_daily')||'{}');
     var today=_todayKey();
     if(d.date!==today){
       var prev=new Date();prev.setDate(prev.getDate()-1);
       var prevKey=prev.toISOString().slice(0,10);
-      var streak=(d.date===prevKey&&(d.count||0)>=DAILY_GOAL)?(d.streak||0)+1:0;
+      var streak=(d.date===prevKey&&(d.count||0)>=goal)?(d.streak||0)+1:0;
       d={date:today,count:0,streak:streak};
       localStorage.setItem('phonix_daily',JSON.stringify(d));
     }
     return d;
   }catch(e){return{date:_todayKey(),count:0,streak:0};}
 }
-function markDailyStudy(){
+function markDailyStudy(result){
   var d=getDailyStats();
   d.count=(d.count||0)+1;
   localStorage.setItem('phonix_daily',JSON.stringify(d));
+  if(result&&result.issues){
+    var w=_getWeakMap();
+    result.issues.forEach(function(iss){
+      if(iss.word) w[iss.word]=(w[iss.word]||0)+1;
+      // track phoneme category
+      var word=iss.word||'';
+      if(/^th/i.test(word)) w['__th']=(w['__th']||0)+1;
+      else if(/^r/i.test(word)) w['__r']=(w['__r']||0)+1;
+      else if(/^l/i.test(word)) w['__l']=(w['__l']||0)+1;
+      else if(/^[vb]/i.test(word)) w['__vb']=(w['__vb']||0)+1;
+      else if(/^[fp]/i.test(word)) w['__fp']=(w['__fp']||0)+1;
+      else if(/wh/i.test(word)) w['__wh']=(w['__wh']||0)+1;
+    });
+    localStorage.setItem('phonix_weak',JSON.stringify(w));
+  }
+}
+function _getWeakMap(){try{return JSON.parse(localStorage.getItem('phonix_weak')||'{}');}catch(e){return{};}}
+function getWeakAnalysis(){
+  var w=_getWeakMap();
+  var total=Object.keys(w).filter(function(k){return k.indexOf('__')<0;}).reduce(function(s,k){return s+w[k];},0);
+  if(total<3) return null; // 데이터 부족
+  var cats=[
+    {key:'__th',label:'TH 발음',tip:'혀를 이 사이에 살짝 대고 바람을 불어요 (think→씽크 ✕, 씬크 ✓)'},
+    {key:'__r', label:'R 발음',tip:'혀가 어디에도 닿지 않게 — 입안에서 공중에 떠 있어야 해요'},
+    {key:'__l', label:'L 발음',tip:'혀끝을 윗니 바로 뒤 잇몸에 탁 붙였다 떼세요'},
+    {key:'__vb',label:'V / B 구분',tip:'V는 윗니로 아랫입술을 살짝 물고 진동, B는 두 입술을 붙였다 터뜨려요'},
+    {key:'__fp',label:'F / P 구분',tip:'F는 윗니-아랫입술 마찰음, P는 두 입술 파열음이에요'},
+    {key:'__wh',label:'WH 발음',tip:'"wh-" 단어는 보통 W 소리만 나요 (what→왓, where→웨어)'}
+  ];
+  var scored=cats.filter(function(c){return w[c.key]>0;}).sort(function(a,b){return (w[b.key]||0)-(w[a.key]||0);});
+  // top word
+  var wordItems=Object.keys(w).filter(function(k){return k.indexOf('__')<0;}).map(function(k){return{word:k,cnt:w[k]};});
+  wordItems.sort(function(a,b){return b.cnt-a.cnt;});
+  var top3=wordItems.slice(0,3);
+  return {cats:scored.slice(0,2),words:top3,total:total};
 }
 function playSavedIdx(ii){var saved=getSaved();if(saved[ii]) speakEng(saved[ii].eng);}
 function deleteSavedIdx(ii){
@@ -924,7 +1247,7 @@ var S={
   savedMsg:'',
   aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiLoading:false,aiImgLoading:false,aiError:'',
   musicSongIdx:0,musicPlaying:false,musicLoading:false,musicPreviewUrl:'',
-  homeExpanded:false
+  homeExpanded:false,homeSubExpanded:0
 };
 function set(patch){Object.assign(S,patch);render();}
 
@@ -1166,7 +1489,7 @@ function prevS(){
 function nextS(){
   var sents=DATA[S.cat]||[];
   stopMic(S.recRef); S.recRef=null;
-  markDailyStudy();
+  markDailyStudy(S.result);
   var n=S.idx<sents.length-1?S.idx+1:0;
   set({idx:n,result:null,live:'',err:'',rec:false,analyzing:false});
 }
@@ -1210,9 +1533,191 @@ function goAnalyze(){
     aiLoading:false,aiImgLoading:false,aiError:''});
 }
 function speakAI(){speakEng(S.aiEng);}
+// Lyric TTS: Google Translate voice (natural), never calls render() so no display reset
+function speakLyric(txt){
+  if(!txt) return;
+  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  var url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+encodeURIComponent(txt)+'&tl=en&client=gtx&ttsspeed=1';
+  var a=new Audio(url);
+  _ttsAudio=a;
+  a.play().catch(function(){_speakWebAPI(txt,null);});
+}
 
 // ─── MUSIC COACH ─────────────────────────────────────
+var _musicOpenAll=false;
+var _musicPage=0;
+var _musicTab=1;
+var _calIdx=0;
+var _calTimes=[];
+var _userLyricClick=0; // 유저가 가사 클릭한 타임스탬프
+function _editDist(a,b){
+  var m=a.length,n=b.length,dp=[],i,j;
+  for(i=0;i<=m;i++){dp[i]=[i];}
+  for(j=0;j<=n;j++){dp[0][j]=j;}
+  for(i=1;i<=m;i++){for(j=1;j<=n;j++){dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);}}
+  return dp[m][n];
+}
+
+function _openPronInput(idx,engText){
+  var re=document.getElementById('pron-result-'+idx);
+  if(!re) return;
+  re.style.display='block';
+  var safeEng=engText.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:6px">발음한 대로 입력하세요</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<input id="pron-input-'+idx+'" type="text" placeholder="예: i luhv dis song" '
+    +'style="flex:1;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:13px;outline:none" '
+    +'onkeydown="if(event.key===\'Enter\')_checkPronInput('+idx+',\''+safeEng+'\')" />'
+    +'<button onclick="_checkPronInput('+idx+',\''+safeEng+'\')" '
+    +'style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">확인</button>'
+    +'</div>';
+  setTimeout(function(){var el=document.getElementById('pron-input-'+idx);if(el)el.focus();},50);
+}
+
+function _checkPronInput(idx,target){
+  var inputEl=document.getElementById('pron-input-'+idx);
+  if(!inputEl) return;
+  var typed=inputEl.value.trim();
+  if(!typed) return;
+  function normW(w){return w.toLowerCase().replace(/[^a-z']/g,'');}
+  var sw=typed.split(/\s+/).map(normW).filter(Boolean);
+  var tw=target.trim().split(/\s+/).map(normW).filter(Boolean);
+  var mistakes=[];
+  var parts=tw.map(function(t,i){
+    var s=sw[i]||'';
+    if(!s){mistakes.push({e:t,s:'(없음)'});return '<span style="color:#e74c3c;font-weight:700;background:#fee2e2;border-radius:3px;padding:1px 5px">'+t+'</span>';}
+    if(s===t) return '<span style="color:#16a34a;font-weight:600">'+t+'</span>';
+    var d=_editDist(s,t);
+    var thresh=Math.max(1,Math.floor(t.length/4));
+    mistakes.push({e:t,s:s});
+    return '<span style="color:'+(d<=thresh?'#ea580c':'#e74c3c')+';font-weight:700;background:'+(d<=thresh?'#fff7ed':'#fee2e2')+';border-radius:3px;padding:1px 5px">'+t+'</span>';
+  }).join(' ');
+  var mHtml=mistakes.length===0
+    ?'<div style="color:#16a34a;font-size:11px;margin-top:6px;font-weight:600">✓ 완벽해요!</div>'
+    :'<div style="margin-top:7px">'+mistakes.map(function(m){
+      return '<div style="font-size:11px;color:#e74c3c;line-height:1.8"><b>'+m.e+'</b> → <span style="color:#888">"'+m.s+'"</span> 라고 발음했어요</div>';
+    }).join('')+'</div>';
+  var safeEng=target.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var re=document.getElementById('pron-result-'+idx);
+  if(re){
+    re.innerHTML='<div style="font-size:13px;line-height:2.4;margin-bottom:2px">'+parts+'</div>'
+      +mHtml
+      +'<button onclick="_openPronInput('+idx+',\''+safeEng+'\')" style="margin-top:8px;background:#f0f0f0;border:none;border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;color:#555">다시 시도</button>';
+  }
+}
+
+function _buildSongPickerHTML(){
+  // ── 상단 카테고리 탭 ──
+  var tabHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+    +'<button onclick="_musicTab=1;_musicPage=0;_rebuildSongPicker()" style="border:2px solid '+(_musicTab===1?'#1a1a1a':'#e8e8e8')+';border-radius:14px;padding:13px 8px;background:'+(_musicTab===1?'#1a1a1a':'#fff')+';cursor:pointer;text-align:center">'
+    +'<div style="font-size:18px;margin-bottom:4px">⏱️</div>'
+    +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===1?'#fff':'#1a1a1a')+'">30초 프리뷰</div>'
+    +'<div style="font-size:9px;color:'+(_musicTab===1?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">Spotify · 25곡</div>'
+    +'</button>'
+    +'<button onclick="_musicTab=0;_musicPage=0;_rebuildSongPicker()" style="border:2px solid '+(_musicTab===0?'#1a1a1a':'#e8e8e8')+';border-radius:14px;padding:13px 8px;background:'+(_musicTab===0?'#1a1a1a':'#fff')+';cursor:pointer;text-align:center">'
+    +'<div style="font-size:18px;margin-bottom:4px">🎶</div>'
+    +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===0?'#fff':'#1a1a1a')+'">Full Version</div>'
+    +'<div style="font-size:9px;color:'+(_musicTab===0?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">SoundCloud</div>'
+    +'</button>'
+    +'</div>';
+  // ── 하단 곡 목록 ──
+  var filtered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
+    return _musicTab===0?!!x.s.soundcloudUrl:!!x.s.spotifyId;
+  });
+  var perPage=7;
+  var total=Math.ceil(filtered.length/perPage);
+  var start=_musicPage*perPage;
+  var end=Math.min(start+perPage,filtered.length);
+  var active=S.musicSongIdx||0;
+  var canLeft=_musicPage>0;
+  var canRight=(_musicPage+1)*perPage<filtered.length;
+  var arrowStyle='flex-shrink:0;border:none;border-radius:8px;width:30px;height:52px;font-size:20px;cursor:';
+  var html=tabHtml+'<div style="display:flex;align-items:center;gap:5px">';
+  html+='<button onclick="_musicPage=Math.max(0,_musicPage-1);_rebuildSongPicker()" style="'+arrowStyle+(canLeft?'pointer':'default')+';background:'+(canLeft?'#1a1a1a':'#e8e8e8')+';color:'+(canLeft?'#fff':'#ccc')+'">‹</button>';
+  html+='<div style="display:flex;flex:1;gap:5px;overflow:hidden">';
+  for(var k=start;k<end;k++){
+    var item=filtered[k];var s=item.s;var i=item.idx;var isA=(active===i);
+    html+='<button onclick="set({musicSongIdx:'+i+'});_previewStartPos=null;_lastLyricIdx=-1;render();" style="flex:1;min-width:0;background:'+(isA?'#1a1a1a':'#f0f0f0')+';color:'+(isA?'#fff':'#555')+';border:none;border-radius:10px;padding:8px 3px;font-size:10px;font-weight:'+(isA?700:500)+';cursor:pointer;line-height:1.3;text-align:center">'
+      +'<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px">'+s.title+'</div>'
+      +'<div style="font-size:8px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px">'+s.artist+'</div>'
+      +'</button>';
+  }
+  if(filtered.length===0) html+='<div style="flex:1;text-align:center;font-size:11px;color:#bbb;padding:14px 0">노래가 없어요</div>';
+  html+='</div>';
+  html+='<button onclick="_musicPage=Math.min('+(total>0?total-1:0)+',_musicPage+1);_rebuildSongPicker()" style="'+arrowStyle+(canRight?'pointer':'default')+';background:'+(canRight?'#1a1a1a':'#e8e8e8')+';color:'+(canRight?'#fff':'#ccc')+'">›</button>';
+  html+='</div>';
+  return html;
+}
+function _rebuildSongPicker(){
+  // 현재 탭에 맞는 곡이 선택돼 있는지 확인
+  var filtered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
+    return _musicTab===0?!!x.s.soundcloudUrl:!!x.s.spotifyId;
+  });
+  var inTab=filtered.some(function(x){return x.idx===(S.musicSongIdx||0);});
+  if(!inTab&&filtered.length>0){
+    // 탭에 맞는 첫 곡으로 교체 후 전체 재렌더
+    S.musicSongIdx=filtered[0].idx;
+    _previewStartPos=null;_lastLyricIdx=-1;
+    if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
+    if(_scWidget){try{_scWidget.pause();}catch(e){}_scWidget=null;}
+    render();
+    return;
+  }
+  var el=document.getElementById('song-picker');
+  if(el) el.innerHTML=_buildSongPickerHTML();
+}
+
+// Tap-to-calibrate: user plays preview and taps "마크" at each lyric's start
+function _markCalNext(){
+  var song=MUSIC_DATA[S.musicSongIdx||0];
+  var lyrics=song.lyrics||[];
+  var relPos=_previewStartPos!==null?_currentPos-_previewStartPos:0;
+  _calTimes[_calIdx]=parseFloat(relPos.toFixed(2));
+  _calIdx++;
+  var btn=document.getElementById('cal-btn');
+  if(_calIdx>=lyrics.length){
+    var out=lyrics.map(function(l,i){return 't:'+(_calTimes[i]||0).toFixed(2);}).join('\n');
+    alert('타이밍 기록 완료 ✓\n가사 '+lyrics.length+'개\n\n'+out+'\n\n이 값들을 Claude에게 보내주세요!');
+    _calIdx=0;_calTimes=[];
+    if(btn)btn.textContent='▶ 가사 1 마크';
+  } else {
+    if(btn)btn.textContent='▶ 가사 '+(_calIdx+1)+' 마크';
+  }
+}
+function _resetCal(){
+  _calIdx=0;_calTimes=[];
+  var btn=document.getElementById('cal-btn');if(btn)btn.textContent='▶ 가사 1 마크';
+  var p=document.getElementById('cal-pos');if(p)p.textContent='0.0s';
+}
 var MUSIC_DATA=[
+  {
+    title:'Your Back',artist:'IØN',
+    searchQ:'your back ion soundcloud',
+    soundcloudUrl:'https://soundcloud.com/ion-807282022/your-back',
+    badge:'INDIE · EMOTIONAL',
+    intro:'IØN의 자작 인디곡. 시적인 문장과 감정 표현을 자연스럽게 익혀요. 타이밍 캘리브레이션으로 맞춰 사용하세요.',
+    lyrics:[
+      {t:3.0,eng:"I left that place — it had a name",note:"<b>left</b>=떠났다(leave 과거). <b>it had a name</b>=이름이 있었다. 짧고 담담한 과거 서술",highlights:["left that place","had a name"]},
+      {t:10.0,eng:"I remember the sound of it",note:"<b>I remember the sound of</b>=~의 소리를 기억한다. 감각 기억 표현",highlights:["remember the sound"]},
+      {t:16.0,eng:"I didn't stay",note:"<b>didn't stay</b>=머물지 않았다. 과거 부정문. 단 4단어로 떠남을 표현",highlights:["didn't stay"]},
+      {t:22.0,eng:"I woke up and the ocean was already there",note:"<b>woke up</b>=잠에서 깨다. <b>was already there</b>=이미 거기 있었다. 과거시제 상황 묘사",highlights:["woke up","already there"]},
+      {t:30.0,eng:"Coming in, before I could think",note:"<b>coming in</b>=밀려오다. <b>before I could think</b>=생각하기도 전에. could=가능성의 조동사",highlights:["coming in","before I could think"]},
+      {t:40.0,eng:"The water kept coming in, it never pulled back",note:"<b>kept coming in</b>=계속 밀려왔다. <b>pulled back</b>=물러났다. keep+동명사 반복 패턴",highlights:["kept coming in","pulled back"]},
+      {t:52.0,eng:"I walked all day, waiting for something that never came",note:"<b>waiting for something</b>=무언가를 기다리며. <b>that never came</b>=끝내 오지 않은. 관계절 구조",highlights:["waiting for something","never came"]},
+      {t:66.0,eng:"Then I saw someone walking like you",note:"<b>saw someone walking</b>=지각동사+목적어+분사. <b>walking like you</b>=너처럼 걷는. 비교 표현",highlights:["saw someone","walking like you"]},
+      {t:76.0,eng:"And it came back, all at once",note:"<b>came back</b>=돌아왔다. <b>all at once</b>=한꺼번에. 갑작스럽게 밀려오는 기억",highlights:["came back","all at once"]},
+      {t:86.0,eng:"I watched you go, I watched you go",note:"<b>watched you go</b>=네가 떠나는 걸 지켜봤다. 지각동사 watch+목적어+원형. 반복으로 감정 강조",highlights:["watched you go"]},
+      {t:96.0,eng:"Said goodbye to your back",note:"<b>said goodbye to your back</b>=네 등에 대고 작별인사를 했다. 타이틀 핵심 이미지",highlights:["goodbye to your back"]},
+      {t:106.0,eng:"I watched you go, and you didn't know",note:"<b>you didn't know</b>=넌 몰랐다. 과거 부정문. 상대는 모른 채 떠났다는 비극적 아이러니",highlights:["you didn't know"]},
+      {t:118.0,eng:"Your eyes — they moved too fast, like they wouldn't stay",note:"<b>moved too fast</b>=너무 빠르게 움직였다. <b>wouldn't stay</b>=머물려 하지 않다. 조동사 would 거부 표현",highlights:["moved too fast","wouldn't stay"]},
+      {t:133.0,eng:"But sometimes, when you looked at me, everything slowed down",note:"<b>when you looked at me</b>=네가 날 봤을 때. <b>slowed down</b>=느려졌다. 속도 대비로 특별한 순간 묘사",highlights:["looked at me","slowed down"]},
+      {t:148.0,eng:"I should've said something, anything, but I didn't",note:"<b>should've said</b>=말했어야 했는데(과거 후회). <b>anything</b>=무엇이든. <b>but I didn't</b>=하지만 안 했다",highlights:["should've said","but I didn't"]},
+      {t:162.0,eng:"I watched you go, said goodbye to your back",note:"후렴 반복. 핵심 이미지 재등장. 감정의 정점",highlights:["watched you go","goodbye to your back"]},
+      {t:178.0,eng:"I watched you go, and you didn't know, not even a little",note:"<b>not even a little</b>=조금도 아니다. 강조 부정 표현. 완전한 무지의 강조",highlights:["you didn't know","not even a little"]},
+      {t:195.0,eng:"I still think of you, sometimes",note:"<b>think of</b>=~를 생각하다(구동사). <b>still</b>=아직도. <b>sometimes</b>=가끔. 여운 있는 마지막 고백",highlights:["think of","sometimes"]}
+    ]
+  },
   {
     title:'Cruel Summer',artist:'Taylor Swift',
     searchQ:'cruel summer taylor swift',
@@ -1329,32 +1834,6 @@ var MUSIC_DATA=[
   },
   // ── Coldplay ──────────────────────────────────────────
   {
-    title:'Clocks',artist:'Coldplay',
-    searchQ:'clocks coldplay',
-    spotifyId:'78QpQVB14ViCAckdKacsKh',
-    badge:'RHYTHM · FLAP-T',
-    intro:'노래를 들으면서 가사 분석을 읽으세요. 강세와 리듬, Flap-T(d처럼 들리는 t) 패턴을 익혀보세요.',
-    lyrics:[
-      {t:1.0,eng:"The lights go out and I can't be saved",
-       note:"<b>can't</b>=cannot 축약. <b>go out</b>→goh-OWT 연음. <b>saved</b>에 강세",highlights:["can't"]},
-      {t:5.0,eng:"Tides that I tried to swim against",
-       note:"<b>tried to</b>→tried-tuh 연음. <b>against</b>→uh-GENST 강세",highlights:[]},
-      {t:9.0,eng:"You've come to take me away",
-       note:"<b>You've</b>=You have 축약. <b>come to</b>→kum-tuh 약화",highlights:["You've"]},
-      {t:13.0,eng:"Am I a part of the cure",
-       note:"<b>a part of the</b>→uh-PART-uv-thuh 연속 약화. 기능어는 전부 약하게",highlights:[]},
-      {t:17.0,eng:"Or am I part of the disease",
-       note:"<b>or am I</b>→or-um-AH 연음. <b>disease</b>→dih-ZEEZ 강세 2음절",highlights:[]}
-    ],
-    contractions:[
-      {s:"can't",  f:"cannot",    ph:"KANT"},
-      {s:"You've", f:"You have",  ph:"YOOV"},
-      {s:"I've",   f:"I have",    ph:"AHV"},
-      {s:"it's",   f:"it is",     ph:"ITS"},
-      {s:"I'm",    f:"I am",      ph:"AHM"}
-    ]
-  },
-  {
     title:'Viva La Vida',artist:'Coldplay',
     searchQ:'viva la vida coldplay',
     spotifyId:'4Lqt3OFx7yvApf32wNoJHI',
@@ -1388,83 +1867,7 @@ var MUSIC_DATA=[
       {s:"singin'",f:"singing",    ph:"SING-in"}
     ]
   },
-  {
-    title:'Adventure of a Lifetime',artist:'Coldplay',
-    searchQ:'adventure of a lifetime coldplay',
-    spotifyId:'2SSpWHvmm9NN86Ui2SULWG',
-    badge:'REDUCTIONS · RHYTHM',
-    intro:'신나는 리듬 속 약화(Reduction) 패턴을 집중적으로 익혀보세요.',
-    lyrics:[
-      {t:1.0,eng:"Turn your magic on",
-       note:"<b>Turn your</b>→TURN-yer 연음. <b>magic</b>→MAH-jik 강세",highlights:[]},
-      {t:4.0,eng:"To me she'd say",
-       note:"<b>she'd</b>=she would 축약. <b>to me</b>→tuh-MEE 약화",highlights:["she'd"]},
-      {t:7.0,eng:"Everything you want's a dream away",
-       note:"<b>want's</b>=want is 구어 축약. <b>dream away</b>→dream-uh-WAY 연음",highlights:["want's"]},
-      {t:11.0,eng:"We are diamonds taking shape",
-       note:"<b>We are</b>→wee-ur 연음. <b>taking</b>→TAY-king 강세",highlights:[]},
-      {t:15.0,eng:"Come alive",
-       note:"<b>Come alive</b>→kum-uh-LAHYV 연음. 짧은 구절에 감정 실기",highlights:[]}
-    ],
-    contractions:[
-      {s:"she'd",  f:"she would",  ph:"SHEED"},
-      {s:"we're",  f:"we are",     ph:"WEER"},
-      {s:"you're", f:"you are",    ph:"YER"},
-      {s:"want's", f:"want is",    ph:"WONTS"}
-    ]
-  },
-  {
-    title:'A Sky Full of Stars',artist:'Coldplay',
-    searchQ:'a sky full of stars coldplay',
-    spotifyId:'4JIck9yO3m6qpyNFJU84RB',
-    badge:'STRESS · RHYTHM',
-    intro:'강렬한 비트와 함께 영어 강세(Stress) 패턴을 몸으로 느껴보세요.',
-    lyrics:[
-      {t:0.5,eng:"'Cause you're a sky full of stars",
-       note:"<b>'Cause</b>=Because 구어 축약. <b>you're</b>=you are. <b>sky</b>에 강세",highlights:["'Cause","you're"]},
-      {t:4.5,eng:"I'm gonna give you my heart",
-       note:"<b>I'm gonna</b>=I am going to 이중 축약. <b>give you</b>→giv-yuh 연음",highlights:["I'm","gonna"]},
-      {t:8.5,eng:"'Cause you're a sky full of stars",
-       note:"반복 코러스 — 리듬 패턴 귀에 익히기",highlights:["'Cause","you're"]},
-      {t:12.5,eng:"Such a heavenly view",
-       note:"<b>Such a</b>→suh-chuh 연음. <b>heavenly</b>→HEV-un-lee 3음절 강세",highlights:[]},
-      {t:16.0,eng:"You're a sky full of stars",
-       note:"<b>You're</b>=You are. 반복되는 리듬에서 강세 위치를 체크",highlights:["You're"]}
-    ],
-    contractions:[
-      {s:"'Cause", f:"Because",    ph:"kuz"},
-      {s:"you're", f:"you are",    ph:"YER"},
-      {s:"I'm",    f:"I am",       ph:"AHM"},
-      {s:"gonna",  f:"going to",   ph:"GUN-uh"}
-    ]
-  },
   // ── Bruno Mars ────────────────────────────────────────
-  {
-    title:'Uptown Funk',artist:'Mark Ronson ft. Bruno Mars',
-    searchQ:'uptown funk bruno mars',
-    spotifyId:'4zfPkrKPobcg1ncgEzK4Al',
-    badge:'RHYTHM · REDUCTIONS',
-    intro:'빠른 리듬 속 구어 축약과 연음을 집중 훈련하세요.',
-    lyrics:[
-      {t:0.5,eng:"Don't believe me, just watch",
-       note:"<b>Don't</b>=do not 축약. <b>just watch</b>→jus-WOCH 연음. 짧고 강한 리듬",highlights:["Don't"]},
-      {t:4.0,eng:"Stop, wait a minute",
-       note:"<b>wait a</b>→wayt-uh 연음. <b>minute</b>→MIN-it (2음절)",highlights:[]},
-      {t:7.5,eng:"Before we leave, lemme tell y'all something",
-       note:"<b>lemme</b>=let me 구어 축약. <b>y'all</b>=you all 남부 미국 영어 축약",highlights:["lemme","y'all"]},
-      {t:12.0,eng:"Too hot, hot damn",
-       note:"<b>Too hot</b>→tuh-HOT 연음. 강한 단음절에 감정 강세",highlights:[]},
-      {t:15.5,eng:"Don't believe me, just watch",
-       note:"반복 후렴 — 리듬 패턴 다시 확인",highlights:["Don't"]}
-    ],
-    contractions:[
-      {s:"Don't",  f:"do not",     ph:"DOHNT"},
-      {s:"lemme",  f:"let me",     ph:"LEM-ee"},
-      {s:"y'all",  f:"you all",    ph:"YAWL"},
-      {s:"gonna",  f:"going to",   ph:"GUN-uh"},
-      {s:"wanna",  f:"want to",    ph:"WON-uh"}
-    ]
-  },
   {
     title:'24K Magic',artist:'Bruno Mars',
     searchQ:'24k magic bruno mars',
@@ -1507,23 +1910,34 @@ var MUSIC_DATA=[
     badge:'RHYTHM · CONTRACTIONS',
     intro:'빠른 전개 속에서 리듬과 축약 패턴을 훈련하세요.',
     lyrics:[
-      {t:0.5,eng:"Money is the anthem of success",
-       note:"<b>of</b>→uv 약화. <b>anthem</b>→AN-thum 강세 1음절",highlights:[]},
-      {t:4.5,eng:"So put on, let's ride",
-       note:"<b>let's</b>=let us 축약. <b>put on</b>→put-ON 강세",highlights:["let's"]},
-      {t:8.0,eng:"We don't care, we aren't caught up in your love affair",
-       note:"<b>don't</b>=do not. <b>aren't</b>=are not 축약. <b>caught up</b>→kawt-UP 연음",highlights:["don't","aren't"]},
-      {t:14.0,eng:"Red, white, blue is in the skies",
-       note:"<b>is in the</b>→iz-in-thuh 연속 약화. 짧은 기능어 전부 약하게",highlights:[]},
-      {t:18.0,eng:"Summer's in the air and baby heaven's in your eyes",
-       note:"<b>Summer's</b>=Summer is. <b>heaven's</b>=heaven is 축약. <b>your</b>→yer 약화",highlights:["Summer's","heaven's"]}
+      {t:0.5,eng:"Booyah, baby, bow down, makin' me say wow now",
+       note:"<b>makin'</b>=making -ing 약화. <b>bow down</b>→BOW-DOWN 강세. 감탄사 <b>Booyah</b> 리듬",highlights:[]},
+      {t:3.5,eng:"Tell me I'm your national anthem",
+       note:"<b>I'm</b>=I am 축약. <b>national</b>→NASH-un-ul 3음절 강세",highlights:["I'm"]},
+      {t:7.0,eng:"(Sugar, sugar, how? Now take your body downtown)",
+       note:"<b>your</b>→yer 약화. <b>downtown</b>→DOWN-town 복합명사 강세",highlights:[]},
+      {t:10.0,eng:"Red, white, blue is in the sky",
+       note:"<b>is in the</b>→iz-in-thuh 연속 약화. 나열할 때 억양 패턴 주목",highlights:[]},
+      {t:13.5,eng:"Summer's in the air and, baby, heaven's in your eyes",
+       note:"<b>Summer's</b>=Summer is. <b>heaven's</b>=heaven is 축약. <b>your</b>→yer 약화",highlights:["Summer's","heaven's"]},
+      {t:17.0,eng:"I'm your national anthem, it's a love story for the new age",
+       note:"<b>I'm</b>=I am. <b>it's</b>=it is 축약. <b>new age</b>→nyoo-AYJ 강세",highlights:["I'm","it's"]},
+      {t:20.0,eng:"For the sixth page",
+       note:"<b>sixth</b>→SIKSTH (th+s 발음 주의). <b>For the</b>→fer-thuh 약화",highlights:[]},
+      {t:23.0,eng:"We're on a quick, sick rampage",
+       note:"<b>We're</b>=We are 축약. <b>quick, sick</b>→KWIK-SIK 라임(rhyme) 패턴",highlights:["We're"]},
+      {t:25.5,eng:"Winin' and dinin', drinkin' and drivin'",
+       note:"모두 -ing 약화 패턴. <b>winin'</b>→WIN-in, <b>dinin'</b>→DY-nin 연속 리듬",highlights:[]},
+      {t:28.0,eng:"Excessive buyin', overdose and dyin'",
+       note:"<b>buyin'</b>=buying, <b>dyin'</b>=dying -ing 약화. 강렬한 마무리 억양",highlights:[]}
     ],
     contractions:[
-      {s:"let's",   f:"let us",     ph:"LETS"},
-      {s:"don't",   f:"do not",     ph:"DOHNT"},
-      {s:"aren't",  f:"are not",    ph:"AR-nt"},
+      {s:"I'm",     f:"I am",       ph:"AHM"},
+      {s:"it's",    f:"it is",      ph:"ITS"},
+      {s:"We're",   f:"We are",     ph:"WEER"},
       {s:"Summer's",f:"Summer is",  ph:"SUM-erz"},
-      {s:"heaven's",f:"heaven is",  ph:"HEV-unz"}
+      {s:"heaven's",f:"heaven is",  ph:"HEV-unz"},
+      {s:"makin'",  f:"making",     ph:"MAY-kin"}
     ]
   },
   {
@@ -1579,6 +1993,272 @@ var MUSIC_DATA=[
       {s:"won't",  f:"will not",   ph:"WOHNT"},
       {s:"I'm",    f:"I am",       ph:"AHM"}
     ]
+  },
+  {
+    title:'Lost Stars',artist:'Adam Levine',
+    searchQ:'lost stars adam levine begin again',
+    spotifyId:'31UdITPwSCT5LcwbG29G3J',
+    badge:'QUESTIONS · RISING INTONATION',
+    intro:'영화 Begin Again의 주제곡. 의문문의 상승 억양(rising intonation)과 감정 표현을 귀로 익혀봐요.',
+    lyrics:[
+      {t:0.5,eng:"And I thought I heard you call my name, yeah, yeah",note:"<b>I thought I heard</b>=들은 것 같았다. 과거 지각동사 중첩 구조. thought→thawt 발음",highlights:["thought I heard","call my name"]},
+      {t:5.0,eng:"And I thought I heard you out there cryin', oh!",note:"<b>out there</b>=저 밖에. <b>cryin'</b>=crying 축약. heard+목적어+분사 지각동사 구조",highlights:["out there","cryin'"]},
+      {t:10.0,eng:"Just the same, oh, yeah, yeah-yeah-yeah-yeah, yeah",note:"<b>Just the same</b>=그래도 마찬가지야. 체념 표현. 감탄사 억양 주목",highlights:["Just the same"]},
+      {t:15.0,eng:"God, give us the reason youth is wasted on the young",note:"<b>youth is wasted on the young</b>=젊음은 젊은이들에게 낭비된다(속담). 아이러니 표현",highlights:["wasted on the young"]},
+      {t:20.0,eng:"It's huntin' season and this lamb is on the run",note:"<b>huntin' season</b>=사냥철. <b>on the run</b>=도망 중. 추격 이미지 비유",highlights:["huntin' season","on the run"]}
+    ]
+  },
+  {
+    title:'Trouble',artist:'Coldplay',
+    searchQ:'trouble coldplay parachute',
+    spotifyId:'0R8P9KfGJCDULmlEoBagcO',
+    badge:'BRITISH · APOLOGY',
+    intro:'Coldplay의 데뷔 앨범 명곡. 영국식 발음과 사과·반성 표현을 집중 연습할 수 있어요.',
+    lyrics:[
+      {t:0.5,eng:"And thought of all the stupid things I'd done",note:"<b>thought of</b>=~을 떠올리다. <b>I'd done</b>=had done 과거완료 축약. 후회 표현",highlights:["thought of","I'd done"]},
+      {t:5.0,eng:"And I, I never meant to cause you trouble",note:"<b>never meant to</b>→nev-er-men-ta 4연음. <b>cause trouble</b>=문제 일으키다",highlights:["never meant to","cause you trouble"]},
+      {t:10.0,eng:"And I, I never meant to do you wrong",note:"<b>do you wrong</b>=해를 끼치다. wrong→RAWNG 영국식 발음. meant→ment 발음",highlights:["do you wrong"]},
+      {t:15.0,eng:"And I, well, if I ever caused you trouble",note:"<b>if I ever caused</b>=혹시라도 내가 ~했다면. 조건절 과거형. ever→에버 강세",highlights:["if I ever caused","trouble"]},
+      {t:20.0,eng:"And oh no, I never meant to do you harm",note:"<b>do you harm</b>=해를 끼치다. harm과 wrong 의미 비교. oh no=강한 부정 감탄",highlights:["do you harm","oh no"]}
+    ]
+  },
+  {
+    title:'Ordinary',artist:'Alex Warren',
+    searchQ:'ordinary alex warren',
+    spotifyId:'6qqrTXSdwiJaq8SO0X2lSe',
+    badge:'SELF-EXPRESSION · CONVERSATIONAL',
+    intro:'Alex Warren의 감성 팝. 자기 표현(self-expression)과 일상 대화체 영어를 자연스럽게 연습해요.',
+    lyrics:[
+      {t:0.5,eng:"Something so out of the ordinary",note:"<b>out of the ordinary</b>=평범하지 않은, 특별한(관용구). out of→아우럽 연음",highlights:["out of the ordinary"]},
+      {t:5.0,eng:"You got me kissing the ground of your sanctuary",note:"<b>got me kissing</b>=~하게 만들다(사역). <b>sanctuary</b>=성역, 안식처. 헌신 표현",highlights:["kissing the ground","sanctuary"]},
+      {t:10.0,eng:"Shatter me with your touch, oh, Lord, return me to dust",note:"<b>Shatter me</b>=산산조각 나게 해. <b>return me to dust</b>=먼지로 돌려보내다. 성경 표현",highlights:["Shatter me","return me to dust"]},
+      {t:16.0,eng:"The angels up in the clouds are jealous knowin' we found",note:"<b>jealous knowin'</b>=알기에 질투하는. <b>knowin'</b>=knowing 축약. 천사도 부러워하는 감정",highlights:["jealous","knowin'"]}
+    ]
+  },
+  {
+    title:'Shape of My Heart',artist:'Sting',
+    searchQ:'shape of my heart sting',
+    spotifyId:'4jsxYecsVNKPHYrRYopO80',
+    badge:'BRITISH · STORYTELLING',
+    intro:'Sting의 1993년 클래식. 서술체(storytelling) 영어와 격조 있는 영국식 발음을 귀로 익혀요.',
+    lyrics:[
+      {t:0.5,eng:"I know that the spades are the swords of a soldier",note:"<b>spades</b>=스페이드(카드). <b>swords of a soldier</b>=군인의 칼. 카드 = 전쟁 도구 비유",highlights:["spades","swords of a soldier"]},
+      {t:5.0,eng:"I know that the clubs are weapons of war",note:"<b>clubs</b>=클럽(카드). <b>weapons of war</b>=전쟁 무기. 병렬 구조 반복",highlights:["clubs","weapons of war"]},
+      {t:10.0,eng:"I know that diamonds mean money for this art",note:"<b>diamonds mean money</b>=다이아몬드는 돈을 의미한다. <b>this art</b>=이 기술(포커)",highlights:["diamonds mean money"]},
+      {t:15.0,eng:"But that's not the shape of my heart",note:"<b>that's not the shape of my heart</b>=그게 내 마음의 모양이 아니야. 핵심 타이틀 라인. 물질 거부",highlights:["shape of my heart"]},
+      {t:20.0,eng:"He may play the jack of diamonds",note:"<b>may play</b>=~을 할 수도 있다(추측). <b>jack of diamonds</b>=다이아몬드 잭 카드",highlights:["jack of diamonds"]}
+    ]
+  },
+  {title:'Anti-Hero',artist:'Taylor Swift',searchQ:'anti-hero taylor swift',spotifyId:'0V3wPSX9ygBnCm8psDIegu',badge:'SELF-REFLECTION · INFORMAL',intro:'Taylor Swift의 내면 고백 팝. 구어체와 자기표현 패턴을 배워요.',lyrics:[
+    {t:0.5,eng:"It's me, hi",note:"<b>hi</b>=가볍고 친근한 인사. 짧은 두 단어로 자기 소개 시작. 강한 임팩트",highlights:["It's me"]},
+    {t:3.0,eng:"I'm the problem, it's me",note:"<b>I'm the problem</b>=내가 문제야. 자기 인정·자기 고백 표현. 반복으로 강조",highlights:["I'm the problem"]},
+    {t:7.0,eng:"At teatime, everybody agrees",note:"<b>At teatime</b>=차 마시는 시간에(영국식). everybody agrees=모두 동의해",highlights:["teatime","everybody agrees"]},
+    {t:11.5,eng:"I'll stare directly at the sun, but never in the mirror",note:"<b>stare directly at</b>=똑바로 응시하다. 태양은 보지만 거울은 못 보는=자기 직면 회피",highlights:["stare directly","never in the mirror"]},
+    {t:17.0,eng:"It must be exhausting always rooting for the anti-hero",note:"<b>must be exhausting</b>=정말 피곤하겠다. <b>rooting for</b>=응원하다. <b>anti-hero</b>=악역",highlights:["exhausting","rooting for","anti-hero"]},
+    {t:22.0,eng:"I have this dream my daughter-in-law kills me for the money",note:"<b>daughter-in-law</b>=며느리. <b>kills me for the money</b>=돈 때문에 죽인다. 블랙 유머",highlights:["daughter-in-law","kills me for the money"]}
+  ]},
+  {title:'Stressed Out',artist:'Twenty One Pilots',searchQ:'stressed out twenty one pilots',spotifyId:'3CRDbSIZ4r5MsZ0YwxuEkn',badge:'NOSTALGIA · RAP',intro:'빠른 랩 스타일 가사. 강세와 리듬 패턴 집중 연습.',lyrics:[
+    {t:0.5,eng:"My name's Blurryface and I care what you think",note:"<b>Blurryface</b>=흐릿한 얼굴(자기의심 상징). <b>care what you think</b>=남의 시선을 신경 쓰다",highlights:["Blurryface","care what you think"]},
+    {t:4.5,eng:"Wish we could turn back time to the good old days",note:"<b>Wish we could</b>=할 수 있으면 좋겠다(가정법). <b>good old days</b>=좋았던 옛 시절",highlights:["Wish we could","good old days"]},
+    {t:9.0,eng:"When our mama sang us to sleep, but now we're stressed out",note:"<b>sang us to sleep</b>=재워주며 노래해줬다. <b>stressed out</b>=극도로 스트레스 받다",highlights:["sang us to sleep","stressed out"]},
+    {t:14.0,eng:"Wish we could turn back time to the good old days",note:"후렴구 반복 구조. 노스탤지어 감정을 반복으로 강조",highlights:["Wish we could","good old days"]},
+    {t:18.5,eng:"When our mama sang us to sleep, but now we're stressed out",note:"앞 문장과 병렬 반복. 과거와 현재의 극명한 대비",highlights:["stressed out"]},
+    {t:23.0,eng:"We used to play pretend",note:"<b>used to</b>=예전에 ~했었다(과거 습관). <b>play pretend</b>=소꿉놀이하다, 상상 놀이",highlights:["used to","play pretend"]}
+  ]},
+  {title:'Believer',artist:'Imagine Dragons',searchQ:'believer imagine dragons',spotifyId:'4gfw7OV41z7LrorH4Ob2u7',badge:'STRENGTH · RHYTHM',intro:'강렬한 비트와 짧고 강한 문장들. 강세 표현과 자신감 있는 발음.',lyrics:[
+    {t:0.5,eng:"You build me up, believer, believer",note:"<b>build me up</b>=나를 세워주다. <b>believer</b>=신념을 가진 사람. 반복 강조 구조",highlights:["build me up","believer"]},
+    {t:5.0,eng:"Pain, oh, let the bullets fly, oh, let them rain",note:"<b>let the bullets fly</b>=총알이 날아오게 두다(비유). 고통을 직면하라는 역설적 의미",highlights:["let the bullets fly","let them rain"]},
+    {t:10.0,eng:"My life, my love, my drive, it came from",note:"<b>My life, my love, my drive</b> 열거 구조. 모든 것의 원천. 'came from'→페이드 인 효과",highlights:["My life","my love","my drive"]},
+    {t:14.0,eng:"Pain! You made me",note:"<b>Pain!</b> 감탄사 강세. <b>You made me</b>=네가 나를 만들었다. 짧고 강렬한 클라이맥스",highlights:["Pain","You made me"]},
+    {t:23.5,eng:"Pain! You made me a believer",note:"후렴 마무리. 고통이 곧 신념을 만들었다는 핵심 메시지",highlights:["Pain","believer"]}
+  ]},
+  {title:'Demons',artist:'Imagine Dragons',searchQ:'demons imagine dragons',spotifyId:'3LlAyCYU26dvFZBDUIMb7a',badge:'EMOTION · CONFESSION',intro:'감성적인 고백의 노래. 감정 표현과 문장 구조를 연습해요.',lyrics:[
+    {t:0.5,eng:"When you feel my heat, look into my eyes",note:"<b>feel my heat</b>=내 열기를 느끼다. 강렬한 감정을 '열기'로 표현",highlights:["feel my heat","look into my eyes"]},
+    {t:5.0,eng:"It's where my demons hide, it's where my demons hide",note:"<b>demons hide</b>=악마가 숨어 있다. <b>demons</b>=내면의 어둠/트라우마 비유",highlights:["demons hide"]},
+    {t:9.5,eng:"Don't get too close, it's dark inside",note:"<b>Don't get too close</b>=너무 가까이 오지 마. 내면의 어두운 면을 경고",highlights:["Don't get too close","dark inside"]},
+    {t:14.0,eng:"It's where my demons hide, it's where my demons hide",note:"후렴구 반복. demons hide 구조 반복으로 내면 고백 강조",highlights:["demons hide"]},
+    {t:18.5,eng:"They say it's what you make, I say it's up to fate",note:"<b>it's what you make</b>=네가 만드는 것. <b>up to fate</b>=운명에 달려 있다. 대조 견해",highlights:["up to fate"]},
+    {t:23.0,eng:"It's woven in my soul, I need to let you go",note:"<b>woven in my soul</b>=영혼에 짜여 있다. 깊이 새겨진 감정 표현",highlights:["woven in my soul"]}
+  ]},
+  {title:'Enemy',artist:'Imagine Dragons',searchQ:'enemy imagine dragons jid',spotifyId:'1r9xUipOqoNwggBpENDsvJ',badge:'RAP · CONTRAST',intro:'랩과 팝이 섞인 곡. 빠른 발음과 대화체 표현 연습.',lyrics:[
+    {t:0.5,eng:"I'm waitin' for the time",note:"<b>waitin'</b>=waiting 축약. <b>waitin' for the time</b>=그 때를 기다리고 있다. 짧은 오프닝 라인",highlights:["waitin' for the time"]},
+    {t:3.5,eng:"When I show you what it's like to be words spit in a mic",note:"<b>words spit in a mic</b>=마이크에 뱉는 가사(랩 표현). <b>what it's like</b>=어떤 것인지",highlights:["spit in a mic","what it's like"]},
+    {t:8.0,eng:"Tell you you're the greatest",note:"<b>the greatest</b>=최고. 칭찬처럼 말하지만 반어적 의미",highlights:["the greatest"]},
+    {t:12.0,eng:"But once you turn, they hate us (Ha)",note:"<b>once you turn</b>=돌아서자마자. 배신과 배척의 순간. Ha=냉소적 웃음",highlights:["once you turn","hate us"]},
+    {t:15.5,eng:"Oh, the misery",note:"<b>misery</b>=비참함. Oh로 시작하는 감탄 표현. 짧고 강렬한 단독 라인",highlights:["misery"]},
+    {t:18.0,eng:"Everybody wants to be my enemy",note:"<b>everybody wants to be</b>=모두가 ~이 되고 싶다. <b>enemy</b>=적. 핵심 타이틀 라인",highlights:["everybody wants","enemy"]},
+    {t:21.0,eng:"Spare the sympathy",note:"<b>Spare the sympathy</b>=동정은 됐어. spare=아끼다/삼가다. 냉소적 거절",highlights:["Spare the sympathy"]},
+    {t:24.0,eng:"Everybody wants to be my enemy-y-y-y-y",note:"후렴 반복. -y-y-y-y 음절 늘려 강조. 보컬 기교와 감정 극대화",highlights:["enemy"]}
+  ]},
+  {title:'Perfect',artist:'Ed Sheeran',searchQ:'perfect ed sheeran',spotifyId:'0tgVpDi06FyKpA1z0VMD4v',badge:'ROMANCE · ADJECTIVES',intro:'낭만적인 형용사와 서정적 표현. 감정 어휘를 자연스럽게 익혀요.',lyrics:[
+    {t:0.5,eng:"Barefoot on the grass while listenin' to our favourite song",note:"<b>barefoot on the grass</b>=잔디 위에 맨발로. <b>listenin'</b>=listening 축약. <b>favourite</b>=영국식 철자",highlights:["barefoot","listenin'","favourite song"]},
+    {t:6.0,eng:"When I saw you in that dress, lookin' so beautiful",note:"<b>When I saw you</b>=내가 너를 봤을 때. <b>lookin'</b>=looking 축약. beautiful→byoo-ti-ful 3음절",highlights:["lookin' so beautiful"]},
+    {t:12.0,eng:"I don't deserve this, darlin', you look perfect tonight",note:"<b>I don't deserve this</b>=이럴 자격이 없어. <b>darlin'</b>=darling 축약. 핵심 후렴 라인",highlights:["don't deserve","perfect tonight"]}
+  ]},
+  {title:'Thinking Out Loud',artist:'Ed Sheeran',searchQ:'thinking out loud ed sheeran',spotifyId:'34gCuhDGsG4bRPIf9bb02f',badge:'IDIOMS · ROMANCE',intro:'관용 표현이 풍부한 러브송. 영어 이디엄을 자연스럽게 배워요.',lyrics:[
+    {t:0.5,eng:"Oh, I'll just keep on makin' the same mistakes",note:"<b>keep on makin'</b>=계속 저지르다. <b>makin'</b>=making 축약. 자기성찰 표현",highlights:["keep on","same mistakes"]},
+    {t:5.5,eng:"Hoping that you'll understand",note:"<b>Hoping that</b>=~이기를 바라며. 분사구문으로 시작. understand→un-der-STAND 강세",highlights:["Hoping that","understand"]},
+    {t:9.0,eng:"That, baby, now, take me into your lovin' arms",note:"<b>take me into your lovin' arms</b>=사랑하는 팔 안으로 데려가줘. <b>lovin'</b>=loving 축약",highlights:["lovin' arms"]},
+    {t:14.0,eng:"Kiss me under the light of a thousand stars",note:"<b>under the light of a thousand stars</b>=천 개의 별빛 아래. 낭만적 시적 이미지",highlights:["thousand stars"]}
+  ]},
+  {title:'Blinding Lights',artist:'The Weeknd',searchQ:'blinding lights the weeknd',spotifyId:'0VjIjW4GlUZAMYd2vXMi3b',badge:'80s POP · LONGING',intro:'80년대 팝 스타일. 갈망과 그리움의 감정 표현을 배워요.',lyrics:[
+    {t:0.5,eng:"I said, ooh, I'm drowning in the night",note:"<b>drowning in the night</b>=밤에 빠져들다. drowning=익사하다(비유). 고립감 표현",highlights:["drowning in the night"]},
+    {t:4.5,eng:"Oh, when I'm like this, you're the one I trust",note:"<b>when I'm like this</b>=내가 이럴 때. <b>the one I trust</b>=내가 믿는 사람. 의존 표현",highlights:["the one I trust"]},
+    {t:8.5,eng:"I'm just coming back to let you know",note:"<b>coming back</b>=돌아오다. <b>let you know</b>=알려주다. 구동사 연습",highlights:["coming back","let you know"]},
+    {t:13.0,eng:"I could never say it on the phone",note:"<b>could never</b>=절대 ~할 수 없다. 직접 만나야 전할 감정 표현",highlights:["could never","on the phone"]},
+    {t:17.0,eng:"Will never let you go this time",note:"<b>let you go</b>=놓아주다. <b>this time</b>=이번에는. 강한 결심 표현",highlights:["let you go","this time"]},
+    {t:21.0,eng:"I said, ooh, I'm blinded by the lights",note:"<b>blinded by the lights</b>=빛에 눈이 멀다. 80년대 네온 이미지. 핵심 타이틀 라인",highlights:["blinded by the lights"]}
+  ]},
+  {title:'Therefore I Am',artist:'Billie Eilish',searchQ:'therefore i am billie eilish',spotifyId:'54bFM56PmE4YLRnqpW6Tha',badge:'CONFIDENCE · SHORT SENTENCES',intro:'짧고 강한 문장들. 자신감 있는 발음과 반복 패턴.',lyrics:[
+    {t:0.5,eng:"I'm not your friend, or anything, damn",note:"<b>I'm not your friend</b>=나는 네 친구가 아니야. <b>damn</b>=구어 강조어. 단호한 거절",highlights:["not your friend","damn"]},
+    {t:4.0,eng:"You think that you're the man, I think therefore I am",note:"<b>You think you're the man</b>=잘난 체하다. <b>I think therefore I am</b>=데카르트 철학 인용",highlights:["the man","therefore I am"]},
+    {t:8.0,eng:"I'm not your friend, or anything, damn",note:"후렴 반복 구조. 단호한 태도를 반복으로 강조",highlights:["not your friend"]},
+    {t:12.0,eng:"You think that you're the man, I think therefore I am",note:"반복 후렴. Billie의 자신감 있는 독립 선언",highlights:["therefore I am"]},
+    {t:16.0,eng:"I don't want press to put your name next to mine",note:"<b>press</b>=언론/미디어. <b>put your name next to mine</b>=내 이름 옆에 놓다. 거리 두기",highlights:["press","next to mine"]},
+    {t:20.5,eng:"We're on different lines, so I wanna be nice enough",note:"<b>on different lines</b>=다른 레벨에 있다. <b>wanna be nice enough</b>=충분히 친절하고 싶다",highlights:["different lines","nice enough"]}
+  ]},
+  {title:'Happy',artist:'Pharrell Williams',searchQ:'happy pharrell williams',spotifyId:'04c0sgiXUEBi0EtCFHZgof',badge:'POSITIVITY · SIMPLE',intro:'단순하고 긍정적인 문장들. 초보자도 따라 부르기 좋아요.',lyrics:[
+    {t:0.5,eng:"Clap along if you feel like a room without a roof",note:"<b>clap along</b>=따라 박수쳐. <b>room without a roof</b>=지붕 없는 방(무한한 공간) 비유",highlights:["clap along","room without a roof"]},
+    {t:5.0,eng:"(Because I'm happy)",note:"<b>Because I'm happy</b>=왜냐하면 나는 행복하니까. 이유절. 반복 후렴 구조",highlights:["happy"]},
+    {t:7.5,eng:"Clap along if you feel like happiness is the truth",note:"<b>happiness is the truth</b>=행복이 진리다. feel like=~처럼 느끼다",highlights:["happiness is the truth"]},
+    {t:12.0,eng:"(Because I'm happy)",note:"후렴 반복. 단순 반복으로 행복감 극대화",highlights:["happy"]},
+    {t:14.5,eng:"Clap along if you know what happiness is to you",note:"<b>what happiness is to you</b>=당신에게 행복이란 무엇인지. 간접의문문 구조",highlights:["what happiness is to you"]},
+    {t:19.0,eng:"(Because I'm happy)",note:"3번째 반복. 강조를 위한 반복 패턴. 리듬감 체득",highlights:["happy"]},
+    {t:22.0,eng:"Clap along if you feel like that's what you wanna do",note:"<b>wanna</b>=want to 구어 축약. <b>that's what you wanna do</b>=그게 하고 싶은 것이면",highlights:["wanna do"]},
+    {t:26.5,eng:"(Because I'm happy)",note:"4번째 반복. 단순한 문장의 반복이 주는 강한 메시지",highlights:["happy"]},
+    {t:28.5,eng:"Clap along if you feel like a room without a roof",note:"첫 라인 재등장. 순환 구조. roof→ROOF 강세",highlights:["room without a roof"]}
+  ]},
+  {title:'Firework',artist:'Katy Perry',searchQ:'firework katy perry',spotifyId:'4r6eNCsrZnQWJzzvFh4nlg',badge:'EMPOWERMENT · METAPHOR',intro:'자기계발 비유 표현이 풍부. 영감을 주는 영어 표현 연습.',lyrics:[
+    {t:0.5,eng:"As you shoot across the sky",note:"<b>shoot across</b>=가로질러 쏘다. 폭죽이 하늘을 가로지르는 이미지",highlights:["shoot across","sky"]},
+    {t:3.0,eng:"Baby, you're a firework",note:"<b>you're a firework</b>=너는 폭죽이야(비유). 짧고 강렬한 비유 문장",highlights:["firework"]},
+    {t:6.0,eng:"Come on, let your colors burst",note:"<b>Come on</b>=어서. <b>let your colors burst</b>=색깔을 터뜨려=개성을 발휘해라",highlights:["let your colors burst"]},
+    {t:9.0,eng:"Make 'em go, \"Ah, ah, ah\"",note:"<b>Make 'em go</b>=그들이 ~하게 만들다. 'em=them 구어 축약. 의성어 표현",highlights:["Make 'em go"]},
+    {t:12.5,eng:"You're gonna leave 'em all in awe, awe, awe",note:"<b>leave 'em in awe</b>=경탄하게 만들다. <b>gonna</b>=going to 구어 축약",highlights:["in awe"]},
+    {t:16.0,eng:"Boom, boom, boom",note:"의성어 반복. 폭죽 소리 표현. 짧은 반복이 주는 에너지감",highlights:["Boom"]},
+    {t:18.0,eng:"Even brighter than the moon, moon, moon",note:"<b>even brighter</b>=심지어 더 밝다(even=강조). <b>than the moon</b>=달보다",highlights:["brighter than the moon"]},
+    {t:21.0,eng:"It's always been inside of you, you, you",note:"<b>always been inside of you</b>=항상 너 안에 있었다. 현재완료 지속. 잠재력 발견",highlights:["always been inside of you"]}
+  ]},
+  {title:'Circles',artist:'Post Malone',searchQ:'circles post malone',spotifyId:'4Nu1WfWicROtRhTiremN0O',badge:'REPETITION · EMOTION',intro:'반복 패턴과 감정 표현. 후렴구 중심의 영어 구조.',lyrics:[
+    {t:0.5,eng:"Run away, but we're running in circles",note:"<b>running in circles</b>=제자리를 맴돌다 관용구. 탈출하려 하지만 반복되는 상황",highlights:["running in circles"]},
+    {t:4.0,eng:"Run away, run away",note:"명령문 반복 구조. run away=도망가다. 반복이 주는 절박함 강조",highlights:["Run away"]},
+    {t:6.5,eng:"I dare you to do something",note:"<b>I dare you</b>=해보라고 도발. <b>dare</b>=감히 ~하다. 도전적 어조",highlights:["dare you","do something"]},
+    {t:9.5,eng:"I'm waiting on you again, so I don't take the blame",note:"<b>waiting on</b>=기다리다. <b>take the blame</b>=비난을 받다. 책임 회피 표현",highlights:["waiting on","take the blame"]},
+    {t:14.0,eng:"Run away, but we're running in circles",note:"후렴 반복. 핵심 이미지 재등장. 악순환의 반복 메시지",highlights:["running in circles"]},
+    {t:18.0,eng:"Run away, run away, run away",note:"세 번 반복으로 강조. 도망의 절박함 고조",highlights:["Run away"]},
+    {t:21.0,eng:"Maybe you don't understand what I'm going through",note:"<b>going through</b>=겪고 있다. <b>Maybe you don't understand</b>=이해 못할 수도 있어. 감정 고백",highlights:["going through","understand"]},
+    {t:26.0,eng:"It's only me, what you got to lose?",note:"<b>what you got to lose</b>=잃을 게 뭐야? 구어체 수사 의문문. got to=have to",highlights:["what you got to lose"]}
+  ]},
+  {title:'Someone Like You',artist:'Adele',searchQ:'someone like you adele',spotifyId:'5lkpeJwmQKgY3bX2zChjxX',badge:'HEARTBREAK · FORMAL',intro:'격조 있는 영국식 감성 팝. 고급 감정 어휘와 문장 구조.',lyrics:[
+    {t:0.5,eng:"Never mind, I'll find someone like you",note:"<b>Never mind</b>=신경 쓰지 마. <b>find someone like you</b>=너 같은 사람을 찾겠다. 체념과 희망",highlights:["Never mind","someone like you"]},
+    {t:5.0,eng:"I wish nothing but the best for you, too",note:"<b>wish nothing but the best</b>=최고만을 바라다. 상대방을 위한 진심 어린 바람",highlights:["nothing but the best"]},
+    {t:10.0,eng:"Don't forget me, I beg",note:"<b>I beg</b>=간청하다. 짧고 강한 감정 표현. beg→BEG 강한 강세",highlights:["Don't forget me","I beg"]},
+    {t:14.0,eng:"I remember you said",note:"<b>I remember you said</b>=네가 말했던 게 기억나. 과거 회상 도입. 다음 문장을 이끄는 접속",highlights:["I remember"]},
+    {t:18.0,eng:"Sometimes it lasts in love, but sometimes it hurts instead",note:"<b>lasts in love</b>=사랑이 지속되다. <b>hurts instead</b>=대신 상처받다. 대조 구조",highlights:["lasts in love","hurts instead"]}
+  ]},
+  {title:'Rolling in the Deep',artist:'Adele',searchQ:'rolling in the deep adele',spotifyId:'1c8gk2PeTE04A1pIDH9YMk',badge:'ANGER · IDIOMS',intro:'강렬한 감정과 이디엄 표현. 영국식 발음과 강세 패턴.',lyrics:[
+    {t:0.5,eng:"The scars of your love remind me of us",note:"<b>scars of your love</b>=사랑의 상처. <b>remind me of</b>=~을 떠오르게 하다. 과거 회상",highlights:["scars of your love","remind me of"]},
+    {t:5.0,eng:"They keep me thinking that we almost had it all",note:"<b>almost had it all</b>=거의 모든 것을 가질 뻔했다. 아쉬움과 후회의 표현",highlights:["almost had it all"]},
+    {t:9.5,eng:"The scars of your love, they leave me breathless",note:"<b>leave me breathless</b>=숨막히게 하다. 강렬한 감정의 신체 반응 표현",highlights:["leave me breathless"]},
+    {t:14.0,eng:"I can't help feeling we could've had it all",note:"<b>I can't help feeling</b>=~라고 느끼지 않을 수 없다. <b>could've had</b>=가졌을 수도 있었다",highlights:["can't help feeling","could've had it all"]},
+    {t:18.5,eng:"Rolling in the deep",note:"<b>rolling in the deep</b>=깊은 곳을 구르다. 영국 관용어로 배신의 고통 표현",highlights:["rolling in the deep"]},
+    {t:22.0,eng:"You're gonna wish you never had met me",note:"<b>gonna wish</b>=바라게 될 것이다. <b>never had met me</b>=나를 만나지 않았더라면. 경고 표현",highlights:["gonna wish","never had met me"]}
+  ]},
+  {
+    title:'Above the Blue',artist:'IØN',
+    searchQ:'above the blue ion soundcloud',
+    soundcloudUrl:'https://soundcloud.com/ion-807282022/above-the-blue',
+    badge:'INDIE · POETIC',
+    intro:'IØN의 자작 인디곡. 비행기에서 바다로 이어지는 감성 여정. 시적 이미지와 자연 표현으로 감각적 영어를 익혀요. 타이밍 캘리브레이션으로 맞춰 사용하세요.',
+    lyrics:[
+      {t:5.0,eng:"Clouds beneath me… I think I left something behind",note:"<b>beneath me</b>=내 아래에. <b>left something behind</b>=무언가를 두고 오다. leave behind=남기다/잊고오다",highlights:["beneath me","left something behind"]},
+      {t:12.0,eng:"Window seat, the world is getting small",note:"<b>window seat</b>=창가 자리. <b>getting small</b>=점점 작아지다. get+형용사=점점~해지다 변화 표현",highlights:["window seat","getting small"]},
+      {t:19.0,eng:"Cities fade into a blur of light and walls",note:"<b>fade into</b>=~속으로 흐릿해지다. <b>blur</b>=흐릿한 덩어리. 도시가 멀어지며 흐려지는 시각적 이미지",highlights:["fade into","blur of light"]},
+      {t:26.0,eng:"I don't know what I'm running from",note:"<b>what I'm running from</b>=내가 무엇으로부터 달아나는지. <b>run from</b>=~로부터 도망치다. 간접의문문 구조",highlights:["running from"]},
+      {t:33.0,eng:"But I needed somewhere I could become",note:"<b>somewhere I could become</b>=내가 될 수 있는 어딘가. <b>could</b>=가능성 조동사. become 뒤 목적어 없이 열린 의미",highlights:["somewhere I could become"]},
+      {t:42.0,eng:"Engines hum like a quiet song",note:"<b>hum</b>=윙윙거리다/흥얼거리다. <b>like a quiet song</b>=조용한 노래처럼. simile(직유) 표현법",highlights:["hum","like a quiet song"]},
+      {t:49.0,eng:"Carrying everything I held too long",note:"<b>carrying</b>=짊어지다/운반하다. <b>held too long</b>=너무 오래 붙잡고 있었던. hold=잡다/간직하다",highlights:["carrying","held too long"]},
+      {t:56.0,eng:"Somewhere between the sky and sea",note:"<b>somewhere between</b>=~사이 어딘가. 하늘과 바다 사이 경계의 모호한 공간감 표현",highlights:["somewhere between"]},
+      {t:62.0,eng:"Feels like there's more of me",note:"<b>feels like</b>=~처럼 느껴지다. <b>more of me</b>=더 많은 내가. 자아 발견의 감각을 시적으로 표현",highlights:["feels like","more of me"]},
+      {t:70.0,eng:"I close my eyes, I drift away",note:"<b>drift away</b>=서서히 떠내려가다/멀어지다. <b>drift</b>=떠다니다. 꿈결 같은 이탈의 순간",highlights:["drift away"]},
+      {t:76.0,eng:"Between the night and yesterday",note:"<b>between</b>=~사이에. night(밤)와 yesterday(어제) — 현실도 과거도 아닌 틈새의 시간",highlights:["between the night","yesterday"]},
+      {t:82.0,eng:"Take me where the water breathes",note:"<b>take me where</b>=~하는 곳으로 데려다줘. <b>water breathes</b>=물이 숨쉰다. 의인화(personification) 기법",highlights:["Take me where","water breathes"]},
+      {t:88.0,eng:"Where the blue goes endlessly",note:"<b>goes endlessly</b>=끝없이 이어지다. <b>the blue</b>=파란 것(바다/하늘). 정관사로 색을 추상적 존재로",highlights:["goes endlessly","the blue"]},
+      {t:94.0,eng:"I don't need to understand",note:"<b>need to</b>=~할 필요가 있다. 이해 없이 받아들이는 순수한 항복. 코러스의 핵심 정서",highlights:["need to understand"]},
+      {t:100.0,eng:"Just let me fall into your hands",note:"<b>let me</b>=나를 ~하게 해줘. <b>fall into your hands</b>=네 손 안으로 떨어지다. 완전한 신뢰와 내맡김",highlights:["let me fall","into your hands"]},
+      {t:110.0,eng:"If I disappear in the tide",note:"<b>disappear</b>=사라지다. <b>in the tide</b>=조류 속에서. <b>tide</b>=조수/파도. 가정법적 질문의 시작",highlights:["disappear","in the tide"]},
+      {t:117.0,eng:"Would I finally feel alive?",note:"<b>would I</b>=나는 ~할까(가정). <b>finally</b>=마침내. <b>feel alive</b>=살아있음을 느끼다. 감각 형용사 구문",highlights:["finally feel alive"]},
+      {t:124.0,eng:"Somewhere far from who I've been",note:"<b>far from</b>=~로부터 멀리. <b>who I've been</b>=지금까지의 나. 현재완료로 쌓인 과거의 자아",highlights:["far from","who I've been"]},
+      {t:130.0,eng:"Let the ocean pull me in",note:"<b>let+목적어+동사원형</b>=~하게 내버려두다. <b>pull me in</b>=나를 끌어당기다. 바다가 나를 받아들이길 바라는",highlights:["ocean pull me in"]},
+      {t:140.0,eng:"Landing slow, the air feels new",note:"<b>landing slow</b>=천천히 착륙하며. <b>the air feels new</b>=공기가 새롭게 느껴진다. feel+형용사=감각 표현",highlights:["landing slow","feels new"]},
+      {t:147.0,eng:"Salt and wind in shades of blue",note:"<b>shades of</b>=~의 색조들. <b>shades of blue</b>=파란색의 다양한 톤. 감각적 색채 이미지",highlights:["shades of blue"]},
+      {t:154.0,eng:"Footprints fading in the sand",note:"<b>footprints</b>=발자국. <b>fading</b>=서서히 사라지다. 현재분사로 진행 중인 사라짐 묘사",highlights:["footprints","fading in the sand"]},
+      {t:161.0,eng:"Like I was never really there",note:"<b>like I was never</b>=마치 내가 한 번도 없었던 것처럼. 존재의 흔적이 지워지는 초현실적 감각",highlights:["never really there"]},
+      {t:172.0,eng:"People laugh but it sounds so far",note:"<b>sounds so far</b>=너무 멀리서 들리다. <b>sound+형용사</b>=~하게 들리다. 감각 동사 구문",highlights:["sounds so far"]},
+      {t:179.0,eng:"Like echoes drifting from another heart",note:"<b>echoes</b>=메아리. <b>drifting from</b>=~로부터 흘러오는. <b>another heart</b>=다른 마음. 공감의 단절",highlights:["echoes","drifting from"]},
+      {t:186.0,eng:"I walk alone but I feel less lost",note:"<b>walk alone</b>=혼자 걷다. <b>feel less lost</b>=덜 길을 잃은 느낌. less+형용사=덜~한",highlights:["walk alone","feel less lost"]},
+      {t:193.0,eng:"Like something found me at a cost",note:"<b>found me</b>=나를 찾다(수동적 발견). <b>at a cost</b>=대가를 치르고. 공짜가 아닌 만남",highlights:["found me","at a cost"]},
+      {t:201.0,eng:"Maybe I don't need a place",note:"<b>maybe</b>=어쩌면. place(장소)가 아닌 다른 무언가를 원하는. 다음 줄의 space와 대비",highlights:["don't need a place"]},
+      {t:207.0,eng:"Maybe I just needed space",note:"<b>just needed</b>=그냥 필요했다. <b>space</b>=공간/여백/거리. place(장소)와 space(여백) 의미 대비",highlights:["just needed space"]},
+      {t:213.0,eng:"To breathe, to break, to be undone",note:"<b>to+동사원형</b> 병렬 구조. <b>undone</b>=풀어지다/무너지다. 완전한 해방의 3단계 열망",highlights:["to breathe","to break","to be undone"]},
+      {t:219.0,eng:"To feel like I'm not the only one",note:"<b>feel like</b>=~처럼 느끼다. <b>the only one</b>=유일한 사람. 고립에서 연대감으로의 전환",highlights:["not the only one"]},
+      {t:228.0,eng:"Take me where the water breathes",note:"코러스 반복. <b>Take me where</b>=~하는 곳으로 데려다줘. 간절함이 더 깊어진 두 번째 코러스",highlights:["Take me where","water breathes"]},
+      {t:234.0,eng:"Where the blue goes endlessly",note:"<b>endlessly</b>=끝없이. 부사로 동사 수식. 무한한 파란 공간에 대한 동경",highlights:["blue goes endlessly"]},
+      {t:240.0,eng:"I don't need to understand",note:"코러스 반복. 반복될수록 더 강한 내맡김의 의지",highlights:["don't need to understand"]},
+      {t:246.0,eng:"Just let me fall into your hands",note:"코러스 클라이맥스. <b>Just</b>=그냥/오직. 단순한 소망의 강조",highlights:["fall into your hands"]},
+      {t:255.0,eng:"If I disappear in the tide",note:"마지막 반복. 처음보다 더 간절한 톤으로. <b>disappear in the tide</b>=조류에 사라지다",highlights:["disappear in the tide"]},
+      {t:262.0,eng:"Would I finally feel alive?",note:"반복되는 질문이지만 이제는 답에 가까운. <b>finally</b>=마침내 — 오래 기다려온 느낌",highlights:["finally feel alive"]},
+      {t:268.0,eng:"Somewhere far from who I've been",note:"<b>who I've been</b>=지금까지 내가 살아온 모습. 현재완료의 누적된 자아에서 탈출",highlights:["far from who I've been"]},
+      {t:274.0,eng:"Let the ocean pull me in",note:"마지막 코러스 결말. 바다에 완전히 몸을 맡기는 장면. 저항 없는 수용",highlights:["ocean pull me in"]},
+      {t:284.0,eng:"I'm not lost… I'm just… drifting",note:"<b>I'm not lost</b>=나는 길을 잃은 게 아니다. <b>drifting</b>=표류하는. 방황이 아닌 흘러감으로 재정의. 노래의 핵심 메시지",highlights:["not lost","drifting"]}
+    ]
+  },
+  {
+    title:'Dear Heathrow',artist:'IØN',
+    searchQ:'dear heathrow ion soundcloud',
+    soundcloudUrl:'https://soundcloud.com/ion-807282022/dear-heathrow',
+    badge:'INDIE · RAW',
+    intro:'IØN의 자작 인디곡. 시카고에서 런던 히드로까지 — 도피가 아무것도 바꾸지 못한다는 날것의 고백. 구어체 표현과 감정 어휘를 자연스럽게 익혀요.',
+    lyrics:[
+      {t:5.0,eng:"Engines fade… Still don't feel like I arrived",note:"<b>fade</b>=서서히 사라지다. <b>don't feel like I arrived</b>=도착한 느낌이 들지 않다. feel like+절=~처럼 느끼다",highlights:["fade","don't feel like I arrived"]},
+      {t:12.0,eng:"Left Chicago, landed at Heathrow Airport",note:"<b>left</b>=떠났다(leave 과거). <b>landed at</b>=~에 착륙하다. 두 동사의 병렬로 여정을 담담하게 서술",highlights:["Left Chicago","landed at"]},
+      {t:19.0,eng:"But nothing really changed, just the air got thinner",note:"<b>nothing really changed</b>=사실 아무것도 바뀌지 않았다. <b>got thinner</b>=더 얇아졌다. get+형용사=변화 표현",highlights:["nothing really changed","got thinner"]},
+      {t:27.0,eng:"No one here could find me, I made sure of that",note:"<b>could find</b>=찾을 수 없었다(과거 가능). <b>made sure of that</b>=그것을 확실히 했다. make sure=확실히 하다",highlights:["could find me","made sure of that"]},
+      {t:35.0,eng:"Disappearing clean, no trace, no map",note:"<b>disappearing clean</b>=깔끔하게 사라지다. <b>trace</b>=흔적. <b>no trace, no map</b> — 명사 병렬로 강조. 흔적 없는 사라짐",highlights:["disappearing clean","no trace"]},
+      {t:45.0,eng:"I know a place I miss but I can't go back",note:"<b>a place I miss</b>=그리운 장소. 관계절 구조. <b>can't go back</b>=돌아갈 수 없다. 과거로의 귀환 불가능",highlights:["a place I miss","can't go back"]},
+      {t:52.0,eng:"So I whisper to the void, \"just take me back\"",note:"<b>whisper to the void</b>=공허함에 속삭이다. <b>void</b>=허공/공허. <b>take me back</b>=나를 데려다줘",highlights:["whisper to the void","take me back"]},
+      {t:61.0,eng:"Take me there, take you there, somewhere unreal",note:"<b>somewhere unreal</b>=비현실적인 어딘가. <b>unreal</b>=비현실적인. 코러스 진입. 현실 탈출의 열망",highlights:["somewhere unreal"]},
+      {t:68.0,eng:"Where the hurt dissolves and the silence feels",note:"<b>dissolves</b>=녹아 사라지다. <b>the silence feels</b>=침묵이 느껴지다. 감각 동사 feel이 자동사로 쓰임",highlights:["hurt dissolves","silence feels"]},
+      {t:75.0,eng:"Take me where I don't exist",note:"<b>where I don't exist</b>=내가 존재하지 않는 곳으로. 자아 소멸에 대한 열망. 코러스 핵심",highlights:["where I don't exist"]},
+      {t:81.0,eng:"Take me where I'm not like this",note:"<b>not like this</b>=이런 모습이 아닌. 현재 자신의 상태를 부정. 다른 버전의 자아를 원하는",highlights:["not like this"]},
+      {t:87.0,eng:"We'd be happy there, I swear",note:"<b>we'd</b>=we would 축약. <b>I swear</b>=맹세해. 가정법 미래(would). 이룰 수 없는 행복에 대한 확신",highlights:["We'd be happy","I swear"]},
+      {t:93.0,eng:"But I can't go… it's not fair",note:"<b>can't go</b>=갈 수 없다. <b>it's not fair</b>=이건 불공평해. 코러스 결말. 열망과 현실의 충돌",highlights:["can't go","not fair"]},
+      {t:103.0,eng:"Stayed locked in a room with the lights off",note:"<b>stayed locked</b>=갇혀 있었다. stay+과거분사=~한 상태로 있다. <b>lights off</b>=불이 꺼진 채로. 은둔의 장면",highlights:["locked in a room","lights off"]},
+      {t:111.0,eng:"Dark felt honest, light just pissed me off",note:"<b>pissed me off</b>=나를 짜증나게 했다(구어체). <b>felt honest</b>=솔직하게 느껴졌다. 어둠이 더 진실하게 느껴지는 역설",highlights:["felt honest","pissed me off"]},
+      {t:119.0,eng:"Days went quiet, nights got loud",note:"<b>went quiet</b>=조용해졌다. <b>got loud</b>=시끄러워졌다. go/get+형용사 변화 패턴. 낮과 밤의 역전",highlights:["went quiet","got loud"]},
+      {t:126.0,eng:"Thoughts running circles, can't get out",note:"<b>running circles</b>=원을 그리며 돌다. <b>can't get out</b>=빠져나올 수 없다. 반복되는 생각의 덫",highlights:["running circles","can't get out"]},
+      {t:136.0,eng:"Was I running… or just stuck in place?",note:"<b>stuck in place</b>=제자리에 갇히다. <b>stuck</b>=꼼짝 못하는. 도망인지 정체인지 모르는 자기 의심",highlights:["running","stuck in place"]},
+      {t:144.0,eng:"Did I land here… or just change the frame?",note:"<b>land here</b>=여기 착륙하다/도착하다. <b>change the frame</b>=틀을 바꾸다. 실질적 변화 없이 배경만 바뀐 것 아닌가",highlights:["land here","change the frame"]},
+      {t:151.0,eng:"No paradise waiting where you escape",note:"<b>no paradise waiting</b>=기다리는 낙원은 없다. <b>where you escape</b>=네가 도망치는 곳에. 도피처의 환상을 깨는 문장",highlights:["no paradise","where you escape"]},
+      {t:158.0,eng:"Just the same weight in a different space",note:"<b>same weight</b>=똑같은 무게감. <b>different space</b>=다른 공간. 장소가 바뀌어도 감정의 무게는 그대로",highlights:["same weight","different space"]},
+      {t:167.0,eng:"I didn't turn the lights on",note:"<b>turn the lights on</b>=불을 켜다. 빛을 켜지 않은 행동이 상징하는 것 — 현실을 마주하기 거부",highlights:["turn the lights on"]},
+      {t:173.0,eng:"'Cause seeing it clear felt worse",note:"<b>'cause</b>=because 축약(구어체). <b>seeing it clear</b>=명확히 보는 것. <b>felt worse</b>=더 나빠졌다. 진실이 위로가 안 되는 상황",highlights:["seeing it clear","felt worse"]},
+      {t:179.0,eng:"If I called it healing",note:"<b>called it healing</b>=그것을 치유라고 부르다. <b>if I called</b>=가정법. 이름 붙이기로 의미가 달라지는가라는 질문",highlights:["called it healing"]},
+      {t:185.0,eng:"Would it make it hurt less?",note:"<b>would it make it hurt less</b>=그러면 덜 아프게 될까? 가정법 질문. make+목적어+동사원형",highlights:["hurt less"]},
+      {t:194.0,eng:"Outside I just see people passing by",note:"<b>passing by</b>=지나치다. <b>just see</b>=그냥 보다. 창 밖 런던 사람들을 거리감 있게 바라보는 시선",highlights:["passing by"]},
+      {t:201.0,eng:"Holding KFC buckets under London sky",note:"<b>under London sky</b>=런던 하늘 아래. <b>KFC buckets</b>=일상의 구체적 디테일. 평범한 현실의 생생한 묘사",highlights:["London sky","KFC buckets"]},
+      {t:209.0,eng:"Like they carry weather in the way they move",note:"<b>carry weather</b>=날씨를 짊어지다. 날씨처럼 무거운 일상을 몸에 담고 다니는 런던 사람들의 걸음걸이",highlights:["carry weather","the way they move"]},
+      {t:216.0,eng:"Grey in their steps, nothing to prove",note:"<b>grey in their steps</b>=걸음 속의 회색. <b>nothing to prove</b>=증명할 것이 없는. to부정사 형용사적 용법",highlights:["grey in their steps","nothing to prove"]},
+      {t:226.0,eng:"No story, no scene like I read before",note:"<b>like I read before</b>=전에 읽었던 것처럼. 소설이나 영화 속 낭만적 런던과 현실의 차이",highlights:["no scene","like I read before"]},
+      {t:233.0,eng:"No café moment, no open door",note:"<b>café moment</b>=카페에서의 감성적 순간. <b>open door</b>=열린 기회. 기대했던 낭만이 없는 현실",highlights:["café moment","open door"]},
+      {t:240.0,eng:"Just cold reflections in the glass I face",note:"<b>cold reflections</b>=차가운 반영. <b>the glass I face</b>=내가 마주한 유리. 창문/거울 — 자신을 마주하는 공간",highlights:["cold reflections","the glass I face"]},
+      {t:247.0,eng:"And a stranger staring back in my place",note:"<b>stranger staring back</b>=낯선 사람이 쳐다보다. <b>in my place</b>=내 자리에. 거울 속 자신이 낯선 사람처럼 느껴지는 자기소외",highlights:["stranger staring back","in my place"]},
+      {t:257.0,eng:"Take me where I don't exist",note:"코러스 반복. 처음보다 더 지쳐있는 목소리로. 존재 자체를 지우고 싶은 극도의 피로감",highlights:["where I don't exist"]},
+      {t:263.0,eng:"Take me where I'm not like this",note:"<b>not like this</b>=이런 내가 아닌. 반복되는 코러스가 더 절박하게 느껴지는 맥락",highlights:["not like this"]},
+      {t:269.0,eng:"We'd be happy there, I swear",note:"반복. <b>We'd</b>=we would. 같이 행복할 수 있다는 확신 — 하지만 갈 수 없는",highlights:["We'd be happy","I swear"]},
+      {t:275.0,eng:"But I can't go… it's not fair",note:"반복되는 결론. 이번엔 더 무거운 체념으로. 열망과 현실 사이 막힌 벽",highlights:["can't go","not fair"]},
+      {t:286.0,eng:"Maybe I never left",note:"<b>never left</b>=떠난 적이 없다. 과거 부정. 물리적으로는 런던에 있지만 내면은 여전히 같은 곳",highlights:["never left"]},
+      {t:293.0,eng:"Maybe I never landed",note:"<b>never landed</b>=착륙한 적이 없다. 비행기도, 삶도 어디에도 제대로 닿지 못한. 노래의 핵심 메시지",highlights:["never landed"]}
+    ]
   }
 ];
 
@@ -1589,6 +2269,8 @@ var _currentPos=0;
 var _previewStartPos=null;
 var _lastLyricIdx=-1;
 var _timingOffset=0;
+var _looping=false;
+var _scWidget=null;
 window.onSpotifyIframeApiReady=function(IFrameAPI){
   _spotifyApi=IFrameAPI;
   if(S.screen==='music') _initSpotifyPlayer();
@@ -1603,52 +2285,123 @@ function _calTap(i){
   if(btn){btn.textContent=t.toFixed(1)+'s ✓';btn.style.color='#22c55e';btn.style.borderColor='#22c55e';}
 }
 
-function _setLyricDisplay(idx){
+function _setLyricDisplay(idx,byUser){
   if(idx<0) return;
+  if(byUser) _userLyricClick=Date.now();
   _lastLyricIdx=idx;
   var cards=document.querySelectorAll('.lyric-card');
   for(var i=0;i<cards.length;i++){
     var card=cards[i];
     var textEl=card.querySelector('.lc-text');
     var phonEl=card.querySelector('.lc-phon');
+    var ttsBtn=card.querySelector('.lc-tts');
     var hls=card.querySelectorAll('.lyric-hl');
     if(i===idx){
-      card.style.background='#1a1a1a';
-      card.style.borderColor='#1a1a1a';
-      if(textEl) textEl.style.color='#fff';
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
-      if(phonEl) phonEl.style.display='block';
+      if(_musicOpenAll){
+        // Single-box mode: subtle row highlight
+        card.style.background='rgba(0,0,0,0.05)';
+        if(textEl){textEl.style.color='#1a1a1a';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='#e0e0e0';ttsBtn.style.color='#333';}
+      } else {
+        // Card mode: dark card
+        card.style.background='#1a1a1a';
+        card.style.borderColor='#333';
+        if(textEl){textEl.style.color='#fff';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='rgba(255,255,255,.15)';ttsBtn.style.color='#fff';}
+        for(var k=0;k<hls.length;k++){hls[k].style.background='#FF6B35';hls[k].style.color='#fff';}
+        if(phonEl) phonEl.style.display='block';
+      }
       card.scrollIntoView({behavior:'smooth',block:'nearest'});
     }else{
-      card.style.background='#fff';
-      card.style.borderColor='#ebebeb';
-      if(textEl) textEl.style.color='#888';
-      for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
-      if(phonEl) phonEl.style.display='none';
+      if(_musicOpenAll){
+        card.style.background='transparent';
+        if(textEl){textEl.style.color='#aaa';textEl.style.fontWeight='400';}
+        if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
+      } else {
+        card.style.background='#fff';
+        card.style.borderColor='#ebebeb';
+        if(textEl){textEl.style.color='#888';textEl.style.fontWeight='600';}
+        if(ttsBtn){ttsBtn.style.background='#f0f0f0';ttsBtn.style.color='#555';}
+        for(var k=0;k<hls.length;k++){hls[k].style.background='#ddd';hls[k].style.color='#888';}
+        if(phonEl) phonEl.style.display='none';
+      }
     }
   }
 }
+function _applyOpenAllMode(){
+  var btn=document.getElementById('open-all-btn');
+  if(btn){
+    btn.textContent=_musicOpenAll?'부분 열기':'전체 열기';
+    btn.style.background=_musicOpenAll?'#1a1a1a':'#f0f0f0';
+    btn.style.color=_musicOpenAll?'#fff':'#555';
+  }
+  var cont=document.getElementById('lyrics-container');
+  if(cont){
+    cont.innerHTML=_musicOpenAll?(window._lyricHtmlOpen||''):(window._lyricHtmlPartial||'');
+    _setLyricDisplay(_lastLyricIdx>=0?_lastLyricIdx:0);
+  }
+}
 
-function goMusic(){
+function goMusic(tab){
   stopAll();
   _previewStartPos=null;
   _lastLyricIdx=-1;
   _timingOffset=0;
+  _musicOpenAll=false;
+  _calIdx=0;_calTimes=[];
+  _musicTab=(tab!==undefined)?tab:1;
+  _musicPage=0;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
   set({screen:'music',musicPlaying:false,musicLoading:false,musicPreviewUrl:''});
 }
 
+function _initSoundCloudPlayer(container,song){
+  if(_scWidget){try{_scWidget.pause();}catch(e){}_scWidget=null;}
+  _previewStartPos=0;
+  var enc=encodeURIComponent(song.soundcloudUrl);
+  var src='https://w.soundcloud.com/player/?url='+enc+'&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false';
+  container.innerHTML='<iframe id="sc-iframe" width="100%" height="120" scrolling="no" frameborder="no" allow="autoplay" src="'+src+'"></iframe>';
+  setTimeout(function(){
+    var iframe=document.getElementById('sc-iframe');
+    if(!iframe||!window.SC) return;
+    _scWidget=SC.Widget(iframe);
+    _scWidget.bind(SC.Widget.Events.PLAY_PROGRESS,function(e){
+      if(e&&typeof e.currentPosition==='number') _updateLyricHighlight(e.currentPosition/1000);
+    });
+  },600);
+}
+
 function _initSpotifyPlayer(){
   var container=document.getElementById('music-player-container');
-  if(!container||!_spotifyApi) return;
-  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
+  if(!container) return;
   var song=MUSIC_DATA[S.musicSongIdx||0];
+  if(song.soundcloudUrl){_initSoundCloudPlayer(container,song);return;}
+  if(!_spotifyApi) return;
+  if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   var opts={uri:'spotify:track:'+song.spotifyId,width:'100%',height:80};
   _spotifyApi.createController(container,opts,function(ctrl){
     _spotifyController=ctrl;
     ctrl.addListener('playback_update',function(e){
-      if(e.data&&typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
+      if(!e.data) return;
+      if(typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
+      if(e.data.isPaused&&_previewStartPos!==null&&!_looping){
+        var relPos=(e.data.position/1000)-_previewStartPos;
+        if(relPos>25){
+          _looping=true;
+          _lastLyricIdx=-1;
+          _setLyricDisplay(0);
+          setTimeout(function(){
+            if(_spotifyController){
+              _spotifyController.seek(_previewStartPos*1000);
+              setTimeout(function(){
+                if(_spotifyController) _spotifyController.togglePlay();
+                _looping=false;
+              },400);
+            } else { _looping=false; }
+          },300);
+        }
+      }
     });
   });
 }
@@ -1659,11 +2412,14 @@ function _updateLyricHighlight(pos){
   var relPos=_previewStartPos!==null?pos-_previewStartPos:pos;
   var posEl=document.getElementById('music-pos');
   if(posEl) posEl.textContent=relPos.toFixed(1)+'s';
+  var calEl=document.getElementById('cal-pos');
+  if(calEl) calEl.textContent=relPos.toFixed(2)+'s';
   var song=MUSIC_DATA[S.musicSongIdx||0];
   var lyrics=song.lyrics||[];
   var activeIdx=-1;
   for(var i=lyrics.length-1;i>=0;i--){if(relPos>=lyrics[i].t+_timingOffset){activeIdx=i;break;}}
-  if(activeIdx!==_lastLyricIdx) _setLyricDisplay(activeIdx);
+  // 유저가 클릭한 지 3초 이내엔 자동 하이라이트 억제
+  if(activeIdx!==_lastLyricIdx&&Date.now()-_userLyricClick>3000) _setLyricDisplay(activeIdx);
 }
 
 function splitSentences(text){
@@ -1710,10 +2466,12 @@ function checkGrammarFree(text){
 
 // ── Pollinations AI: free, no key, no account ──
 function callFreeAI(text){
-  var prompt='다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON으로만 반환해. 마크다운 없이 JSON만:\n'
-    +'{"grammar":[{"icon":"이모지","label":"표현명 (영어)","color":"#hex","detail":"한국어 설명. 이 텍스트에서 어떻게 쓰였는지 구체적으로."}]}\n'
+  var prompt='[필수 규칙: detail 필드는 반드시 한국어로만 작성. 영어 절대 금지]\n'
+    +'다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON만 반환해. 마크다운 없이:\n'
+    +'{"grammar":[{"icon":"이모지","label":"표현명 — 한국어뜻","color":"#hex","detail":"한국어로만 설명. 이 문장에서 어떻게 쓰였는지."}]}\n'
+    +'예시 형식: {"icon":"🔧","label":"bring back — 되돌리다","color":"#2563EB","detail":"\'bring back\'은 무언가를 이전 상태로 되돌린다는 구동사예요. 예: bring it back into Photoshop = 포토샵으로 다시 가져오다."}\n'
     +'규칙: 실제로 텍스트에 있는 표현만. 구동사/숙어/관용구 우선. 최대 4개.\n'
-    +'금지: 소유격, 진행형, be동사처럼 너무 기본적인 건 절대 넣지 마.\n'
+    +'금지: 소유격·진행형·be동사 같은 기초 문법, detail에 영어 문장.\n'
     +'color: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2 중 하나.\n\n'
     +'영어 텍스트:\n'+text;
   return fetch('https://text.pollinations.ai/',{
@@ -1811,38 +2569,49 @@ function render(){
     var _monthNames=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
     var _ds=getDailyStats();
 
-    // Dot grid
-    var _dotsHtml='';
-    for(var _d=1;_d<=_daysInMonth;_d++){
-      var _isToday=_d===_today;
-      var _isPast=_d<_today;
-      var _dotBg=_isToday?'#FF6B35':_isPast?'rgba(255,255,255,0.85)':'rgba(255,255,255,0.15)';
-      var _dotSize=_isToday?'12px':'9px';
-      var _dotCursor=_isToday?'pointer':'default';
-      _dotsHtml+='<div onclick="'+(_isToday?'set({homeExpanded:!S.homeExpanded})':'')+'" style="width:'+_dotSize+';height:'+_dotSize+';border-radius:50%;background:'+_dotBg+';cursor:'+_dotCursor+';flex-shrink:0;'+ (_isToday?'box-shadow:0 0 0 3px rgba(255,107,53,.35);':'') +'"></div>';
+    // Dot grid — flex column with space-evenly so rows fill the dark section evenly
+    var _weeks=Math.ceil(_daysInMonth/7);
+    var _dotsHtml='<div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;">';
+    for(var _row=0;_row<_weeks;_row++){
+      _dotsHtml+='<div style="display:flex;justify-content:space-evenly;align-items:center;">';
+      for(var _col=0;_col<7;_col++){
+        var _d=_row*7+_col+1;
+        if(_d>_daysInMonth){_dotsHtml+='<div style="width:min(5.5vw,22px);height:min(5.5vw,22px);flex-shrink:0;"></div>';continue;}
+        var _isToday=_d===_today;
+        var _isPast=_d<_today;
+        var _dotBg=_isToday?'#ffffff':_isPast?'rgba(255,255,255,0.75)':'rgba(255,255,255,0.18)';
+        var _dotExtra=_isToday?'box-shadow:0 0 0 3px rgba(255,255,255,.3);cursor:pointer;':'cursor:default;';
+        _dotsHtml+='<div onclick="'+(_isToday?'set({homeExpanded:!S.homeExpanded})':'')+'" style="width:min(5.5vw,22px);height:min(5.5vw,22px);border-radius:50%;background:'+_dotBg+';'+_dotExtra+'flex-shrink:0;"></div>';
+      }
+      _dotsHtml+='</div>';
     }
+    _dotsHtml+='</div>';
 
-    // Today's music (rotate by day of month)
-    var _tmIdx=(_today-1)%MUSIC_DATA.length;
-    var _tmSong=MUSIC_DATA[_tmIdx];
+    // Today's music — Daily picks from Spotify songs only
+    var _dailySongs=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){return !!x.s.spotifyId;});
+    var _tmItem=_dailySongs[(_today-1)%_dailySongs.length];
+    var _tmIdx=_tmItem.idx;
+    var _tmSong=_tmItem.s;
+    // Full version: first SoundCloud song
+    var _fvItem=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).find(function(x){return !!x.s.soundcloudUrl;});
+    var _fvIdx=_fvItem?_fvItem.idx:0;
+    var _fvSong=_fvItem?_fvItem.s:{title:'—',artist:''};
 
-    // Expanded action cards
+    // Expanded action cards (2 cards: Practice / Music Coach)
     var _expandHtml='';
     if(S.homeExpanded){
       _expandHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">'
-        // Practice Course card
-        +'<div onclick="goPCats()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:16px 14px;cursor:pointer">'
-        +'<div style="font-size:22px;margin-bottom:8px">📖</div>'
-        +'<div style="font-weight:700;font-size:12px;color:#fff;line-height:1.3">Practice<br>Course</div>'
-        +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:4px;line-height:1.4">카테고리별<br>발음·억양 연습</div>'
+        // 1. Practice Course
+        +'<div onclick="goPCats()" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer">'
+        +'<div style="font-size:24px;margin-bottom:10px">📖</div>'
+        +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;line-height:1.3">Practice<br>Course</div>'
+        +'<div style="font-size:10px;color:#888;margin-top:6px;line-height:1.5">카테고리별<br>발음·억양 연습</div>'
         +'</div>'
-        // Music Coach card
-        +'<div onclick="set({musicSongIdx:'+_tmIdx+'});goMusic();" style="background:#FF6B35;border-radius:16px;padding:16px 14px;cursor:pointer">'
-        +'<div style="font-size:22px;margin-bottom:6px">🎵</div>'
-        +'<div style="font-weight:700;font-size:12px;color:#fff;line-height:1.3">Music Coach</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,.8);letter-spacing:.8px;text-transform:uppercase;margin-top:6px">오늘의 뮤직</div>'
-        +'<div style="font-size:11px;color:#fff;font-weight:700;margin-top:2px;line-height:1.3">'+_tmSong.title+'</div>'
-        +'<div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:1px">'+_tmSong.artist+'</div>'
+        // 2. Music Coach → 바로 뮤직 화면으로
+        +'<div onclick="goMusic(1);" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer">'
+        +'<div style="font-size:24px;margin-bottom:10px">🎵</div>'
+        +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;line-height:1.3">Music<br>Coach</div>'
+        +'<div style="font-size:10px;color:#888;margin-top:6px;line-height:1.5">30초 프리뷰<br>· Full Version</div>'
         +'</div>'
         +'</div>';
     }
@@ -1855,11 +2624,12 @@ function render(){
       +'<button onclick="goSaved()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:12px">저장목록</button>'
       +'</div>'
       +'<div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px">'+_monthNames[_month]+' '+_year+'</div>'
-      // Dot grid
-      +'<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px">'+_dotsHtml+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:8px">'+_today+'일째 · '+(_ds.streak||0)+' day streak — 오늘의 점을 눌러 연습 시작</div>'
-      +_expandHtml
+      // Dot grid (already flex:1, distributes rows via space-evenly)
+      +_dotsHtml
+      +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+_today+'일째 · '+(_ds.streak||0)+' day streak · 오늘 '+(_ds.count||0)+'/'+getDailyGoal()+'회</div>'
       +'</div>'
+      // ── Expanded cards: OUTSIDE dark section so dots don't get squeezed ──
+      +(_expandHtml?'<div style="padding:0 22px 20px;background:#1a1a1a">'+_expandHtml+'</div>':'')
       // ── Light bottom: always-visible tools ──
       +'<div style="background:#f5f5f5;border-radius:28px 28px 0 0;flex:1;padding:24px 18px 40px">'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px">학습 도구</div>'
@@ -1870,11 +2640,11 @@ function render(){
       +'<div style="font-weight:700;font-size:13px;color:#fff;line-height:1.3">Pronunciation<br>Checker</div>'
       +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px;line-height:1.5">원어민 귀에 들리는 발음</div>'
       +'</div>'
-      // 내 문장 분석
-      +'<div onclick="goAnalyze()" style="background:#fff;border:1.5px solid #e8e8e8;border-radius:18px;padding:20px 16px;cursor:pointer">'
+      // 문장→발음화
+      +'<div onclick="goAnalyze()" style="background:#1a1a1a;border-radius:18px;padding:20px 16px;cursor:pointer">'
       +'<div style="font-size:24px;margin-bottom:10px">🔍</div>'
-      +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;line-height:1.3">내 문장<br>분석</div>'
-      +'<div style="font-size:10px;color:#aaa;margin-top:4px;line-height:1.5">발음·번역·문법 가이드</div>'
+      +'<div style="font-weight:700;font-size:13px;color:#fff;line-height:1.3">Sentence<br>Analyzer</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px;line-height:1.5">발음·번역·문법 가이드</div>'
       +'</div>'
       +'</div>'
       +'</div>'
@@ -1888,40 +2658,60 @@ function render(){
     var _musicUncached=[];
     (song.lyrics||[]).forEach(function(line){line.eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_musicUncached.indexOf(w)<0)_musicUncached.push(w);});});
     if(_musicUncached.length){fetchPhonForWords(_musicUncached).then(function(){render();return;});}
-    var lyricHtml=(song.lyrics||[]).map(function(line,i){
+    // — Partial mode: individual cards with phonetics
+    var lyricHtmlPartial=(song.lyrics||[]).map(function(line,i){
       var disp=line.eng;
       (line.highlights||[]).forEach(function(h){
         disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/['"]/g,'[\\\'"]?')+'(\\b|$)','gi'),
           '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
       });
-      return '<div class="lyric-card" id="lc-'+i+'" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s">'
-        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6">'+disp+'</div>'
-        +'<div class="lc-phon" style="display:none;margin-top:12px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px 12px">'
+      var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+',true)" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px">'
+        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
+        +'<div style="display:flex;gap:5px;flex-shrink:0;margin-top:1px">'
+        +'<button onclick="event.stopPropagation();_setLyricDisplay('+i+',true);setTimeout(function(){_openPronInput('+i+',\''+safe+'\')},80)" style="background:#f0f0f0;border:none;border-radius:20px;padding:0 12px;height:32px;font-size:11px;font-weight:700;cursor:pointer;color:#555;white-space:nowrap">테스트</button>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555">🔊</button>'
+        +'</div>'
+        +'</div>'
+        +'<div class="lc-phon" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:10px 12px">'
         +musicWordPhon(line.eng)
-        +'<div style="font-size:11px;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
+        +'<div id="pron-result-'+i+'" style="display:none;border-top:1px solid #ebebeb;margin-top:8px;padding-top:8px"></div>'
+        +'<div style="font-size:11px;color:#888;border-top:1px solid #efefef;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
         +'</div>'
         +'</div>';
     }).join('');
-    var songPickHtml=MUSIC_DATA.map(function(s,i){
-      var active=(S.musicSongIdx||0)===i;
-      return '<button onclick="set({musicSongIdx:'+i+'});render();" style="flex:1;background:'+(active?'#1a1a1a':'#f0f0f0')+';color:'+(active?'#fff':'#555')+';border:none;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;line-height:1.3;text-align:center">'
-        +'<div>'+s.title+'</div>'
-        +'<div style="font-size:9px;opacity:.7;margin-top:2px">'+s.artist+'</div>'
-        +'</button>';
-    }).join('');
+    window._lyricHtmlPartial=lyricHtmlPartial;
+    // — Open-all mode: single box, all lyrics + phonetics always visible
+    var lyricHtmlOpen='<div style="background:#fff;border-radius:14px;padding:8px 14px;margin-bottom:8px;border:1px solid #ebebeb">';
+    (song.lyrics||[]).forEach(function(line,i){
+      var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      lyricHtmlOpen+='<div class="lyric-card" id="lc-'+i+'" style="padding:10px 6px;border-radius:8px;transition:background .15s;'+(i>0?'border-top:1px solid #f5f5f5;':'')+'">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px">'
+        +'<div class="lc-text" style="flex:1;font-size:14px;color:#aaa;line-height:1.65;font-weight:400">'+line.eng+'</div>'
+        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:30px;height:30px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:2px">🔊</button>'
+        +'</div>'
+        +'<div class="lc-phon" style="margin-top:8px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:8px 10px">'
+        +musicWordPhon(line.eng)
+        +'<div style="font-size:10px;color:#888;border-top:1px solid #efefef;margin-top:6px;padding-top:6px;line-height:1.75">'+line.note+'</div>'
+        +'</div>'
+        +'</div>';
+    });
+    lyricHtmlOpen+='</div>';
+    window._lyricHtmlOpen=lyricHtmlOpen;
+    var lyricHtml=_musicOpenAll?lyricHtmlOpen:lyricHtmlPartial;
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:12px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
       +'<span style="font-weight:700;font-size:15px;color:#fff">🎵 Music Coach</span>'
       +'</div>'
-      +'<div style="padding:0 18px;margin-bottom:14px">'
-      +'<div style="display:flex;gap:8px">'+songPickHtml+'</div>'
-      +'</div>'
+      +'<div id="song-picker" style="padding:0 18px;margin-bottom:14px">'+_buildSongPickerHTML()+'</div>'
       +'<div style="padding:0 18px">'
       +'<div style="background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;border:1px solid #ebebeb">'
       +'<div style="font-size:9px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">'+song.badge+'</div>'
       +'<div style="font-size:18px;font-weight:800;color:#1a1a1a;line-height:1.2;margin-bottom:1px">'+song.title+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
+      +(song.soundcloudUrl?'<div style="display:inline-flex;align-items:center;gap:5px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:4px 10px;margin-bottom:8px"><span style="font-size:10px;color:#ea580c;font-weight:700">🎵 FULL VERSION</span><span style="font-size:10px;color:#f97316">· SoundCloud</span></div>':'')
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
       +'<span style="font-size:10px;color:#bbb">박자 조정:</span>'
@@ -1931,10 +2721,23 @@ function render(){
       +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset+0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">늦게 →</button>'
       +'</div>'
       +'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">'
+      +'<span style="font-size:10px;color:#bbb">가사 보기:</span>'
+      +'<button id="open-all-btn" onclick="_musicOpenAll=!_musicOpenAll;_applyOpenAllMode()" style="background:#f0f0f0;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;color:#555">전체 열기</button>'
       +'</div>'
-      +lyricHtml
+      +'<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #f3f3f3">'
+      +'<span style="font-size:10px;color:#bbb;flex-shrink:0">⏱ 타이밍:</span>'
+      +'<span id="cal-pos" style="font-size:11px;color:#888;min-width:38px;font-family:monospace">0.00s</span>'
+      +'<button id="cal-btn" onclick="_markCalNext()" style="flex:1;background:#f0f0f0;border:none;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;color:#555;text-align:center">▶ 가사 1 마크</button>'
+      +'<button onclick="_resetCal()" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:8px;padding:5px 8px;font-size:11px;cursor:pointer;color:#aaa">↺</button>'
+      +'</div>'
+      +'</div>'
+      +'<div id="lyrics-container">'+lyricHtml+'</div>'
       +'</div></div>';
-    setTimeout(function(){ _setLyricDisplay(0); _initSpotifyPlayer(); }, 100);
+    setTimeout(function(){
+      if(_lastLyricIdx===-1) _setLyricDisplay(0);
+      _initSpotifyPlayer();
+    }, 100);
     return;
   }
 
@@ -1964,6 +2767,10 @@ function render(){
       // Pronunciation — sentence by sentence with individual play buttons
       var sentences=splitSentences(S.aiEng);
       window._aiSents=sentences;
+      // Fetch API phonetics for any uncached words, then re-render
+      var _aiUncached=[];
+      sentences.forEach(function(s){s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_aiUncached.indexOf(w)<0)_aiUncached.push(w);});});
+      if(_aiUncached.length){fetchPhonForWords(_aiUncached).then(function(){render();});return;}
       var pronCard='<div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
         +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase">발음 가이드</div>'
@@ -1977,9 +2784,13 @@ function render(){
           +'<button onclick="speakEng(window._aiSents['+i+'])" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:#444">▶</button>'
           +'</div>';
         pronCard+=wordByWordHTML(sent,'');
+        var safeS=sent.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        pronCard+='<button onclick="_openPronInput(\'a'+i+'\',\''+safeS+'\')" '
+          +'style="margin-top:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'
+          +'<div id="pron-result-a'+i+'" style="display:none;margin-top:8px;background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #ebebeb"></div>';
         pronCard+='</div>';
       });
-      pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px"><span><b style="color:#1a1a1a">대문자</b>=강세 음절</span><span>·=음절 구분</span></div>';
+      pronCard+='<div style="font-size:10px;color:#bbb;margin-top:12px;display:flex;gap:14px;flex-wrap:wrap"><span><b style="color:#1a1a1a">대문자</b>=강세</span><span>·=음절 구분</span><span><b style="color:#FF6B35">주황⌒</b>=연음 (다음 단어로 이어짐)</span></div>';
       pronCard+='</div>';
 
       // Grammar cards
@@ -2025,7 +2836,7 @@ function render(){
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
-      +'<span style="font-weight:700;font-size:15px;color:#fff">내 문장 분석</span>'
+      +'<span style="font-weight:700;font-size:15px;color:#fff">문장→발음화</span>'
       +'</div>'
       +'<div style="padding:0 18px 40px">'
       +'<div style="background:#fff;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
@@ -2042,7 +2853,7 @@ function render(){
       +(!S.aiEng&&!S.aiLoading
         ?'<div style="background:#fff;border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
           +'<div style="font-size:36px;margin-bottom:12px">🔍</div>'
-          +'<div style="font-weight:700;font-size:15px;color:#1a1a1a;margin-bottom:10px">내 문장 분석</div>'
+          +'<div style="font-weight:700;font-size:15px;color:#1a1a1a;margin-bottom:10px">문장→발음화</div>'
           +'<div style="font-size:13px;color:#888;line-height:1.9">영어 문장을 입력하거나<br>📷 사진으로 텍스트를 스캔하면<br><b style="color:#059669">번역 · 발음 · 문법 포인트</b>를 알려드려요</div>'
           +'</div>':''
       )
@@ -2077,8 +2888,8 @@ function render(){
   // CAT SELECT
   if(S.screen==='cats'){
     var cards=CATS.map(function(c){
-      return '<div onclick="startDrill(\''+c.id+'\')" style="background:'+c.bg+';border-radius:20px;padding:20px 16px;cursor:pointer;border:2px solid '+c.color+'20;active:transform:scale(.98)">'
-        +'<div style="width:42px;height:42px;border-radius:13px;background:'+c.color+';display:flex;align-items:center;justify-content:center;margin-bottom:11px;color:#fff;font-weight:800;font-size:12px">'+c.id.slice(0,2).toUpperCase()+'</div>'
+      return '<div onclick="startDrill(\''+c.id+'\')" style="background:#ffffff;border-radius:20px;padding:20px 16px;cursor:pointer;border:1.5px solid #e8e8e8;">'
+        +'<div style="width:42px;height:42px;border-radius:13px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;margin-bottom:11px;color:#fff;font-weight:800;font-size:12px">'+c.id.slice(0,2).toUpperCase()+'</div>'
         +'<div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:3px">'+c.name+'</div>'
         +'<div style="font-size:11px;color:#888">'+c.desc+'</div>'
         +'</div>';
@@ -2099,17 +2910,30 @@ function render(){
   // SAVED
   if(S.screen==='saved'){
     var saved=getSaved();
+    // Pre-fetch phonetics for uncached words, then re-render once
+    if(saved.length){
+      var allSavedWords=[];
+      saved.forEach(function(item){
+        item.eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){
+          w=w.replace(/[^a-z]/g,'');
+          if(w.length>1&&!PH[w]&&PHON_CACHE[w]===undefined&&allSavedWords.indexOf(w)<0) allSavedWords.push(w);
+        });
+      });
+      if(allSavedWords.length) fetchPhonForWords(allSavedWords).then(function(){render();});
+    }
     var rows=saved.length===0
       ?'<div style="text-align:center;color:#bbb;padding:40px 0"><div style="font-size:36px;margin-bottom:10px">🔖</div><div style="font-size:14px;line-height:1.7">아직 저장된 문장이 없어요.<br>연습 중 🔖 버튼을 눌러 저장해 보세요!</div></div>'
       :saved.map(function(item,ii){
+        var safeEng=item.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         return '<div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)">'
           +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
           +'<div style="font-size:15px;font-weight:700;color:#1a1a1a;flex:1;line-height:1.4;margin-right:10px">'+item.eng+'</div>'
           +'<div style="display:flex;gap:7px;flex-shrink:0">'
-          +'<button onclick="playSavedIdx('+ii+')" style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:13px">▶</button>'
+          +'<button onclick="speakEng(\''+safeEng+'\')" style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:13px">▶</button>'
           +'<button onclick="deleteSavedIdx('+ii+')" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-size:13px">✕</button>'
           +'</div></div>'
-          +'<div style="font-size:12px;color:#888;margin-bottom:6px">'+item.kor+'</div>'
+          +'<div style="font-size:12px;color:#888;margin-bottom:10px">'+item.kor+'</div>'
+          +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">발음 가이드</div>'
           +wordByWordHTML(item.eng,'')
           +'</div>';
       }).join('');
@@ -2131,8 +2955,9 @@ function render(){
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
     var eng=s[0],kor=s[1],tip=s[3];
+    // Fetch API phonetics for uncached words, then re-render with best quality
     var _drillUncached=[];
-    eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
+    eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
     if(_drillUncached.length){fetchPhonForWords(_drillUncached).then(function(){render();});}
     var saved=isSaved();
     var intoQ=eng.trim().endsWith('?');
@@ -2146,7 +2971,7 @@ function render(){
       +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">발음 가이드</div>'
       +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,'')+'</div>'
-      
+      +(function(){var se=eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");return '<button onclick="_openPronInput(\'p\',\''+se+'\')" style="margin-bottom:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'+'<div id="pron-result-p" style="display:none;margin-bottom:10px;background:#f9f9f9;border-radius:8px;padding:10px 12px;border:1px solid #ebebeb"></div>';})()
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
       +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">발음 팁</div>'
@@ -2176,7 +3001,7 @@ function render(){
       +(S.savedMsg?'<span style="font-size:11px;color:#4ade80;font-weight:700">'+S.savedMsg+'</span>':'')
       +'</div></div>'
       +'<div style="background:#fff;padding:5px 14px;display:flex;gap:12px;flex-shrink:0;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa">'
-      +'<span><b style="color:#1a1a1a">대문자</b>=강세 음절</span><span>·=음절 구분</span>'
+      +'<span><b style="color:#1a1a1a">대문자</b>=강세</span><span>·=음절</span><span><b style="color:#FF6B35">주황⌒</b>=연음</span>'
       +'</div>'
       +'<div style="flex:1;display:flex;overflow:hidden;min-height:0">'
       +leftPanel+rightPanel
