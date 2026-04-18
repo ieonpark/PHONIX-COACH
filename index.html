@@ -437,7 +437,14 @@ function wordPhon(w){
 }
 
 // ── Free Dictionary API: IPA → kum-PLEET-lee format ──
-var PHON_CACHE={};
+// PHON_CACHE persists across page reloads via localStorage
+var PHON_CACHE=(function(){
+  try{return JSON.parse(localStorage.getItem('phonix_phon_cache')||'{}');}
+  catch(e){return {};}
+})();
+function _savePhonCache(){
+  try{localStorage.setItem('phonix_phon_cache',JSON.stringify(PHON_CACHE));}catch(e){}
+}
 
 function ipaConvert(s){
   return s
@@ -473,6 +480,11 @@ function ipaConvert(s){
 // e.g. "bawldnuhs" → ["BAWLD","nuhs"], "hapin" → ["HAP","in"]
 function splitPhonSyllables(s){
   if(!s) return [s||''];
+  // If string already has hyphens (from phonetize suffix rules), use them directly
+  if(s.indexOf('-')>=0){
+    var _pts=s.split('-').filter(Boolean);
+    if(_pts.length){_pts[0]=_pts[0].toUpperCase();return _pts;}
+  }
   var p=s.toLowerCase();
   // Vowel nuclei patterns, longest first
   var VNUC=['eer','oor','air','eye','ai','aw','ay','ee','oo','oy','ow','uh','ih','er','oh','aa','ah'];
@@ -510,6 +522,29 @@ function splitPhonSyllables(s){
     if(end>start) result.push(s.slice(start,end));
   }
   if(!result.length) return [s.toUpperCase()];
+  // Short-vowel closed syllable fix: stressed syllable ending in short vowel
+  // claims following consonant as coda (FISH not FI, HAP not HA, BET not BE)
+  var DIGRAPHS=['sh','th','ch','ng','zh'];
+  if(result.length>=2){
+    var r0l=result[0].toLowerCase();
+    var r0last2=r0l.slice(-2), r0last1=r0l.slice(-1);
+    // ih/uh = 2-char short vowels; bare a/e after consonant = short /æ//ɛ/
+    var r0prev=r0l[r0l.length-2]||'';
+    var isShortV=r0last2==='ih'||r0last2==='uh'||
+      (r0last1==='a'&&'aeiou'.indexOf(r0prev)<0)||
+      (r0last1==='e'&&'aeiou'.indexOf(r0prev)<0&&r0last2!=='ee');
+      var r1=result[1], coda='';
+      for(var di=0;di<DIGRAPHS.length;di++){
+        if(r1.slice(0,2).toLowerCase()===DIGRAPHS[di]){coda=r1.slice(0,2);break;}
+      }
+      if(!coda&&r1.length>1&&'aeiouAEIOU'.indexOf(r1[0])<0) coda=r1[0];
+      if(coda&&coda.length<r1.length){
+        result[0]=result[0]+coda;
+        result[1]=r1.slice(coda.length);
+        if(!result[1]) result.splice(1,1);
+      }
+    }
+  }
   result[0]=result[0].toUpperCase();
   return result;
 }
@@ -535,8 +570,12 @@ function ipaToPhon(ipa){
       result=(before?before+'-':'')+afterSyls.join('-');
     }
   }
-  // Word-final bare 'i' after consonant → 'ee' (tiny→TAI-nee, city→SIH-tee, happy→HAP-ee)
-  result=result.replace(/([bcdfghjklmnpqrstvwxyz])i$/i,'$1ee');
+  // Word-final bare 'i' → 'ee': fix last syllable (handles both 'ni' and bare '-i')
+  var _rp=result.split('-');
+  var _last=_rp[_rp.length-1];
+  _last=_last.replace(/^([bcdfghjklmnpqrstvwxyz]*)i$/,function(m,c){return c+'ee';});
+  _rp[_rp.length-1]=_last;
+  result=_rp.join('-');
   return result;
 }
 
@@ -557,7 +596,7 @@ function fetchPhonForWords(words){
       })
       .catch(function(){PHON_CACHE[w]=phonetize(w);});
   });
-  return Promise.all(promises);
+  return Promise.all(promises).then(_savePhonCache);
 }
 
 // ── Phonetic rules fallback for words not in PH dict ──
@@ -793,6 +832,11 @@ function phonetize(w){
   p=p.replace(/([aeiooulmnr])s$/g,'$1z');
   // Map remaining bare vowels to clearer sounds
   p=p.replace(/\boh\b/g,'oh');
+  // If suffix rules already inserted hyphens, use them directly (avoid double-hyphen bug)
+  if(p.indexOf('-')>=0){
+    var pts=p.split('-').filter(Boolean);
+    if(pts.length){pts[0]=pts[0].toUpperCase();return pts.join('-');}
+  }
   return splitPhonSyllables(p).join('-');
 }
 
