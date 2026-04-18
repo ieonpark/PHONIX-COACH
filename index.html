@@ -2784,8 +2784,8 @@ function render(){
       window._aiSents=sentences;
       // Fetch API phonetics for any uncached words, then re-render
       var _aiUncached=[];
-      sentences.forEach(function(s){s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_aiUncached.indexOf(w)<0)_aiUncached.push(w);});});
-      if(_aiUncached.length){fetchPhonForWords(_aiUncached).then(function(){render();});return;}
+      sentences.forEach(function(s){s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_aiUncached.indexOf(w)<0)_aiUncached.push(w);});});
+      if(_aiUncached.length){fetchPhonForWords(_aiUncached).then(function(){render();});}
       var pronCard='<div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
         +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase">발음 가이드</div>'
