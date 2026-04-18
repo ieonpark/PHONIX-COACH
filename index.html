@@ -476,11 +476,13 @@ function _savePhonCache(){
   try{localStorage.setItem('phonix_phon_cache',JSON.stringify(PHON_CACHE));}catch(e){}
 }
 
+var _PHON_EXCEPTIONS={};
+
 function ipaConvert(s){
   return s
     .replace(/ɑː/g,'aa').replace(/ɑ/g,'ah').replace(/æ/g,'a')
     .replace(/eɪ/g,'ay').replace(/ɪər/g,'eer').replace(/ɛər/g,'air').replace(/eər/g,'air')
-    .replace(/iː/g,'ee').replace(/ɪ/g,'i')
+    .replace(/iː/g,'ee').replace(/ɪ/g,'ih')
     .replace(/oʊ/g,'oh').replace(/əʊ/g,'oh').replace(/ɔɪ/g,'oy').replace(/ɔː/g,'aw').replace(/ɔ/g,'aw')
     .replace(/uː/g,'oo').replace(/ʊər/g,'oor').replace(/ʊ/g,'u')
     .replace(/ʌ/g,'uh').replace(/ɜː/g,'er').replace(/ɜ/g,'er').replace(/ɚ/g,'er').replace(/ər/g,'er').replace(/ə/g,'uh')
@@ -498,7 +500,7 @@ function splitPhonSyllables(s){
   if(!s) return [s||''];
   var p=s.toLowerCase();
   // Vowel nuclei patterns, longest first
-  var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','er','oh','aa','ah'];
+  var VNUC=['eer','oor','air','eye','aw','ay','ee','oo','oy','ow','uh','ih','er','oh','aa','ah'];
   var vPos=[];
   var i=0;
   while(i<p.length){
@@ -557,7 +559,7 @@ function ipaToPhon(ipa){
 }
 
 function fetchPhonForWords(words){
-  var toFetch=words.filter(function(w){return w&&w.length>1&&!PH[w]&&PHON_CACHE[w]===undefined;});
+  var toFetch=words.filter(function(w){return w&&w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined;});
   if(!toFetch.length) return Promise.resolve();
   var promises=toFetch.map(function(w){
     return fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w))
@@ -580,6 +582,7 @@ function fetchPhonForWords(words){
 function phonetize(w){
   if(!w) return '';
   var p=w;
+  if(p.indexOf('-')>=0){var _pts=p.split('-').filter(Boolean);_pts[0]=_pts[0].toUpperCase();return _pts.join('-');}
   // Multi-char digraph patterns (order: longest first)
   p=p.replace(/tion/g,'shun');
   p=p.replace(/sion/g,'zhun');
@@ -1878,6 +1881,9 @@ function render(){
   // MUSIC COACH
   if(S.screen==='music'){
     var song=MUSIC_DATA[S.musicSongIdx||0];
+    var _musicUncached=[];
+    (song.lyrics||[]).forEach(function(line){line.eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_musicUncached.indexOf(w)<0)_musicUncached.push(w);});});
+    if(_musicUncached.length){fetchPhonForWords(_musicUncached).then(function(){render();return;});}
     var lyricHtml=(song.lyrics||[]).map(function(line,i){
       var disp=line.eng;
       (line.highlights||[]).forEach(function(h){
@@ -2120,7 +2126,10 @@ function render(){
     var sents=DATA[S.cat]||[];
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
-    var eng=s[0],kor=s[1],phon=s[2],tip=s[3];
+    var eng=s[0],kor=s[1],tip=s[3];
+    var _drillUncached=[];
+    eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
+    if(_drillUncached.length){fetchPhonForWords(_drillUncached).then(function(){render();});}
     var saved=isSaved();
     var intoQ=eng.trim().endsWith('?');
     var into=intoQ?'↗ 상승 Rising':'↘ 하강 Falling';
@@ -2132,7 +2141,7 @@ function render(){
       +'<div style="font-size:18px;font-weight:800;line-height:1.4;margin-bottom:5px">'+eng+'</div>'
       +'<div style="font-size:12px;color:#888;margin-bottom:16px">'+kor+'</div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">발음 가이드</div>'
-      +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,phon)+'</div>'
+      +'<div style="margin-bottom:8px">'+wordByWordHTML(eng,'')+'</div>'
       
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
       +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
