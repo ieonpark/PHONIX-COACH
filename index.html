@@ -1189,6 +1189,28 @@ function getDailyStats(){
     return d;
   }catch(e){return{date:_todayKey(),count:0,streak:0};}
 }
+
+var _practiceStart=null;
+function _startPracticeTimer(){if(!_practiceStart)_practiceStart=Date.now();}
+function _stopPracticeTimer(){
+  if(!_practiceStart) return;
+  var secs=Math.round((Date.now()-_practiceStart)/1000);
+  _practiceStart=null;
+  if(secs<2) return;
+  try{
+    var key=_todayKey();
+    var t=JSON.parse(localStorage.getItem('phonix_time_v1')||'{}');
+    t[key]=(t[key]||0)+secs;
+    localStorage.setItem('phonix_time_v1',JSON.stringify(t));
+  }catch(e){}
+}
+function getDayTime(dateKey){
+  try{var t=JSON.parse(localStorage.getItem('phonix_time_v1')||'{}');return t[dateKey]||0;}catch(e){return 0;}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_stopPracticeTimer();}
+  else if(S&&S.screen&&S.screen!=='home'){_practiceStart=Date.now();}
+});
 function markDailyStudy(result){
   var d=getDailyStats();
   d.count=(d.count||0)+1;
@@ -1471,19 +1493,23 @@ function analHTML(res,loading){
 
 // ─── NAVIGATION ─────────────────────────────────────
 function goHome(){
+  _stopPracticeTimer();
   stopAll();
   set({screen:'home',result:null,live:'',err:'',cResult:null,cLive:'',cErr:'',savedMsg:'',analyzing:false,cAnalyzing:false});
 }
 function goChecker(){
   stopAll();
+  _startPracticeTimer();
   set({screen:'checker',cResult:null,cLive:'',cErr:'',cRec:false,cAnalyzing:false});
 }
 function goPCats(){
   stopAll();
+  _startPracticeTimer();
   set({screen:'cats'});
 }
 function startDrill(id){
   stopAll();
+  _startPracticeTimer();
   set({screen:'drill',cat:id,idx:0,result:null,live:'',err:'',rec:false,analyzing:false,speaking:false,savedMsg:''});
 }
 function prevS(){
@@ -1535,6 +1561,7 @@ function runAnalyze(txt,target,isPractice){
 // ─── ANALYZE MY SENTENCE ─────────────────────────────
 function goAnalyze(){
   stopAll();
+  _startPracticeTimer();
   set({screen:'analyze',aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],
     aiLoading:false,aiImgLoading:false,aiError:''});
 }
@@ -2396,6 +2423,7 @@ function _applyOpenAllMode(){
 
 function goMusic(tab){
   stopAll();
+  _startPracticeTimer();
   _previewStartPos=null;
   _lastLyricIdx=-1;
   _timingOffset=0;
@@ -2612,8 +2640,16 @@ function render(){
         if(_d>_daysInMonth){_dotsHtml+='<div style="width:min(5.5vw,22px);height:min(5.5vw,22px);flex-shrink:0;"></div>';continue;}
         var _isToday=_d===_today;
         var _isPast=_d<_today;
-        var _dotBg=_isToday?'#ffffff':_isPast?'rgba(255,255,255,0.75)':'rgba(255,255,255,0.18)';
-        var _dotExtra=_isToday?'box-shadow:0 0 0 3px rgba(255,255,255,.3);cursor:pointer;':'cursor:default;';
+        var _isFuture=_d>_today;
+        var _dk=_year+'-'+(_month+1<10?'0':'')+(_month+1)+'-'+(_d<10?'0':'')+_d;
+        var _secs=getDayTime(_dk);
+        var _pct=Math.min(1,_secs/(20*60));
+        var _dotBg;
+        if(_isFuture){_dotBg='rgba(255,255,255,0.12)';}
+        else if(_pct>=1){_dotBg='#ffffff';}
+        else if(_pct>0){_dotBg='conic-gradient(#fff '+Math.round(_pct*360)+'deg, rgba(255,255,255,0.18) 0deg)';}
+        else{_dotBg='rgba(255,255,255,0.18)';}
+        var _dotExtra=_isToday?'box-shadow:0 0 0 2px rgba(255,255,255,.5);cursor:pointer;':'cursor:default;';
         _dotsHtml+='<div onclick="'+(_isToday?'set({homeExpanded:!S.homeExpanded})':'')+'" style="width:min(5.5vw,22px);height:min(5.5vw,22px);border-radius:50%;background:'+_dotBg+';'+_dotExtra+'flex-shrink:0;"></div>';
       }
       _dotsHtml+='</div>';
@@ -2659,7 +2695,7 @@ function render(){
       +'<div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px">'+_monthNames[_month]+' '+_year+'</div>'
       // Dot grid (already flex:1, distributes rows via space-evenly)
       +_dotsHtml
-      +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+_today+'일째 · '+(_ds.streak||0)+' day streak · 오늘 '+(_ds.count||0)+'/'+getDailyGoal()+'회</div>'
+      +(function(){var _ts=getDayTime(_year+'-'+(_month+1<10?'0':'')+(_month+1)+'-'+(_today<10?'0':'')+_today);var _tm=Math.floor(_ts/60);var _ts2=_ts%60;return '<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+_today+'일째 · '+(_ds.streak||0)+' day streak · 오늘 '+_tm+'분 '+_ts2+'초 / 20분</div>';})()
       +'</div>'
       // ── Expanded cards: OUTSIDE dark section so dots don't get squeezed ──
       +(_expandHtml?'<div style="padding:0 22px 20px;background:#1a1a1a">'+_expandHtml+'</div>':'')
