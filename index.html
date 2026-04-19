@@ -1570,15 +1570,85 @@ function _openPronInput(idx,engText){
   if(!re) return;
   re.style.display='block';
   var safeEng=engText.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:6px">발음한 대로 입력하세요</div>'
-    +'<div style="display:flex;gap:6px">'
-    +'<input id="pron-input-'+idx+'" type="text" placeholder="예: i luhv dis song" '
-    +'style="flex:1;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:13px;outline:none" '
-    +'onkeydown="if(event.key===\'Enter\')_checkPronInput('+idx+',\''+safeEng+'\')" />'
-    +'<button onclick="_checkPronInput('+idx+',\''+safeEng+'\')" '
-    +'style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">확인</button>'
-    +'</div>';
-  setTimeout(function(){var el=document.getElementById('pron-input-'+idx);if(el)el.focus();},50);
+  var hasSR=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  if(hasSR){
+    re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:10px">버튼을 누르고 영어 문장을 말해보세요</div>'
+      +'<button id="mic-btn-'+idx+'" onclick="_startSpeechCheck(\''+idx+'\',\''+safeEng+'\')" '
+      +'style="background:#e74c3c;color:#fff;border:none;border-radius:50px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">🎤 말하기</button>'
+      +'<div id="mic-status-'+idx+'" style="font-size:11px;color:#aaa;margin-top:8px"></div>';
+  } else {
+    re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:6px">말한 내용을 영어로 입력하세요</div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<input id="pron-input-'+idx+'" type="text" placeholder="예: i love this song" '
+      +'style="flex:1;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:13px;outline:none" '
+      +'onkeydown="if(event.key===\'Enter\')_checkPronInput(\''+idx+'\',\''+safeEng+'\')" />'
+      +'<button onclick="_checkPronInput(\''+idx+'\',\''+safeEng+'\')" '
+      +'style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">확인</button>'
+      +'</div>';
+    setTimeout(function(){var el=document.getElementById('pron-input-'+idx);if(el)el.focus();},50);
+  }
+}
+
+var _activeRecognition=null;
+
+function _startSpeechCheck(idx,target){
+  if(_activeRecognition){_activeRecognition.abort();_activeRecognition=null;}
+  var SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  var rec=new SpeechRec();
+  _activeRecognition=rec;
+  rec.lang='en-US';
+  rec.interimResults=false;
+  rec.maxAlternatives=1;
+  var btn=document.getElementById('mic-btn-'+idx);
+  var status=document.getElementById('mic-status-'+idx);
+  if(btn){btn.textContent='🔴 듣는 중...';btn.style.background='#999';btn.disabled=true;}
+  if(status)status.textContent='말씀해 주세요...';
+  rec.onresult=function(e){
+    var heard=e.results[0][0].transcript;
+    _activeRecognition=null;
+    _checkSpeechResult(idx,target,heard);
+  };
+  rec.onerror=function(e){
+    _activeRecognition=null;
+    var re=document.getElementById('pron-result-'+idx);
+    var safeT=target.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    if(re)re.innerHTML='<div style="color:#e74c3c;font-size:12px;margin-bottom:8px">마이크 오류: '+(e.error||'알 수 없는 오류')+'</div>'
+      +'<button onclick="_openPronInput(\''+idx+'\',\''+safeT+'\')" style="background:#f0f0f0;border:none;border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;color:#555">다시 시도</button>';
+  };
+  rec.onend=function(){
+    _activeRecognition=null;
+    if(btn){btn.textContent='🎤 말하기';btn.style.background='#e74c3c';btn.disabled=false;}
+  };
+  rec.start();
+}
+
+function _checkSpeechResult(idx,target,heard){
+  function normW(w){return w.toLowerCase().replace(/[^a-z']/g,'');}
+  var sw=heard.trim().split(/\s+/).map(normW).filter(Boolean);
+  var tw=target.trim().split(/\s+/).map(normW).filter(Boolean);
+  var mistakes=[];
+  var parts=tw.map(function(t,i){
+    var s=sw[i]||'';
+    if(!s){mistakes.push({e:t,s:'(없음)'});return '<span style="color:#e74c3c;font-weight:700;background:#fee2e2;border-radius:3px;padding:1px 5px">'+t+'</span>';}
+    if(s===t)return '<span style="color:#16a34a;font-weight:600">'+t+'</span>';
+    var d=_editDist(s,t);
+    var thresh=Math.max(1,Math.floor(t.length/4));
+    mistakes.push({e:t,s:s});
+    return '<span style="color:'+(d<=thresh?'#ea580c':'#e74c3c')+';font-weight:700;background:'+(d<=thresh?'#fff7ed':'#fee2e2')+';border-radius:3px;padding:1px 5px">'+t+'</span>';
+  }).join(' ');
+  var mHtml=mistakes.length===0
+    ?'<div style="color:#16a34a;font-size:12px;margin-top:6px;font-weight:700">✓ 완벽해요!</div>'
+    :'<div style="margin-top:8px">'+mistakes.map(function(m){
+      return '<div style="font-size:11px;color:#e74c3c;line-height:1.8"><b>'+m.e+'</b> → <span style="color:#888">"'+m.s+'"</span> 라고 들렸어요</div>';
+    }).join('')+'</div>';
+  var safeT=target.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var re=document.getElementById('pron-result-'+idx);
+  if(re){
+    re.innerHTML='<div style="font-size:10px;color:#aaa;margin-bottom:4px">인식된 발음: '+heard+'</div>'
+      +'<div style="font-size:13px;line-height:2.4;margin-bottom:2px">'+parts+'</div>'
+      +mHtml
+      +'<button onclick="_openPronInput(\''+idx+'\',\''+safeT+'\')" style="margin-top:8px;background:#f0f0f0;border:none;border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;color:#555">다시 시도</button>';
+  }
 }
 
 function _checkPronInput(idx,target){
@@ -1586,31 +1656,7 @@ function _checkPronInput(idx,target){
   if(!inputEl) return;
   var typed=inputEl.value.trim();
   if(!typed) return;
-  function normW(w){return w.toLowerCase().replace(/[^a-z']/g,'');}
-  var sw=typed.split(/\s+/).map(normW).filter(Boolean);
-  var tw=target.trim().split(/\s+/).map(normW).filter(Boolean);
-  var mistakes=[];
-  var parts=tw.map(function(t,i){
-    var s=sw[i]||'';
-    if(!s){mistakes.push({e:t,s:'(없음)'});return '<span style="color:#e74c3c;font-weight:700;background:#fee2e2;border-radius:3px;padding:1px 5px">'+t+'</span>';}
-    if(s===t) return '<span style="color:#16a34a;font-weight:600">'+t+'</span>';
-    var d=_editDist(s,t);
-    var thresh=Math.max(1,Math.floor(t.length/4));
-    mistakes.push({e:t,s:s});
-    return '<span style="color:'+(d<=thresh?'#ea580c':'#e74c3c')+';font-weight:700;background:'+(d<=thresh?'#fff7ed':'#fee2e2')+';border-radius:3px;padding:1px 5px">'+t+'</span>';
-  }).join(' ');
-  var mHtml=mistakes.length===0
-    ?'<div style="color:#16a34a;font-size:11px;margin-top:6px;font-weight:600">✓ 완벽해요!</div>'
-    :'<div style="margin-top:7px">'+mistakes.map(function(m){
-      return '<div style="font-size:11px;color:#e74c3c;line-height:1.8"><b>'+m.e+'</b> → <span style="color:#888">"'+m.s+'"</span> 라고 발음했어요</div>';
-    }).join('')+'</div>';
-  var safeEng=target.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  var re=document.getElementById('pron-result-'+idx);
-  if(re){
-    re.innerHTML='<div style="font-size:13px;line-height:2.4;margin-bottom:2px">'+parts+'</div>'
-      +mHtml
-      +'<button onclick="_openPronInput('+idx+',\''+safeEng+'\')" style="margin-top:8px;background:#f0f0f0;border:none;border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;color:#555">다시 시도</button>';
-  }
+  _checkSpeechResult(idx,target,typed);
 }
 
 function _buildSongPickerHTML(){
