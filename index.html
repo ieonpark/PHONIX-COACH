@@ -1751,8 +1751,8 @@ var MUSIC_DATA=[
     intro:'IØN의 자작 인디곡. 시적인 문장과 감정 표현을 자연스럽게 익혀요. 타이밍 캘리브레이션으로 맞춰 사용하세요.',
     lyrics:[
       {t:3.0,eng:"I left that place — it had a name",note:"<b>left</b>=떠났다(leave 과거). <b>it had a name</b>=이름이 있었다. 짧고 담담한 과거 서술",highlights:["left that place","had a name"]},
-      {t:10.0,eng:"I remember the sound of it",note:"<b>I remember the sound of</b>=~의 소리를 기억한다. 감각 기억 표현",highlights:["remember the sound"]},
-      {t:16.0,eng:"I didn't stay",note:"<b>didn't stay</b>=머물지 않았다. 과거 부정문. 단 4단어로 떠남을 표현",highlights:["didn't stay"]},
+      {t:10.0,eng:"I remember the sound like spring coming",note:"<b>I remember the sound like spring coming</b>=봄이 오는 것 같은 소리를 기억한다. 감각적 비유 표현",highlights:["remember the sound"]},
+      {t:16.0,eng:"I couldn't stay",note:"<b>couldn't stay</b>=머물 수 없었다. 의지가 아닌 상황으로 인한 떠남을 표현",highlights:["couldn't stay"]},
       {t:22.0,eng:"I woke up and the ocean was already there",note:"<b>woke up</b>=잠에서 깨다. <b>was already there</b>=이미 거기 있었다. 과거시제 상황 묘사",highlights:["woke up","already there"]},
       {t:30.0,eng:"Coming in, before I could think",note:"<b>coming in</b>=밀려오다. <b>before I could think</b>=생각하기도 전에. could=가능성의 조동사",highlights:["coming in","before I could think"]},
       {t:40.0,eng:"The water kept coming in, it never pulled back",note:"<b>kept coming in</b>=계속 밀려왔다. <b>pulled back</b>=물러났다. keep+동명사 반복 패턴",highlights:["kept coming in","pulled back"]},
@@ -2418,9 +2418,7 @@ function _initSoundCloudPlayer(container,song){
     var iframe=document.getElementById('sc-iframe');
     if(!iframe||!window.SC) return;
     _scWidget=SC.Widget(iframe);
-    _scWidget.bind(SC.Widget.Events.PLAY_PROGRESS,function(e){
-      if(e&&typeof e.currentPosition==='number') _updateLyricHighlight(e.currentPosition/1000);
-    });
+    _scWidget.bind(SC.Widget.Events.PLAY_PROGRESS,function(e){});
   },600);
 }
 
@@ -2434,27 +2432,7 @@ function _initSpotifyPlayer(){
   var opts={uri:'spotify:track:'+song.spotifyId,width:'100%',height:80};
   _spotifyApi.createController(container,opts,function(ctrl){
     _spotifyController=ctrl;
-    ctrl.addListener('playback_update',function(e){
-      if(!e.data) return;
-      if(typeof e.data.position==='number') _updateLyricHighlight(e.data.position/1000);
-      if(e.data.isPaused&&_previewStartPos!==null&&!_looping){
-        var relPos=(e.data.position/1000)-_previewStartPos;
-        if(relPos>25){
-          _looping=true;
-          _lastLyricIdx=-1;
-          _setLyricDisplay(0);
-          setTimeout(function(){
-            if(_spotifyController){
-              _spotifyController.seek(_previewStartPos*1000);
-              setTimeout(function(){
-                if(_spotifyController) _spotifyController.togglePlay();
-                _looping=false;
-              },400);
-            } else { _looping=false; }
-          },300);
-        }
-      }
-    });
+    ctrl.addListener('playback_update',function(e){});
   });
 }
 
@@ -2719,48 +2697,26 @@ function render(){
     var _musicUncached=[];
     (song.lyrics||[]).forEach(function(line){line.eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&PHON_CACHE[w]===undefined&&_musicUncached.indexOf(w)<0)_musicUncached.push(w);});});
     if(_musicUncached.length){fetchPhonForWords(_musicUncached).then(function(){render();return;});}
-    // — Partial mode: individual cards with phonetics
-    var lyricHtmlPartial=(song.lyrics||[]).map(function(line,i){
-      var disp=line.eng;
-      (line.highlights||[]).forEach(function(h){
-        disp=disp.replace(new RegExp('(^|\\b)'+h.replace(/['"]/g,'[\\\'"]?')+'(\\b|$)','gi'),
-          '$1<span class="lyric-hl" style="background:#ddd;color:#aaa;border-radius:4px;padding:1px 5px">'+h+'</span>$2');
-      });
-      var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return '<div class="lyric-card" id="lc-'+i+'" onclick="_setLyricDisplay('+i+',true)" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px;border:1px solid #ebebeb;transition:background .2s,border-color .2s;cursor:pointer">'
-        +'<div style="display:flex;align-items:flex-start;gap:8px">'
-        +'<div class="lc-text" style="font-size:15px;font-weight:600;color:#bbb;line-height:1.6;flex:1">'+disp+'</div>'
-        +'<div style="display:flex;gap:5px;flex-shrink:0;margin-top:1px">'
-        +'<button onclick="event.stopPropagation();_setLyricDisplay('+i+',true);setTimeout(function(){_openPronInput('+i+',\''+safe+'\')},80)" style="background:#f0f0f0;border:none;border-radius:20px;padding:0 12px;height:32px;font-size:11px;font-weight:700;cursor:pointer;color:#555;white-space:nowrap">테스트</button>'
-        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;width:32px;height:32px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555">🔊</button>'
-        +'</div>'
-        +'</div>'
-        +'<div class="lc-phon" style="display:none;margin-top:10px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:10px 12px">'
-        +musicWordPhon(line.eng)
-        +'<div id="pron-result-'+i+'" style="display:none;border-top:1px solid #ebebeb;margin-top:8px;padding-top:8px"></div>'
-        +'<div style="font-size:11px;color:#888;border-top:1px solid #efefef;margin-top:8px;padding-top:8px;line-height:1.8">'+line.note+'</div>'
-        +'</div>'
-        +'</div>';
-    }).join('');
-    window._lyricHtmlPartial=lyricHtmlPartial;
-    // — Open-all mode: single box, all lyrics + phonetics always visible
-    var lyricHtmlOpen='<div style="background:#fff;border-radius:14px;padding:8px 14px;margin-bottom:8px;border:1px solid #ebebeb">';
+    // — All lyrics visible with phonetics
+    var lyricHtml='<div style="background:#fff;border-radius:14px;padding:8px 14px;margin-bottom:8px;border:1px solid #ebebeb">';
     (song.lyrics||[]).forEach(function(line,i){
       var safe=line.eng.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      lyricHtmlOpen+='<div class="lyric-card" id="lc-'+i+'" style="padding:10px 6px;border-radius:8px;transition:background .15s;'+(i>0?'border-top:1px solid #f5f5f5;':'')+'">'
+      lyricHtml+='<div style="padding:10px 6px;'+(i>0?'border-top:1px solid #f5f5f5;':'')+'">'
         +'<div style="display:flex;align-items:flex-start;gap:8px">'
-        +'<div class="lc-text" style="flex:1;font-size:14px;color:#aaa;line-height:1.65;font-weight:400">'+line.eng+'</div>'
-        +'<button class="lc-tts" onclick="event.stopPropagation();speakLyric(\''+safe+'\')" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:20px;width:30px;height:30px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;margin-top:2px">🔊</button>'
+        +'<div style="flex:1;font-size:14px;color:#1a1a1a;line-height:1.65;font-weight:500">'+line.eng+'</div>'
+        +'<div style="display:flex;gap:5px;flex-shrink:0;margin-top:2px">'
+        +'<button onclick="_openPronInput(\''+i+'\',\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;padding:0 10px;height:28px;font-size:10px;font-weight:700;cursor:pointer;color:#555;white-space:nowrap">테스트</button>'
+        +'<button onclick="speakLyric(\''+safe+'\')" style="background:#f0f0f0;border:none;border-radius:20px;width:28px;height:28px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555">🔊</button>'
         +'</div>'
-        +'<div class="lc-phon" style="margin-top:8px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:8px 10px">'
+        +'</div>'
+        +'<div style="margin-top:8px;background:#f8f8f8;border-radius:8px;border:1px solid #efefef;padding:8px 10px">'
         +musicWordPhon(line.eng)
+        +'<div id="pron-result-'+i+'" style="display:none;border-top:1px solid #ebebeb;margin-top:8px;padding-top:8px"></div>'
         +'<div style="font-size:10px;color:#888;border-top:1px solid #efefef;margin-top:6px;padding-top:6px;line-height:1.75">'+line.note+'</div>'
         +'</div>'
         +'</div>';
     });
-    lyricHtmlOpen+='</div>';
-    window._lyricHtmlOpen=lyricHtmlOpen;
-    var lyricHtml=_musicOpenAll?lyricHtmlOpen:lyricHtmlPartial;
+    lyricHtml+='</div>';
     app.innerHTML='<div style="background:#f5f5f5;min-height:100vh;padding-bottom:40px">'
       +'<div style="background:#1a1a1a;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:12px">'
       +'<button onclick="goHome()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px">← 홈</button>'
@@ -2774,31 +2730,10 @@ function render(){
       +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+song.artist+'</div>'
       +(song.soundcloudUrl?'<div style="display:inline-flex;align-items:center;gap:5px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:4px 10px;margin-bottom:8px"><span style="font-size:10px;color:#ea580c;font-weight:700">🎵 FULL VERSION</span><span style="font-size:10px;color:#f97316">· SoundCloud</span></div>':'')
       +'<div id="music-player-container" style="border-radius:12px;overflow:hidden;min-height:80px;background:#f5f5f5"></div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">'
-      +'<span style="font-size:10px;color:#bbb">박자 조정:</span>'
-      +'<div style="display:flex;align-items:center;gap:6px">'
-      +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset-0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">← 빠르게</button>'
-      +'<span id="off-val" style="font-size:11px;color:#888;min-width:36px;text-align:center">+0.0s</span>'
-      +'<button onclick="(function(){_timingOffset=Math.round((_timingOffset+0.5)*10)/10;var el=document.getElementById(\'off-val\');if(el)el.textContent=(_timingOffset>=0?\'+\':\'\')+_timingOffset.toFixed(1)+\'s\';})()" style="background:#f0f0f0;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#555">늦게 →</button>'
       +'</div>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">'
-      +'<span style="font-size:10px;color:#bbb">가사 보기:</span>'
-      +'<button id="open-all-btn" onclick="_musicOpenAll=!_musicOpenAll;_applyOpenAllMode()" style="background:#f0f0f0;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;color:#555">전체 열기</button>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #f3f3f3">'
-      +'<span style="font-size:10px;color:#bbb;flex-shrink:0">⏱ 타이밍:</span>'
-      +'<span id="cal-pos" style="font-size:11px;color:#888;min-width:38px;font-family:monospace">0.00s</span>'
-      +'<button id="cal-btn" onclick="_markCalNext()" style="flex:1;background:#f0f0f0;border:none;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;color:#555;text-align:center">▶ 가사 1 마크</button>'
-      +'<button onclick="_resetCal()" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:8px;padding:5px 8px;font-size:11px;cursor:pointer;color:#aaa">↺</button>'
-      +'</div>'
-      +'</div>'
-      +'<div id="lyrics-container">'+lyricHtml+'</div>'
+      +lyricHtml
       +'</div></div>';
-    setTimeout(function(){
-      if(_lastLyricIdx===-1) _setLyricDisplay(0);
-      _initSpotifyPlayer();
-    }, 100);
+    setTimeout(function(){_initSpotifyPlayer();}, 100);
     return;
   }
 
