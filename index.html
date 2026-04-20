@@ -2493,12 +2493,22 @@ function splitSentences(text){
 // ── Free translation via Google Translate (unofficial, no key) ──
 function translateFree(text){
   var url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ko&dt=t&q='+encodeURIComponent(text);
-  return fetch(url)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(!d||!d[0]) throw new Error('번역 실패');
-      return d[0].map(function(seg){return seg[0]||'';}).join('');
-    });
+  function attempt(left){
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},15000);
+    return fetch(url,{signal:ctrl.signal})
+      .then(function(r){clearTimeout(tid);return r.json();})
+      .then(function(d){
+        if(!d||!d[0]) throw new Error('번역 실패');
+        return d[0].map(function(seg){return seg[0]||'';}).join('');
+      })
+      .catch(function(e){
+        clearTimeout(tid);
+        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},3000);});
+        return '';
+      });
+  }
+  return attempt(1);
 }
 
 // ── Local phrasal verb detector (only shows when found, no false positives) ──
@@ -2526,7 +2536,8 @@ function checkGrammarFree(text){
 }
 
 // ── Pollinations AI: free, no key, no account ──
-// 20s timeout + 2 retries; also retries when server returns error text (200 OK but no JSON)
+// 25s timeout + 3 retries with exponential backoff; detects server error text in full response
+var _POLL_ERR=/error|timeout|timed.out|partial|rate.limit|overload|bad.gateway|unavailable|too.many/i;
 function callFreeAI(text){
   var prompt='[필수 규칙: detail 필드는 반드시 한국어로만 작성. 영어 절대 금지]\n'
     +'다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON만 반환해. 마크다운 없이:\n'
@@ -2540,24 +2551,24 @@ function callFreeAI(text){
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},20000);
+    var tid=setTimeout(function(){ctrl.abort();},25000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
-        if(!t||/error|timeout|partial/i.test(t.slice(0,120))) throw new Error('api error');
+        if(!t||_POLL_ERR.test(t)) throw new Error('api error');
         var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
         var items=JSON.parse(m[0]).grammar||[];
-        if(items.some(function(x){return /error|timeout/i.test(x.label||'');})) throw new Error('error in response');
+        if(items.some(function(x){return _POLL_ERR.test((x.label||'')+(x.detail||''));})) throw new Error('error in response');
         return items;
       })
       .catch(function(e){
         clearTimeout(tid);
-        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
+        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000*(4-left));});
         return checkGrammarFree(text);
       });
   }
-  return attempt(2);
+  return attempt(3);
 }
 
 // ── AI Pronunciation Coaching (stress · rhythm · natural phrasing) ──
@@ -2575,25 +2586,25 @@ function callPronCoach(text){
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},20000);
+    var tid=setTimeout(function(){ctrl.abort();},25000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
-        if(!t||/error|timeout|partial/i.test(t.slice(0,120))) throw new Error('api error');
+        if(!t||_POLL_ERR.test(t)) throw new Error('api error');
         var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
         var d=JSON.parse(m[0]);
         var items=Array.isArray(d.pronunciation)?d.pronunciation:[];
-        if(items.some(function(x){return /error|timeout/i.test(x.label||'');})) throw new Error('error in response');
+        if(items.some(function(x){return _POLL_ERR.test((x.label||'')+(x.detail||''));})) throw new Error('error in response');
         return items;
       })
       .catch(function(e){
         clearTimeout(tid);
-        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
+        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000*(4-left));});
         return [];
       });
   }
-  return attempt(2);
+  return attempt(3);
 }
 
 function runAIAnalysis(txt){
