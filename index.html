@@ -2526,6 +2526,7 @@ function checkGrammarFree(text){
 }
 
 // ── Pollinations AI: free, no key, no account ──
+// 20s timeout + 2 retries; also retries when server returns error text (200 OK but no JSON)
 function callFreeAI(text){
   var prompt='[필수 규칙: detail 필드는 반드시 한국어로만 작성. 영어 절대 금지]\n'
     +'다음 영어 텍스트에서 구동사·숙어·관용표현을 찾아 JSON만 반환해. 마크다운 없이:\n'
@@ -2535,19 +2536,25 @@ function callFreeAI(text){
     +'금지: 소유격·진행형·be동사 같은 기초 문법, detail에 영어 문장.\n'
     +'color: #2563EB, #7C3AED, #059669, #D97706, #DC2626, #0891B2 중 하나.\n\n'
     +'영어 텍스트:\n'+text;
-  return fetch('https://text.pollinations.ai/',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})
-  })
-  .then(function(r){if(!r.ok) return checkGrammarFree(text);return r.text();})
-  .then(function(t){
-    var m=t.match(/\{[\s\S]*\}/);
-    if(!m) return [];
-    var d=JSON.parse(m[0]);
-    return d.grammar||[];
-  })
-  .catch(function(){return checkGrammarFree(text);});
+  var opts={method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})};
+  function attempt(left){
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},20000);
+    return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
+      .then(function(r){clearTimeout(tid);return r.text();})
+      .then(function(t){
+        var m=t&&t.match(/\{[\s\S]*\}/);
+        if(!m) throw new Error('no json');
+        return JSON.parse(m[0]).grammar||[];
+      })
+      .catch(function(e){
+        clearTimeout(tid);
+        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
+        return checkGrammarFree(text);
+      });
+  }
+  return attempt(2);
 }
 
 // ── AI Pronunciation Coaching (stress · rhythm · natural phrasing) ──
@@ -2561,19 +2568,26 @@ function callPronCoach(text){
     +'③ 어색한 표현: 더 자연스러운 네이티브 대안이 있으면 제시\n'
     +'해당 없는 항목은 생략. color: #7C3AED(강세), #059669(연음), #D97706(표현) 중 선택.\n\n'
     +'영어 문장:\n'+text;
-  return fetch('https://text.pollinations.ai/',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})
-  })
-  .then(function(r){if(!r.ok) return [];return r.text();})
-  .then(function(t){
-    var m=t.match(/\{[\s\S]*\}/);
-    if(!m) return [];
-    var d=JSON.parse(m[0]);
-    return Array.isArray(d.pronunciation)?d.pronunciation:[];
-  })
-  .catch(function(){return [];});
+  var opts={method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})};
+  function attempt(left){
+    var ctrl=new AbortController();
+    var tid=setTimeout(function(){ctrl.abort();},20000);
+    return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
+      .then(function(r){clearTimeout(tid);return r.text();})
+      .then(function(t){
+        var m=t&&t.match(/\{[\s\S]*\}/);
+        if(!m) throw new Error('no json');
+        var d=JSON.parse(m[0]);
+        return Array.isArray(d.pronunciation)?d.pronunciation:[];
+      })
+      .catch(function(e){
+        clearTimeout(tid);
+        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
+        return [];
+      });
+  }
+  return attempt(2);
 }
 
 function runAIAnalysis(txt){
