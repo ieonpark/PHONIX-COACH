@@ -2544,9 +2544,12 @@ function callFreeAI(text){
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
-        var m=t&&t.match(/\{[\s\S]*\}/);
+        if(!t||/error|timeout|partial/i.test(t.slice(0,120))) throw new Error('api error');
+        var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
-        return JSON.parse(m[0]).grammar||[];
+        var items=JSON.parse(m[0]).grammar||[];
+        if(items.some(function(x){return /error|timeout/i.test(x.label||'');})) throw new Error('error in response');
+        return items;
       })
       .catch(function(e){
         clearTimeout(tid);
@@ -2576,10 +2579,13 @@ function callPronCoach(text){
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
-        var m=t&&t.match(/\{[\s\S]*\}/);
+        if(!t||/error|timeout|partial/i.test(t.slice(0,120))) throw new Error('api error');
+        var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
         var d=JSON.parse(m[0]);
-        return Array.isArray(d.pronunciation)?d.pronunciation:[];
+        var items=Array.isArray(d.pronunciation)?d.pronunciation:[];
+        if(items.some(function(x){return /error|timeout/i.test(x.label||'');})) throw new Error('error in response');
+        return items;
       })
       .catch(function(e){
         clearTimeout(tid);
