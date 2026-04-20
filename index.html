@@ -1047,20 +1047,8 @@ function wordByWordHTML(eng,phon){
   var linkSet={};
   rh.linking.forEach(function(li){linkSet[li]=true;});
 
-  // ── Full sentence pronunciation bar — words stay separate, arc shows linking ──
-  var html='<div style="background:#f8f8f8;border-radius:10px;padding:10px 14px;margin-bottom:14px">'
-    +'<div style="font-size:9px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">전체 문장 발음</div>'
-    +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;line-height:2.4">';
-  wordPhons.forEach(function(ph,i){
-    if(!ph) return;
-    html+='<span>'+phHTML(ph)+'</span>';
-    if(linkSet[i]&&wordPhons[i+1]){
-      html+='<span style="color:#FF6B35;font-size:11px;font-weight:700;line-height:1;margin:0 -3px;position:relative;top:-2px">⌒</span>';
-    }
-  });
-  html+='</div></div>';
-
   // ── Word cards ──
+  var html='';
   html+='<div style="display:flex;flex-wrap:wrap;gap:4px 14px;">';
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
@@ -1076,18 +1064,12 @@ function wordByWordHTML(eng,phon){
   });
   html+='</div>';
 
-  // ── Connected speech / reduction hints ──
+  // ── Connected speech / reduction hints (축약만, 연음 제외) ──
   var hints=[];
   rh.reductions.forEach(function(red){
     var orig=words.slice(red.at,red.at+red.len).join(' ');
     hints.push('"'+orig+'" → <b>'+red.result+'</b> 로 줄여 발음해요');
   });
-  if(rh.linking.length){
-    var linkEx=rh.linking.slice(0,3).map(function(li){
-      return '"<b>'+words[li]+'</b> '+words[li+1]+'" → 이어서 발음해요';
-    }).join('  ');
-    hints.push(linkEx);
-  }
   if(hints.length){
     html+='<div style="font-size:11px;color:#555;margin-top:0;margin-bottom:4px;background:#f8f8f8;border-radius:7px;padding:7px 12px;line-height:2;border-left:3px solid #FF6B35">'
       +hints.join('<br>')+'</div>';
@@ -2607,6 +2589,84 @@ function callPronCoach(text){
   return attempt(3);
 }
 
+// ── Drill pronunciation tip generator ──
+// Generates a real, useful tip for Korean learners based on sentence content.
+function makeDrillTip(eng){
+  var FUNC={a:1,an:1,the:1,is:1,are:1,was:1,were:1,be:1,been:1,am:1,
+    have:1,has:1,had:1,do:1,does:1,did:1,will:1,would:1,shall:1,should:1,
+    may:1,might:1,can:1,could:1,must:1,
+    i:1,you:1,he:1,she:1,it:1,we:1,they:1,me:1,him:1,her:1,us:1,them:1,
+    my:1,your:1,his:1,its:1,our:1,their:1,
+    at:1,in:1,on:1,to:1,for:1,of:1,with:1,by:1,from:1,up:1,out:1,
+    and:1,or:1,but:1,so:1,if:1,as:1,that:1,this:1,these:1,those:1};
+  var words=eng.replace(/[^a-zA-Z\s]/g,' ').trim().split(/\s+/).map(function(w){
+    return w.toLowerCase().replace(/[^a-z]/g,'');
+  }).filter(function(w){return w.length>1;});
+
+  for(var i=0;i<words.length;i++){
+    var w=words[i];
+    if(!w) continue;
+    var ph=wordPhon(w)||phonetize(w)||'';
+
+    // TH: voiced vs unvoiced
+    if(/^th/.test(w)){
+      var voicedTH={the:1,this:1,that:1,those:1,these:1,they:1,them:1,their:1,there:1,though:1,than:1,then:1,thus:1};
+      if(voicedTH[w]) return '"'+w+'" — 유성 TH: 혀를 이 사이에 살짝 대고 목소리를 내요. "ㄷ"이 아닙니다!';
+      return '"'+w+'" — 무성 TH: 혀를 이 사이에 살짝 내밀고 바람만 내보내요. 한국어에 없는 소리!';
+    }
+    // Initial R
+    if(/^r/.test(w)&&w.length>2){
+      return '"'+w+'" — R: 혀가 어디에도 닿으면 안 돼요! 입술을 살짝 둥글게 모으고 안쪽으로. "ㄹ"과 달라요.';
+    }
+    // V vs B
+    if(/^v|[aeiou]v[aeiou]/.test(w)&&!/[^a-z]/.test(w)){
+      return '"'+w+'" — V: 아랫입술을 윗니에 살짝 대고 소리내요. 입술을 완전히 붙이면 "B" 소리가 나요!';
+    }
+    // F vs P
+    if(/^f/.test(w)){
+      return '"'+w+'" — F: 윗니를 아랫입술에 가볍게 대고 바람을 내보내요. "ㅍ"처럼 입술을 모으면 P 소리!';
+    }
+    // Silent K
+    if(/^kn/.test(w)){
+      return '"'+w+'" — KN: K는 묵음! "'+ph+'"처럼 N부터 발음해요.';
+    }
+    // -tion
+    if(/tion$/.test(w)&&w.length>5){
+      return '"'+w+'" — "-tion" 끝: 항상 "shun"으로! ex) nation→NAY-shun, question→KWES-chun';
+    }
+    // -ture
+    if(/ture$/.test(w)){
+      return '"'+w+'" — "-ture" 끝: "cher"로 발음해요! nature→NAY-cher, picture→PIK-cher';
+    }
+    // Words with silent letters (would/could/should)
+    if(w==='would'||w==='could'||w==='should'){
+      return '"'+w+'" — L이 묵음! "wud/kud/shud"처럼. L을 발음하지 않아요.';
+    }
+    // W sound (lip rounding)
+    if(/^w/.test(w)&&w.length>2&&w!=='was'&&w!=='with'&&w!=='when'&&w!=='what'){
+      return '"'+w+'" — W: 입술을 동그랗게 오므렸다가 펼치며 발음해요. "ㅜ" 입 모양에서 시작!';
+    }
+    // Long words with 3+ syllables
+    if(ph&&ph.split('-').length>=3&&!FUNC[w]){
+      var syls=ph.split('-');
+      var stressIdx=syls.findIndex(function(s){return /[A-Z]{2}/.test(s);});
+      return '"'+w+'" → '+ph.toLowerCase().replace(/-/g,'·')+' ('+syls.length+'음절) — '+(stressIdx>=0?'강세: '+(stressIdx+1)+'번째 음절':'각 음절을 또렷하게');
+    }
+    // -ed ending
+    if(/[^aeiou]ed$/.test(w)&&w.length>4){
+      var b=w.slice(0,-2),last=b[b.length-1];
+      if(last==='t'||last==='d') return '"'+w+'" — -ed: 앞이 t/d면 "-id"로! "'+b+'-id"처럼 발음해요.';
+      return '"'+w+'" — -ed 결말: 앞이 무성음이면 "t", 유성음이면 "d"로만 발음해요.';
+    }
+  }
+  // Default: stress pattern
+  var content=words.filter(function(w){return !FUNC[w]&&w.length>2;});
+  if(content.length){
+    return '"'+content[0]+'" 같은 내용어는 강하고 길게, "a/the/in" 같은 기능어는 약하고 빠르게!';
+  }
+  return '내용어(명사·동사)는 강하게·길게, 기능어(관사·전치사)는 약하게·빠르게 발음해요.';
+}
+
 function runAIAnalysis(txt){
   txt=(txt||'').trim();
   if(!txt) return;
@@ -3017,7 +3077,8 @@ function render(){
     var sents=DATA[S.cat]||[];
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
-    var eng=s[0],kor=s[1],tip=s[3];
+    var eng=s[0],kor=s[1];
+    var tip=makeDrillTip(eng);
     // Fetch API phonetics for uncached words, then re-render with best quality
     var _drillUncached=[];
     eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
