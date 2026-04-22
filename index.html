@@ -968,58 +968,6 @@ function getRhythmHints(words){
   return {stressed:stressed,linking:linking,reductions:reds};
 }
 
-// ── English phonetic → Korean approximate reading ──
-function phonToKorean(ph){
-  if(!ph) return '';
-  var VOWELS=['eye','eer','air','oor','ow','oy','ay','ee','oo','er','aa','ah','aw','oh','ih','eh','uh','y'];
-  var DIPH={'eye':'아이','eer':'이어','air':'에어','oor':'우어','ow':'아우','oy':'오이','ay':'에이','y':'아이'};
-  var MONO={'ee':20,'oo':13,'er':4,'aa':0,'ah':0,'aw':8,'oh':8,'ih':20,'eh':5,'uh':4};
-  var CHO_I={'sh':9,'ch':14,'th':3,'b':7,'d':3,'f':17,'g':0,'h':18,'j':12,'k':15,'l':5,'m':6,'n':2,'p':17,'r':5,'s':9,'t':16,'v':7,'z':12};
-  var JONG_I={'b':17,'d':7,'g':1,'k':1,'l':8,'m':16,'n':4,'ng':21,'p':26,'s':19,'t':25,'z':22,'sh':19,'th':25,'ch':23,'f':26};
-  // r은 종성 ㄹ이 아니라 '알' 분리 처리 → JONG_I에서 제외
-  var CSUF={'r':'알','b':'브','d':'드','f':'프','g':'그','k':'크','l':'르','m':'므','n':'느','p':'프','s':'스','t':'트','v':'브','z':'즈','sh':'쉬','th':'스','ch':'츠','ng':'응','ts':'츠','rd':'얼드','rn':'얼ㄴ','rl':'얼ㄹ','ld':'ㄹ드','nd':'ㄴ드','nt':'ㄴ트','st':'스트','sk':'스크','kt':'크트','ft':'프트'};
-  var DIPH_J={'아이':0,'에이':5,'아우':0,'오이':8,'이어':20,'에어':5,'우어':13};
-  function hw(c,v,j){return String.fromCharCode(0xAC00+(c*21+v)*28+j);}
-  return ph.toLowerCase().split('-').map(function(syl){
-    var vi=-1,vl=0,vn='';
-    for(var i=0;i<syl.length&&vi<0;i++){
-      for(var j=0;j<VOWELS.length;j++){
-        var v=VOWELS[j];
-        if(syl.slice(i,i+v.length)===v){vi=i;vl=v.length;vn=v;break;}
-      }
-    }
-    if(vi<0) return '';
-    var onset=syl.slice(0,vi), coda=syl.slice(vi+vl);
-    var prefix='', cho=11;
-    if(onset==='w'||onset==='wh'){prefix='우';}
-    else if(onset==='y'){prefix='이';}
-    else if(CHO_I[onset]!=null){cho=CHO_I[onset];}
-    else if(onset.length>1){cho=CHO_I[onset.slice(-2)]!=null?CHO_I[onset.slice(-2)]:CHO_I[onset.slice(-1)]||11;}
-    var ds=DIPH[vn];
-    if(ds){
-      var fj=DIPH_J[ds], r=prefix;
-      if(!prefix&&cho!==11&&fj!==undefined) r+=hw(cho,fj,0)+ds.slice(1);
-      else r+=ds;
-      if(coda){var jv=JONG_I[coda]||JONG_I[coda.slice(0,2)]||JONG_I[coda[0]];r+=jv?hw(11,18,jv):CSUF[coda]||CSUF[coda.slice(0,2)]||'';}
-      return r;
-    }
-    var jung=MONO[vn]; if(jung===undefined) return '';
-    var jong=0,suffix='';
-    if(coda){
-      // r 단독 coda: 종성 ㄹ 아니라 '알' 접미사
-      if(coda==='r'){suffix='알';}
-      else if(JONG_I[coda]!==undefined){jong=JONG_I[coda];}
-      else if(coda.length>=2){
-        var jc2=JONG_I[coda.slice(0,2)],jc1=JONG_I[coda[0]];
-        jong=jc2!=null?jc2:jc1||0;
-        suffix=CSUF[jc2!=null?coda.slice(2):coda.slice(1)]||'';
-      } else {
-        suffix=CSUF[coda]||'';
-      }
-    }
-    return prefix+hw(cho,jung,jong)+suffix;
-  }).join('');
-}
 
 function wordByWordHTML(eng,phon){
   var words=eng.trim().split(/\s+/);
@@ -1112,7 +1060,6 @@ function wordByWordHTML(eng,phon){
       +'</span>'
       +(ph
         ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phHTML(ph)+'</div>'
-        +'<div style="font-size:10px;color:#FF6B35;font-family:sans-serif;letter-spacing:0.3px;line-height:1.4">'+phonToKorean(ph)+'</div>'
         :'<div style="height:20px;"></div>')
       +'</div>';
   });
