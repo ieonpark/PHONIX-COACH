@@ -975,8 +975,9 @@ function phonToKorean(ph){
   var DIPH={'eye':'아이','eer':'이어','air':'에어','oor':'우어','ow':'아우','oy':'오이','ay':'에이','y':'아이'};
   var MONO={'ee':20,'oo':13,'er':4,'aa':0,'ah':0,'aw':8,'oh':8,'ih':20,'eh':5,'uh':4};
   var CHO_I={'sh':9,'ch':14,'th':3,'b':7,'d':3,'f':17,'g':0,'h':18,'j':12,'k':15,'l':5,'m':6,'n':2,'p':17,'r':5,'s':9,'t':16,'v':7,'z':12};
-  var JONG_I={'b':17,'d':7,'g':1,'k':1,'l':8,'m':16,'n':4,'ng':21,'p':26,'r':8,'s':19,'t':25,'z':22,'sh':19,'th':25,'ch':23,'f':26};
-  var CSUF={'b':'브','d':'드','f':'프','g':'그','k':'크','l':'르','m':'므','n':'느','p':'프','r':'르','s':'스','t':'트','v':'브','z':'즈','sh':'쉬','th':'스','ch':'츠','ng':'응','ts':'츠','ld':'ㄹ드','nd':'ㄴ드','nt':'ㄴ트','st':'스트','sk':'스크','kt':'크트','ft':'프트'};
+  var JONG_I={'b':17,'d':7,'g':1,'k':1,'l':8,'m':16,'n':4,'ng':21,'p':26,'s':19,'t':25,'z':22,'sh':19,'th':25,'ch':23,'f':26};
+  // r은 종성 ㄹ이 아니라 '알' 분리 처리 → JONG_I에서 제외
+  var CSUF={'r':'알','b':'브','d':'드','f':'프','g':'그','k':'크','l':'르','m':'므','n':'느','p':'프','s':'스','t':'트','v':'브','z':'즈','sh':'쉬','th':'스','ch':'츠','ng':'응','ts':'츠','rd':'얼드','rn':'얼ㄴ','rl':'얼ㄹ','ld':'ㄹ드','nd':'ㄴ드','nt':'ㄴ트','st':'스트','sk':'스크','kt':'크트','ft':'프트'};
   var DIPH_J={'아이':0,'에이':5,'아우':0,'오이':8,'이어':20,'에어':5,'우어':13};
   function hw(c,v,j){return String.fromCharCode(0xAC00+(c*21+v)*28+j);}
   return ph.toLowerCase().split('-').map(function(syl){
@@ -1005,11 +1006,15 @@ function phonToKorean(ph){
     var jung=MONO[vn]; if(jung===undefined) return '';
     var jong=0,suffix='';
     if(coda){
-      if(JONG_I[coda]!==undefined){jong=JONG_I[coda];}
+      // r 단독 coda: 종성 ㄹ 아니라 '알' 접미사
+      if(coda==='r'){suffix='알';}
+      else if(JONG_I[coda]!==undefined){jong=JONG_I[coda];}
       else if(coda.length>=2){
         var jc2=JONG_I[coda.slice(0,2)],jc1=JONG_I[coda[0]];
         jong=jc2!=null?jc2:jc1||0;
         suffix=CSUF[jc2!=null?coda.slice(2):coda.slice(1)]||'';
+      } else {
+        suffix=CSUF[coda]||'';
       }
     }
     return prefix+hw(cho,jung,jong)+suffix;
