@@ -2534,7 +2534,7 @@ function callFreeAI(text){
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},25000);
+    var tid=setTimeout(function(){ctrl.abort();},10000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
@@ -2569,7 +2569,7 @@ function callPronCoach(text){
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},25000);
+    var tid=setTimeout(function(){ctrl.abort();},10000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
@@ -2677,8 +2677,12 @@ function runAIAnalysis(txt){
     .map(function(w){return w.replace(/[^a-z]/g,'');})
     .filter(function(w,i,arr){return w.length>1&&arr.indexOf(w)===i;});
 
-  var analysisPromise=Promise.all([translateFree(txt),callFreeAI(txt),callPronCoach(txt)])
-    .then(function(r){return {translation:r[0],grammar:r[1],pron:r[2]};});
+  var fallback={translation:'',grammar:[],pron:[]};
+  var analysisPromise=Promise.race([
+    Promise.all([translateFree(txt),callFreeAI(txt),callPronCoach(txt)])
+      .then(function(r){return {translation:r[0],grammar:r[1],pron:r[2]};}),
+    new Promise(function(res){setTimeout(function(){res(fallback);},20000);})
+  ]);
 
   Promise.all([analysisPromise,fetchPhonForWords(allWords)])
     .then(function(results){
