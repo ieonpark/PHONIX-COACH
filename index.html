@@ -969,7 +969,7 @@ function getRhythmHints(words){
 }
 
 
-function wordByWordHTML(eng,phon,korPhon){
+function wordByWordHTML(eng,phon,_showKor){
   var words=eng.trim().split(/\s+/);
   var chunks=phon?phon.split('-'):[];
 
@@ -1054,7 +1054,7 @@ function wordByWordHTML(eng,phon,korPhon){
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
-    var kp=korPhon&&korPhon[word.toLowerCase().replace(/[^a-z]/g,'')]||'';
+    var kp=(_showKor&&ph)?phonToKorean(ph):'';
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:8px;">'
       +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'
       +word+(linkSet[i]?'<span style="font-size:8px;color:#FF6B35;vertical-align:super">⌒</span>':'')
@@ -1252,7 +1252,7 @@ var S={
   rec:false,live:'',result:null,err:'',analyzing:false,recRef:null,speaking:false,
   cRec:false,cLive:'',cResult:null,cErr:'',cAnalyzing:false,cRef:null,
   savedMsg:'',
-  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiKorPhon:{},aiLoading:false,aiImgLoading:false,aiError:'',
+  aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiLoading:false,aiImgLoading:false,aiError:'',
   musicSongIdx:0,musicPlaying:false,musicLoading:false,musicPreviewUrl:'',
   homeExpanded:false,homeSubExpanded:0
 };
@@ -1547,7 +1547,7 @@ function runAnalyze(txt,target,isPractice){
 function goAnalyze(){
   stopAll();
   _startPracticeTimer();
-  set({screen:'analyze',aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],aiKorPhon:{},
+  set({screen:'analyze',aiInput:'',aiEng:'',aiKor:'',aiGrammar:[],aiPron:[],
     aiLoading:false,aiImgLoading:false,aiError:''});
 }
 function speakAI(){speakEng(S.aiEng);}
@@ -2592,43 +2592,68 @@ function callPronCoach(text){
   return attempt(3);
 }
 
-// ── AI Korean phonetic approximation (한국어 발음 표기) ──
-function callKoreanPhon(txt){
-  var prompt='다음 영어 문장의 각 단어를 한국어 발음으로 표기해줘.\n'
-    +'JSON만 반환, 마크다운 절대 없이:\n'
-    +'{"영어단어":"한국어발음",...}\n'
-    +'규칙:\n'
-    +'- 실제 영어 발음 기준 (외래어 표기법 참고)\n'
-    +'- 예: "possible"→"파써블", "market"→"마알킷", "beautiful"→"뷰러풀", "the"→"더", "is"→"이즈"\n'
-    +'- 모든 단어 포함 (기능어도 짧게)\n'
-    +'- 값은 한국어 문자열만, 영어 절대 금지\n'
-    +'영어 문장:\n'+txt;
-  var opts={method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:55,jsonMode:true})};
-  function attempt(left){
-    var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},12000);
-    return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
-      .then(function(r){clearTimeout(tid);return r.text();})
-      .then(function(t){
-        if(!t||_POLL_ERR.test(t)) throw new Error('api error');
-        var m=t.match(/\{[\s\S]*\}/);
-        if(!m) throw new Error('no json');
-        var obj=JSON.parse(m[0]);
-        var result={};
-        Object.keys(obj).forEach(function(k){
-          if(typeof obj[k]==='string'&&obj[k].length>0)
-            result[k.toLowerCase().replace(/[^a-z]/g,'')]=obj[k];
-        });
-        return result;
-      })
-      .catch(function(e){
-        clearTimeout(tid);
-        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},3000);});
-        return {};
-      });
+// ── Korean phonetic approximation from app-internal phonetic notation ──
+// Input: phonetic string like "hohm", "BYOO-tih-fuhl", "MAR-kit"
+// Output: Korean text like "홈", "뷰티펄", "말킷"
+function phonToKorean(phon){
+  if(!phon) return '';
+  var syls=phon.toLowerCase().split('-');
+  // Token list: longest match first to avoid ambiguity (sh before s, ah before a, etc.)
+  var ALL=['sh','ch','th','zh','ng','ay','ai','aw','ow','oh','ah','uh','eh','er','ee','ih','oo','oy','b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z','a'];
+  var VS={ay:1,ai:1,aw:1,ow:1,oh:1,ah:1,uh:1,eh:1,er:1,ee:1,ih:1,oo:1,oy:1,a:1};
+  function tok(s){
+    var out=[],i=0;
+    while(i<s.length){
+      var done=false;
+      for(var t=0;t<ALL.length;t++){if(s.substr(i,ALL[t].length)===ALL[t]){out.push(ALL[t]);i+=ALL[t].length;done=true;break;}}
+      if(!done)i++;
+    }
+    return out;
   }
-  return attempt(2);
+  // Jamo indices for Unicode block formula: 0xAC00 + (cho*21+jung)*28 + jong
+  var CI={ㄱ:0,ㄴ:2,ㄷ:3,ㄹ:5,ㅁ:6,ㅂ:7,ㅅ:9,ㅇ:11,ㅈ:12,ㅊ:14,ㅋ:15,ㅌ:16,ㅍ:17,ㅎ:18};
+  var VI={ㅏ:0,ㅐ:1,ㅑ:2,ㅒ:3,ㅓ:4,ㅔ:5,ㅕ:6,ㅖ:7,ㅗ:8,ㅘ:9,ㅙ:10,ㅚ:11,ㅛ:12,ㅜ:13,ㅝ:14,ㅞ:15,ㅟ:16,ㅠ:17,ㅡ:18,ㅢ:19,ㅣ:20};
+  var JI={ㄱ:1,ㄴ:4,ㄷ:7,ㄹ:8,ㅁ:16,ㅂ:17,ㅅ:19,ㅇ:21,ㅈ:22,ㅊ:23,ㅋ:24,ㅌ:25,ㅍ:26,ㅎ:27};
+  function blk(c,v,j){return String.fromCharCode(0xAC00+(((CI[c]||11)*21+(VI[v]||0))*28+(j&&JI[j]?JI[j]:0)));}
+  // Consonant → onset / coda jamo
+  var ONS={b:'ㅂ',ch:'ㅊ',d:'ㄷ',th:'ㄷ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㅋ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅍ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅌ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
+  var COD={b:'ㅂ',ch:'ㄱ',d:'ㄷ',th:'ㅅ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㄱ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅂ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅅ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
+  // Vowel → jung jamo
+  var VJ={ah:'ㅏ',a:'ㅐ',uh:'ㅓ',aw:'ㅗ',eh:'ㅔ',er:'ㅓ',ih:'ㅣ',ee:'ㅣ',oh:'ㅗ',oo:'ㅜ'};
+  // w/y + vowel → combined jung
+  var WY={'w+ah':'ㅘ','w+uh':'ㅝ','w+eh':'ㅞ','w+oh':'ㅗ','w+oo':'ㅜ','w+ih':'ㅜ','w+ee':'ㅜ','w+a':'ㅘ','w+er':'ㅝ',
+          'y+ah':'ㅑ','y+uh':'ㅕ','y+oh':'ㅛ','y+oo':'ㅠ','y+ee':'ㅣ','y+ih':'ㅣ','y+eh':'ㅖ','y+er':'ㅕ','y+a':'ㅒ','y+aw':'ㅛ'};
+  var res='';
+  for(var si=0;si<syls.length;si++){
+    var tokens=tok(syls[si]);
+    if(!tokens.length) continue;
+    var vi=-1;
+    for(var ti=0;ti<tokens.length;ti++) if(VS[tokens[ti]]){vi=ti;break;}
+    if(vi<0){
+      for(var ti=0;ti<tokens.length;ti++){var oj=ONS[tokens[ti]];if(oj)res+=blk(oj,'ㅡ',null);}
+      continue;
+    }
+    var vowel=tokens[vi], pre=tokens.slice(0,vi), post=tokens.slice(vi+1);
+    var wy=(pre.length&&(pre[pre.length-1]==='w'||pre[pre.length-1]==='y'))?pre[pre.length-1]:null;
+    var cons=wy?pre.slice(0,-1):pre;
+    // Determine vowel (jung)
+    var jung,extra='';
+    if(vowel==='ow'){jung='ㅏ';extra='우';}
+    else if(vowel==='ai'){jung='ㅏ';extra='이';}
+    else if(vowel==='ay'){jung='ㅔ';extra='이';}
+    else if(vowel==='oy'){jung='ㅗ';extra='이';}
+    else if(wy){jung=WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ';}
+    else{jung=VJ[vowel]||'ㅏ';}
+    // Extra onset consonants (all but last become 으 syllables)
+    for(var oi=0;oi<cons.length-1;oi++){var ej=ONS[cons[oi]];if(ej)res+=blk(ej,'ㅡ',null);}
+    var cho=cons.length>0?(ONS[cons[cons.length-1]]||'ㅇ'):'ㅇ';
+    // Coda: first post-vowel consonant; rest become 으 syllables
+    var coda=null,xpost=[];
+    if(post.length>0){coda=COD[post[0]]||null;xpost=post.slice(1);}
+    res+=blk(cho,jung,coda)+extra;
+    for(var xi=0;xi<xpost.length;xi++){var xj=ONS[xpost[xi]];if(xj)res+=blk(xj,'ㅡ',null);}
+  }
+  return res;
 }
 
 // ── Drill pronunciation tip generator ──
@@ -2712,7 +2737,7 @@ function makeDrillTip(eng){
 function runAIAnalysis(txt){
   txt=(txt||'').trim();
   if(!txt) return;
-  set({aiLoading:true,aiEng:txt,aiInput:txt,aiKor:'',aiGrammar:[],aiPron:[],aiKorPhon:{},aiError:''});
+  set({aiLoading:true,aiEng:txt,aiInput:txt,aiKor:'',aiGrammar:[],aiPron:[],aiError:''});
 
   var allWords=txt.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/)
     .map(function(w){return w.replace(/[^a-z]/g,'');})
@@ -2725,14 +2750,10 @@ function runAIAnalysis(txt){
     new Promise(function(res){setTimeout(function(){res(fallback);},20000);})
   ]);
 
-  var _analysisTxt=txt;
   Promise.all([analysisPromise,fetchPhonForWords(allWords)])
     .then(function(results){
       var d=results[0];
       set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[],aiPron:d.pron||[]});
-      callKoreanPhon(_analysisTxt).then(function(korPhon){
-        if(S.aiEng===_analysisTxt) set({aiKorPhon:korPhon});
-      });
     })
     .catch(function(){set({aiLoading:false,aiError:'오류. 네트워크를 확인해주세요.'});});
 }
@@ -2956,7 +2977,7 @@ function render(){
           +'<div style="font-size:14px;font-weight:700;color:#333;line-height:1.6;flex:1">'+sent+'</div>'
           +'<button onclick="speakEng(window._aiSents['+i+'])" style="flex-shrink:0;background:#f0f0f0;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:#444">▶</button>'
           +'</div>';
-        pronCard+=wordByWordHTML(sent,'',S.aiKorPhon);
+        pronCard+=wordByWordHTML(sent,'',true);
         var safeS=sent.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         pronCard+='<button onclick="_openPronInput(\'a'+i+'\',\''+safeS+'\')" '
           +'style="margin-top:10px;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;color:#555">테스트</button>'
