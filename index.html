@@ -2637,7 +2637,16 @@ function phonToKorean(phon){
     var tokens=tok(syls[si]);
     if(!tokens.length) continue;
     var vi=-1;
-    for(var ti=0;ti<tokens.length;ti++) if(VS[tokens[ti]]){vi=ti;break;}
+    for(var ti=0;ti<tokens.length;ti++){
+      if(!VS[tokens[ti]]) continue;
+      // 'y' before another real vowel → semi-vowel /j/, not /aɪ/ diphthong
+      if(tokens[ti]==='y'){
+        var nv=false;
+        for(var tj=ti+1;tj<tokens.length;tj++) if(VS[tokens[tj]]&&tokens[tj]!=='y'){nv=true;break;}
+        if(nv) continue;
+      }
+      vi=ti; break;
+    }
     if(vi<0){
       for(var ti=0;ti<tokens.length;ti++){var oj=ONS[tokens[ti]];if(oj)res+=blk(oj,'ㅡ',null);}
       continue;
@@ -2658,12 +2667,15 @@ function phonToKorean(phon){
       if(OPEN[post[0]]!==undefined){xpost=post;}
       else{coda=COD[post[0]]||null; xpost=post.slice(1);}
     }
+    var rawCons=cons.length>0?cons[cons.length-1]:null;
     // Build Korean block(s)
     if(DIPH[vowel]){
       var d=(wy&&WY_DIPH[wy+'+'+vowel])?WY_DIPH[wy+'+'+vowel]:DIPH[vowel];
       res+=blk(cho,d.v1,null)+blk('ㅇ',d.v2,coda);
     } else {
-      var jung=wy?(WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ'):(VJ[vowel]||'ㅏ');
+      // sh/ch + u → ㅕ palatalization (shun→션, chun→천)
+      var palU=!wy&&vowel==='u'&&(rawCons==='sh'||rawCons==='ch');
+      var jung=wy?(WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ'):(palU?'ㅕ':(VJ[vowel]||'ㅏ'));
       res+=blk(cho,jung,coda);
     }
     // Remaining post consonants as open syllables
