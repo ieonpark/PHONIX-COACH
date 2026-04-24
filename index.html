@@ -2598,9 +2598,9 @@ function callPronCoach(text){
 function phonToKorean(phon){
   if(!phon) return '';
   var syls=phon.toLowerCase().split('-');
-  // Token list: longest match first to avoid ambiguity (sh before s, ah before a, etc.)
-  var ALL=['sh','ch','th','zh','ng','ay','ai','aw','ow','oh','ah','uh','eh','er','ee','ih','oo','oy','b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z','a'];
-  var VS={ay:1,ai:1,aw:1,ow:1,oh:1,ah:1,uh:1,eh:1,er:1,ee:1,ih:1,oo:1,oy:1,a:1};
+  // Token list: longest match first (sh before s, ah before a, ih before i, etc.)
+  var ALL=['sh','ch','th','zh','ng','ay','ai','aw','ow','oh','ah','uh','eh','er','ee','ih','oo','oy','b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z','a','i','u','e','o'];
+  var VS={ay:1,ai:1,aw:1,ow:1,oh:1,ah:1,uh:1,eh:1,er:1,ee:1,ih:1,oo:1,oy:1,a:1,i:1,u:1,e:1,o:1};
   function tok(s){
     var out=[],i=0;
     while(i<s.length){
@@ -2615,14 +2615,13 @@ function phonToKorean(phon){
   var VI={ㅏ:0,ㅐ:1,ㅑ:2,ㅒ:3,ㅓ:4,ㅔ:5,ㅕ:6,ㅖ:7,ㅗ:8,ㅘ:9,ㅙ:10,ㅚ:11,ㅛ:12,ㅜ:13,ㅝ:14,ㅞ:15,ㅟ:16,ㅠ:17,ㅡ:18,ㅢ:19,ㅣ:20};
   var JI={ㄱ:1,ㄴ:4,ㄷ:7,ㄹ:8,ㅁ:16,ㅂ:17,ㅅ:19,ㅇ:21,ㅈ:22,ㅊ:23,ㅋ:24,ㅌ:25,ㅍ:26,ㅎ:27};
   function blk(c,v,j){return String.fromCharCode(0xAC00+(((CI[c]||11)*21+(VI[v]||0))*28+(j&&JI[j]?JI[j]:0)));}
-  // Consonant → onset / coda jamo
   var ONS={b:'ㅂ',ch:'ㅊ',d:'ㄷ',th:'ㄷ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㅋ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅍ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅌ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
   var COD={b:'ㅂ',ch:'ㄱ',d:'ㄷ',th:'ㅅ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㄱ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅂ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅅ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
-  // Vowel → jung jamo
-  var VJ={ah:'ㅏ',a:'ㅐ',uh:'ㅓ',aw:'ㅗ',eh:'ㅔ',er:'ㅓ',ih:'ㅣ',ee:'ㅣ',oh:'ㅗ',oo:'ㅜ'};
-  // w/y + vowel → combined jung
-  var WY={'w+ah':'ㅘ','w+uh':'ㅝ','w+eh':'ㅞ','w+oh':'ㅗ','w+oo':'ㅜ','w+ih':'ㅜ','w+ee':'ㅜ','w+a':'ㅘ','w+er':'ㅝ',
-          'y+ah':'ㅑ','y+uh':'ㅕ','y+oh':'ㅛ','y+oo':'ㅠ','y+ee':'ㅣ','y+ih':'ㅣ','y+eh':'ㅖ','y+er':'ㅕ','y+a':'ㅒ','y+aw':'ㅛ'};
+  var VJ={ah:'ㅏ',a:'ㅐ',uh:'ㅓ',aw:'ㅗ',eh:'ㅔ',er:'ㅓ',ih:'ㅣ',ee:'ㅣ',oh:'ㅗ',oo:'ㅜ',i:'ㅣ',u:'ㅜ',e:'ㅔ',o:'ㅗ'};
+  var WY={'w+ah':'ㅘ','w+uh':'ㅝ','w+eh':'ㅞ','w+oh':'ㅗ','w+oo':'ㅜ','w+ih':'ㅜ','w+ee':'ㅜ','w+a':'ㅘ','w+er':'ㅝ','w+u':'ㅜ','w+e':'ㅞ','w+i':'ㅜ','w+o':'ㅗ',
+          'y+ah':'ㅑ','y+uh':'ㅕ','y+oh':'ㅛ','y+oo':'ㅠ','y+ee':'ㅣ','y+ih':'ㅣ','y+eh':'ㅖ','y+er':'ㅕ','y+a':'ㅒ','y+aw':'ㅛ','y+i':'ㅣ','y+u':'ㅠ','y+e':'ㅖ','y+o':'ㅛ'};
+  // Diphthong split: first-part vowel / second-part vowel
+  var DIPH={ow:{v1:'ㅏ',v2:'ㅜ'},ai:{v1:'ㅏ',v2:'ㅣ'},ay:{v1:'ㅔ',v2:'ㅣ'},oy:{v1:'ㅗ',v2:'ㅣ'}};
   var res='';
   for(var si=0;si<syls.length;si++){
     var tokens=tok(syls[si]);
@@ -2636,21 +2635,19 @@ function phonToKorean(phon){
     var vowel=tokens[vi], pre=tokens.slice(0,vi), post=tokens.slice(vi+1);
     var wy=(pre.length&&(pre[pre.length-1]==='w'||pre[pre.length-1]==='y'))?pre[pre.length-1]:null;
     var cons=wy?pre.slice(0,-1):pre;
-    // Determine vowel (jung)
-    var jung,extra='';
-    if(vowel==='ow'){jung='ㅏ';extra='우';}
-    else if(vowel==='ai'){jung='ㅏ';extra='이';}
-    else if(vowel==='ay'){jung='ㅔ';extra='이';}
-    else if(vowel==='oy'){jung='ㅗ';extra='이';}
-    else if(wy){jung=WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ';}
-    else{jung=VJ[vowel]||'ㅏ';}
-    // Extra onset consonants (all but last become 으 syllables)
+    // Extra onset consonants (all but last → 으 syllables)
     for(var oi=0;oi<cons.length-1;oi++){var ej=ONS[cons[oi]];if(ej)res+=blk(ej,'ㅡ',null);}
     var cho=cons.length>0?(ONS[cons[cons.length-1]]||'ㅇ'):'ㅇ';
-    // Coda: first post-vowel consonant; rest become 으 syllables
-    var coda=null,xpost=[];
-    if(post.length>0){coda=COD[post[0]]||null;xpost=post.slice(1);}
-    res+=blk(cho,jung,coda)+extra;
+    var coda=post.length>0?(COD[post[0]]||null):null;
+    var xpost=post.length>0?post.slice(1):[];
+    if(DIPH[vowel]){
+      // Diphthong: split into two blocks; coda goes on the SECOND block
+      var d=DIPH[vowel];
+      res+=blk(cho,d.v1,null)+blk('ㅇ',d.v2,coda);
+    } else {
+      var jung=wy?(WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ'):(VJ[vowel]||'ㅏ');
+      res+=blk(cho,jung,coda);
+    }
     for(var xi=0;xi<xpost.length;xi++){var xj=ONS[xpost[xi]];if(xj)res+=blk(xj,'ㅡ',null);}
   }
   return res;
