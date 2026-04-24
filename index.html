@@ -2593,14 +2593,15 @@ function callPronCoach(text){
 }
 
 // ── Korean phonetic approximation from app-internal phonetic notation ──
-// Input: phonetic string like "hohm", "BYOO-tih-fuhl", "MAR-kit"
-// Output: Korean text like "홈", "뷰티펄", "말킷"
+// Input: phonetic string like "hohm", "BYOO-tih-fuhl", "RYT"
+// Output: Korean text like "홈", "뷰티펄", "라잇"
 function phonToKorean(phon){
   if(!phon) return '';
   var syls=phon.toLowerCase().split('-');
-  // Token list: longest match first (sh before s, ah before a, ih before i, etc.)
-  var ALL=['sh','ch','th','zh','ng','ay','ai','aw','ow','oh','ah','uh','eh','er','ee','ih','oo','oy','b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z','a','i','u','e','o'];
-  var VS={ay:1,ai:1,aw:1,ow:1,oh:1,ah:1,uh:1,eh:1,er:1,ee:1,ih:1,oo:1,oy:1,a:1,i:1,u:1,e:1,o:1};
+  // 'eye' before 'e', multi-char tokens before single-char (longest match first)
+  var ALL=['eye','sh','ch','th','zh','ng','ay','ai','aw','ow','oh','ah','uh','eh','er','ee','ih','oo','oy','b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z','a','i','u','e','o'];
+  // VS: vowel tokens (y = /aɪ/ diphthong in vowel position, e.g. RYT, TYM, HY)
+  var VS={eye:1,ay:1,ai:1,aw:1,ow:1,oh:1,ah:1,uh:1,eh:1,er:1,ee:1,ih:1,oo:1,oy:1,a:1,i:1,u:1,e:1,o:1,y:1};
   function tok(s){
     var out=[],i=0;
     while(i<s.length){
@@ -2610,18 +2611,27 @@ function phonToKorean(phon){
     }
     return out;
   }
-  // Jamo indices for Unicode block formula: 0xAC00 + (cho*21+jung)*28 + jong
   var CI={ㄱ:0,ㄴ:2,ㄷ:3,ㄹ:5,ㅁ:6,ㅂ:7,ㅅ:9,ㅇ:11,ㅈ:12,ㅊ:14,ㅋ:15,ㅌ:16,ㅍ:17,ㅎ:18};
   var VI={ㅏ:0,ㅐ:1,ㅑ:2,ㅒ:3,ㅓ:4,ㅔ:5,ㅕ:6,ㅖ:7,ㅗ:8,ㅘ:9,ㅙ:10,ㅚ:11,ㅛ:12,ㅜ:13,ㅝ:14,ㅞ:15,ㅟ:16,ㅠ:17,ㅡ:18,ㅢ:19,ㅣ:20};
   var JI={ㄱ:1,ㄴ:4,ㄷ:7,ㄹ:8,ㅁ:16,ㅂ:17,ㅅ:19,ㅇ:21,ㅈ:22,ㅊ:23,ㅋ:24,ㅌ:25,ㅍ:26,ㅎ:27};
   function blk(c,v,j){return String.fromCharCode(0xAC00+(((CI[c]||11)*21+(VI[v]||0))*28+(j&&JI[j]?JI[j]:0)));}
   var ONS={b:'ㅂ',ch:'ㅊ',d:'ㄷ',th:'ㄷ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㅋ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅍ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅌ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
-  var COD={b:'ㅂ',ch:'ㄱ',d:'ㄷ',th:'ㅅ',f:'ㅍ',g:'ㄱ',h:'ㅎ',j:'ㅈ',k:'ㄱ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅂ',r:'ㄹ',s:'ㅅ',sh:'ㅅ',t:'ㅅ',v:'ㅂ',z:'ㅈ',zh:'ㅈ'};
+  var COD={k:'ㄱ',l:'ㄹ',m:'ㅁ',n:'ㄴ',ng:'ㅇ',p:'ㅂ',r:'ㄹ',t:'ㅅ'};
   var VJ={ah:'ㅏ',a:'ㅐ',uh:'ㅓ',aw:'ㅗ',eh:'ㅔ',er:'ㅓ',ih:'ㅣ',ee:'ㅣ',oh:'ㅗ',oo:'ㅜ',i:'ㅣ',u:'ㅜ',e:'ㅔ',o:'ㅗ'};
-  var WY={'w+ah':'ㅘ','w+uh':'ㅝ','w+eh':'ㅞ','w+oh':'ㅗ','w+oo':'ㅜ','w+ih':'ㅜ','w+ee':'ㅜ','w+a':'ㅘ','w+er':'ㅝ','w+u':'ㅜ','w+e':'ㅞ','w+i':'ㅜ','w+o':'ㅗ',
-          'y+ah':'ㅑ','y+uh':'ㅕ','y+oh':'ㅛ','y+oo':'ㅠ','y+ee':'ㅣ','y+ih':'ㅣ','y+eh':'ㅖ','y+er':'ㅕ','y+a':'ㅒ','y+aw':'ㅛ','y+i':'ㅣ','y+u':'ㅠ','y+e':'ㅖ','y+o':'ㅛ'};
-  // Diphthong split: first-part vowel / second-part vowel
-  var DIPH={ow:{v1:'ㅏ',v2:'ㅜ'},ai:{v1:'ㅏ',v2:'ㅣ'},ay:{v1:'ㅔ',v2:'ㅣ'},oy:{v1:'ㅗ',v2:'ㅣ'}};
+  // w/y semi-vowel + plain vowel → combined jung
+  var WY={
+    'w+ah':'ㅘ','w+uh':'ㅝ','w+eh':'ㅞ','w+oh':'ㅗ','w+oo':'ㅜ','w+ih':'ㅟ','w+ee':'ㅟ','w+a':'ㅘ','w+er':'ㅝ','w+u':'ㅝ','w+e':'ㅞ','w+i':'ㅟ','w+o':'ㅗ','w+aw':'ㅝ',
+    'y+ah':'ㅑ','y+uh':'ㅕ','y+oh':'ㅛ','y+oo':'ㅠ','y+ee':'ㅣ','y+ih':'ㅣ','y+eh':'ㅖ','y+er':'ㅕ','y+a':'ㅒ','y+aw':'ㅛ','y+i':'ㅣ','y+u':'ㅠ','y+e':'ㅖ','y+o':'ㅛ'
+  };
+  // Diphthong vowels: split into 2 Korean syllables (coda goes on 2nd block)
+  var DIPH={ow:{v1:'ㅏ',v2:'ㅜ'},ai:{v1:'ㅏ',v2:'ㅣ'},ay:{v1:'ㅔ',v2:'ㅣ'},oy:{v1:'ㅗ',v2:'ㅣ'},eye:{v1:'ㅏ',v2:'ㅣ'},y:{v1:'ㅏ',v2:'ㅣ'}};
+  // w/y prefix on diphthong modifies first-block vowel
+  var WY_DIPH={
+    'w+ow':{v1:'ㅘ',v2:'ㅜ'},'w+ai':{v1:'ㅘ',v2:'ㅣ'},'w+ay':{v1:'ㅞ',v2:'ㅣ'},'w+y':{v1:'ㅘ',v2:'ㅣ'},
+    'y+ow':{v1:'ㅑ',v2:'ㅜ'},'y+ai':{v1:'ㅑ',v2:'ㅣ'},'y+ay':{v1:'ㅖ',v2:'ㅣ'},'y+y':{v1:'ㅑ',v2:'ㅣ'}
+  };
+  // Consonants that become open (으/이) syllables as coda instead of batchim
+  var OPEN={z:'ㅡ',v:'ㅡ',s:'ㅡ',d:'ㅡ',b:'ㅡ',g:'ㅡ',f:'ㅡ',th:'ㅡ',sh:'ㅣ',ch:'ㅣ',zh:'ㅣ',j:'ㅡ'};
   var res='';
   for(var si=0;si<syls.length;si++){
     var tokens=tok(syls[si]);
@@ -2633,22 +2643,34 @@ function phonToKorean(phon){
       continue;
     }
     var vowel=tokens[vi], pre=tokens.slice(0,vi), post=tokens.slice(vi+1);
+    // Deduplicate adjacent identical consonants in post (e.g. "ss","ll" → one)
+    var pd=[];
+    for(var pi=0;pi<post.length;pi++){if(!pd.length||post[pi]!==pd[pd.length-1])pd.push(post[pi]);}
+    post=pd;
     var wy=(pre.length&&(pre[pre.length-1]==='w'||pre[pre.length-1]==='y'))?pre[pre.length-1]:null;
     var cons=wy?pre.slice(0,-1):pre;
-    // Extra onset consonants (all but last → 으 syllables)
+    // Extra onset consonants
     for(var oi=0;oi<cons.length-1;oi++){var ej=ONS[cons[oi]];if(ej)res+=blk(ej,'ㅡ',null);}
     var cho=cons.length>0?(ONS[cons[cons.length-1]]||'ㅇ'):'ㅇ';
-    var coda=post.length>0?(COD[post[0]]||null):null;
-    var xpost=post.length>0?post.slice(1):[];
+    // Coda: only natural batchim consonants (m,n,ng,l,r,k,p,t); rest become open syllables
+    var coda=null, xpost=[];
+    if(post.length>0){
+      if(OPEN[post[0]]!==undefined){xpost=post;}
+      else{coda=COD[post[0]]||null; xpost=post.slice(1);}
+    }
+    // Build Korean block(s)
     if(DIPH[vowel]){
-      // Diphthong: split into two blocks; coda goes on the SECOND block
-      var d=DIPH[vowel];
+      var d=(wy&&WY_DIPH[wy+'+'+vowel])?WY_DIPH[wy+'+'+vowel]:DIPH[vowel];
       res+=blk(cho,d.v1,null)+blk('ㅇ',d.v2,coda);
     } else {
       var jung=wy?(WY[wy+'+'+vowel]||VJ[vowel]||'ㅏ'):(VJ[vowel]||'ㅏ');
       res+=blk(cho,jung,coda);
     }
-    for(var xi=0;xi<xpost.length;xi++){var xj=ONS[xpost[xi]];if(xj)res+=blk(xj,'ㅡ',null);}
+    // Remaining post consonants as open syllables
+    for(var xi=0;xi<xpost.length;xi++){
+      var xc=xpost[xi],xj=ONS[xc];
+      if(xj) res+=blk(xj,OPEN[xc]!==undefined?OPEN[xc]:'ㅡ',null);
+    }
   }
   return res;
 }
