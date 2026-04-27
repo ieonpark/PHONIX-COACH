@@ -156,7 +156,7 @@ var PH={
   "may":"may","might":"myt","must":"must","need":"NEED",
   "go":"GOH","going":"GOH-ing","gone":"GON","went":"WENT",
   "come":"KUHM","coming":"KUHM-ing","came":"KAYM",
-  "get":"GET","getting":"GET-ing","got":"GAHT","gotten":"GAHT-un",
+  "get":"GET","getting":"GEH-ding","got":"GAHT","gotten":"GAHT-un",
   "make":"MAYK","making":"MAY-king","made":"MAYD",
   "take":"TAYK","taking":"TAY-king","took":"TUK","taken":"TAY-kun",
   "give":"GIV","giving":"GIV-ing","gave":"GAYV","given":"GIV-un",
@@ -209,17 +209,17 @@ var PH={
   "important":"im-PORT-unt","different":"DIF-rent","same":"SAYM","other":"UH-dher",
   "last":"LAST","first":"FERST","next":"NEKST","few":"FYOO","many":"MEN-ee",
   "much":"MUHCH","more":"MOR","most":"MOHST","less":"LES","least":"LEEST",
-  "better":"BEH-ter","best":"BEST","sure":"SHOR","ready":"RED-ee",
+  "better":"BEH-der","best":"BEST","sure":"SHOR","ready":"RED-ee",
   "possible":"POS-ih-bul","clear":"KLEER","free":"FREE","full":"FUL",
   "early":"ER-lee","late":"LAYT","recent":"REE-sunt","main":"MAYN","whole":"HOHL",
   "time":"TYM","day":"DAY","year":"YEER","way":"WAY","man":"MAN","woman":"WOO-mun",
   "people":"PEE-pul","thing":"THING","place":"PLAYS","case":"KAYS",
   "week":"WEEK","month":"MUHNTH","night":"NYT","home":"HOHM","hand":"HAND",
   "life":"LYF","world":"WERLD","part":"PART","house":"HOWS",
-  "room":"ROOM","money":"MUHN-ee","book":"BUK","water":"WAW-ter",
+  "room":"ROOM","money":"MUHN-ee","book":"BUK","water":"WAW-der",
   "food":"FOOD","door":"DOR","table":"TAY-bul","phone":"FOHN","plan":"PLAN",
   "car":"KAR","bus":"BUHS","train":"TRAYN","flight":"FLYT","hotel":"hoh-TEL",
-  "office":"AW-fis","school":"SKOOL","city":"SIT-ee","country":"KUHN-tree",
+  "office":"AW-fis","school":"SKOOL","city":"SIH-dee","country":"KUHN-tree",
   "company":"KUHM-puh-nee","team":"TEEM","meeting":"MEET-ing","report":"rih-PORT",
   "project":"PROJ-ekt","issue":"ISH-oo","point":"POYNT","question":"KWES-chun",
   "answer":"AN-ser","problem":"PROB-lum","decision":"dih-SIH-zhun",
@@ -339,7 +339,7 @@ var PH={
   "sea":"SEE","ocean":"OH-shun","river":"RIH-ver","tree":"TREE","trees":"TREEZ",
   "earth":"ERTH","ground":"GROWND","road":"ROHD","path":"PATH","bridge":"BRIJ",
   "father":"FAH-dher","mother":"MUH-dher","brother":"BRUH-dher","sister":"SIS-ter",
-  "son":"SUHN","daughter":"DAW-ter","friend":"FREND","friends":"FRENZ",
+  "son":"SUHN","daughter":"DAW-der","friend":"FREND","friends":"FRENZ",
   "love":"LUHV","loved":"LUHVD","loving":"LUHV-ing",
   "heart":"HART","soul":"SOHL","mind":"MYND","body":"BAH-dee","breath":"BRETH",
   "voice":"VOYS","eyes":"EYZ","eye":"EY","face":"FAYS","head":"HED",
@@ -415,7 +415,7 @@ var PH={
   "create":"kree-AYT","created":"kree-AY-tid",
   "relate":"rih-LAYT","related":"rih-LAY-tid",
   "minute":"MIN-it","second":"SEK-und","moment":"MOH-munt",
-  "pretty":"PRIT-ee","heavy":"HEV-ee","ready":"RED-ee","steady":"STED-ee",
+  "pretty":"PRIH-dee","heavy":"HEV-ee","ready":"RED-ee","steady":"STED-ee",
   "body":"BAH-dee","copy":"KAH-pee","happy":"HAP-ee","carry":"KAR-ee",
   "early":"ER-lee","clearly":"KLEER-lee","nearly":"NEER-lee",
   "behind":"bih-HYND","beyond":"bee-OND","beside":"bih-SYD",
@@ -903,6 +903,8 @@ function phonetize(w){
   p=p.replace(/tch/g,'ch').replace(/ck/g,'k').replace(/ph/g,'f');
   p=p.replace(/gh/g,'').replace(/kn/g,'n').replace(/wr/g,'r');
   p=p.replace(/qu/g,'kw').replace(/wh/g,'w').replace(/mb$/g,'m');
+  // American flap: /t/ between vowels → /d/ (better→베더, water→워더, pretty→프리디)
+  p=p.replace(/([aeiouy])tt?([aeiouy])/g,'$1d$2');
   p=p.replace(/u/g,'uh');
   p=p.replace(/c([eiy])/g,'s$1').replace(/c/g,'k');
   p=p.replace(/g([ei])/g,'j$1').replace(/x/g,'ks');
