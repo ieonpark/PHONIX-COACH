@@ -142,7 +142,7 @@ var PH={
   "you":"yuh","your":"yer","youre":"YER","youll":"YUL","youve":"YUV",
   "he":"hee","him":"him","his":"hiz","she":"shee","her":"her",
   "we":"wee","us":"uhs","our":"owr","ours":"OWRZ",
-  "they":"dhay","them":"dhuhm","their":"dhehr",
+  "they":"dhay","them":"dhuhm","their":"dheh-er",
   "who":"hoo","whom":"hoom","whose":"hooz","which":"wich","what":"WUHT","that":"dhat",
   "the":"dhuh","a":"uh","an":"un","this":"dhiss","these":"dheez","those":"dhohz",
   "some":"SUHM","any":"EN-ee","no":"noh","all":"AWL","each":"EECH","every":"EV-ree",
@@ -188,13 +188,13 @@ var PH={
   "between":"bih-TWEEN","without":"widh-OWT","within":"wih-DHIN","under":"UHN-der",
   "over":"OH-ver","around":"uh-ROWND",
   "and":"and","but":"buht","or":"or","so":"soh","if":"if","as":"az",
-  "because":"bih-KUZ","while":"WYL","when":"wen","where":"wair","how":"HOW","why":"WY",
+  "because":"bih-KUZ","while":"WYL","when":"wen","where":"weh-er","how":"HOW","why":"WY",
   "whether":"WEH-dher","unless":"un-LES","since":"SINS","until":"un-TIL","though":"DHOH",
   "not":"NAHT","yes":"YES","well":"WEL","just":"JUHST",
   "also":"AWL-soh","very":"VER-ee","really":"REE-lee","quite":"KWYT",
-  "still":"STIL","now":"NOW","then":"THEN","here":"HEER","there":"dhehr",
+  "still":"STIL","now":"NOW","then":"THEN","here":"HEER","there":"dheh-er",
   "too":"TOO","only":"OHN-lee","even":"EE-vun","already":"awl-RED-ee",
-  "always":"AWL-wayz","never":"NEV-er","often":"AW-fun","sometimes":"SUHM-tymz",
+  "always":"AWL-wayz","never":"NEH-ver","often":"AW-fun","sometimes":"SUHM-tymz",
   "maybe":"MAY-bee","please":"PLEEZ","again":"uh-GEN","back":"BAK","away":"uh-WAY",
   "together":"tuh-GEH-dher","probably":"PROB-uh-blee","actually":"AK-choo-uh-lee",
   "exactly":"ig-ZAKT-lee","especially":"uh-SPESH-uh-lee","completely":"kum-PLEET-lee",
@@ -209,7 +209,7 @@ var PH={
   "important":"im-PORT-unt","different":"DIF-rent","same":"SAYM","other":"UH-dher",
   "last":"LAST","first":"FERST","next":"NEKST","few":"FYOO","many":"MEN-ee",
   "much":"MUHCH","more":"MOR","most":"MOHST","less":"LES","least":"LEEST",
-  "better":"BET-er","best":"BEST","sure":"SHOR","ready":"RED-ee",
+  "better":"BEH-ter","best":"BEST","sure":"SHOR","ready":"RED-ee",
   "possible":"POS-ih-bul","clear":"KLEER","free":"FREE","full":"FUL",
   "early":"ER-lee","late":"LAYT","recent":"REE-sunt","main":"MAYN","whole":"HOHL",
   "time":"TYM","day":"DAY","year":"YEER","way":"WAY","man":"MAN","woman":"WOO-mun",
@@ -242,7 +242,7 @@ var PH={
   "total":"TOH-tul","complete":"kum-PLEET","direct":"dih-REKT","recent":"REE-sunt",
   "further":"FER-dher","similar":"SIM-ih-ler","available":"uh-VAY-luh-bul",
   "likely":"LYK-lee","rather":"RAH-dher","provide":"pruh-VYD","include":"in-KLOOD",
-  "consider":"kun-SID-er","require":"rih-KWYR","report":"rih-PORT","support":"suh-PORT",
+  "consider":"KUHN-SIH-der","require":"rih-KWYR","report":"rih-PORT","support":"suh-PORT",
   "follow":"FOL-oh","allow":"uh-LOW","create":"kree-AYT","become":"bih-KUHM",
   "show":"SHOH","move":"MOOV","play":"PLAY","live":"LIV","believe":"bih-LEEV",
   "hold":"HOHLD","bring":"BRING","happen":"HAP-un","write":"RYT","provide":"pruh-VYD",
@@ -313,7 +313,7 @@ var PH={
   "cards":"KARDZ","card":"KARD","show":"SHOH","shows":"SHOHZ",
   "like":"LYK","likes":"LYKS","liked":"LYKT",
   "take":"TAYK","takes":"TAYKS","make":"MAYK","makes":"MAYKS",
-  "shes":"SHEEZ","hes":"HEEZ","theyre":"dhehr","weve":"WEEV",
+  "shes":"SHEEZ","hes":"HEEZ","theyre":"dheh-er","weve":"WEEV",
   "theyve":"DHAYV","wouldnt":"WUD-nt","couldnt":"KUD-nt",
   "didnt":"DID-nt","doesnt":"DUZ-nt","isnt":"IZ-nt","arent":"AR-nt",
   "cant":"KAANT","wont":"WOHNT","dont":"DOHNT","lets":"LETS",
@@ -336,7 +336,7 @@ var PH={
   // ── Everyday / Nature words (commonly missing) ──
   "sun":"SUHN","moon":"MOON","star":"STAR","stars":"STARZ","sky":"SKY",
   "snow":"SNOH","rain":"RAYN","wind":"WIND","fire":"FY-er","cloud":"KLOWD","clouds":"KLOWDZ",
-  "sea":"SEE","ocean":"OH-shun","river":"RIV-er","tree":"TREE","trees":"TREEZ",
+  "sea":"SEE","ocean":"OH-shun","river":"RIH-ver","tree":"TREE","trees":"TREEZ",
   "earth":"ERTH","ground":"GROWND","road":"ROHD","path":"PATH","bridge":"BRIJ",
   "father":"FAH-dher","mother":"MUH-dher","brother":"BRUH-dher","sister":"SIS-ter",
   "son":"SUHN","daughter":"DAW-ter","friend":"FREND","friends":"FRENZ",
@@ -2668,6 +2668,8 @@ function phonToKorean(phon){
       if(OPEN[post[0]]!==undefined){xpost=post;}
       else{coda=COD[post[0]]||null; xpost=post.slice(1);}
     }
+    // Word-final 'er' → add ㄹ batchim (mother→머덜, there→데얼)
+    if(si===syls.length-1&&vowel==='er'&&coda===null&&xpost.length===0){coda='ㄹ';}
     var rawCons=cons.length>0?cons[cons.length-1]:null;
     // Build Korean block(s)
     if(DIPH[vowel]){
