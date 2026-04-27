@@ -1057,7 +1057,8 @@ function wordByWordHTML(eng,phon,_showKor){
   words.forEach(function(word,i){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
-    var kp=(_showKor&&ph)?(S.aiKorPhon&&S.aiKorPhon[norm(word)])||phonToKorean(ph):'';
+    var aiKp=S.aiKorPhon&&S.aiKorPhon[norm(word)];
+    var kp=(_showKor&&ph)?aiKp||phonToKorean(ph):'';
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:8px;">'
       +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'
       +word+(linkSet[i]?'<span style="font-size:8px;color:#FF6B35;vertical-align:super">⌒</span>':'')
@@ -1065,7 +1066,7 @@ function wordByWordHTML(eng,phon,_showKor){
       +(ph
         ?'<div style="background:#f0f0f0;border-radius:5px;padding:2px 7px;white-space:nowrap;line-height:1.6">'+phHTML(ph)+'</div>'
         :'<div style="height:20px;"></div>')
-      +(kp?'<div style="font-size:10px;color:#e05080;font-weight:600;white-space:nowrap;margin-top:1px">'+kp+'</div>':'')
+      +(kp?'<div style="font-size:10px;color:'+(aiKp?'#2563EB':'#e05080')+';font-weight:600;white-space:nowrap;margin-top:1px">'+kp+'</div>':'')
       +'</div>';
   });
   html+='</div>';
@@ -2620,8 +2621,16 @@ function callKoreanPhonAI(words){
       .then(function(t){
         var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
-        var result=JSON.parse(m[0]).p||{};
-        Object.keys(result).forEach(function(w){if(result[w]) localStorage.setItem('kphAI_'+w.toLowerCase(),result[w]);});
+        var raw=JSON.parse(m[0]).p||{};
+        // Normalize keys to lowercase so lookup always matches
+        var result={};
+        Object.keys(raw).forEach(function(w){
+          if(raw[w]){
+            var k=w.toLowerCase().replace(/[^a-z]/g,'');
+            result[k]=raw[w];
+            localStorage.setItem('kphAI_'+k,raw[w]);
+          }
+        });
         return Object.assign(cached,result);
       })
       .catch(function(){
