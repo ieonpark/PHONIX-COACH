@@ -2560,22 +2560,34 @@ function callFreeAI(text){
   return attempt(3);
 }
 
-// ── AI Pronunciation Coaching (stress · rhythm · natural phrasing) ──
-function callPronCoach(text){
+// ── AI Pronunciation Coaching + Korean phonetics (merged to avoid 429) ──
+function callPronCoach(text, words){
+  // Check localStorage cache for each word
+  var uncached=[],phonCached={};
+  (words||[]).forEach(function(w){
+    var c=localStorage.getItem('kphAI_'+w);
+    if(c){phonCached[w]=c;} else {uncached.push(w);}
+  });
+  var needPhon=uncached.length>0;
   var prompt='한국인 영어 학습자를 위해 아래 영어 문장의 발음·강세·리듬·연음을 코칭해줘.\n'
     +'JSON만 반환, 마크다운 없이:\n'
-    +'{"pronunciation":[{"icon":"이모지","label":"코칭 제목","color":"#hex","detail":"한국어 설명 (구체적 예시 포함)"}]}\n'
+    +'{"pronunciation":[{"icon":"이모지","label":"코칭 제목","color":"#hex","detail":"한국어 설명 (구체적 예시 포함)"}]'
+    +(needPhon?',"phonetics":[{"word":"영어단어","kor":"한국어발음"}]':'')
+    +'}\n'
     +'코칭 기준 (가장 중요한 것 최대 3개):\n'
     +'① 문장 강세: 어떤 단어가 강하게/약하게? 실제 발화 예시와 함께\n'
     +'② 연음·리듬: "pick_it_up"처럼 이어 발음하는 부분, 축약형 (gonna/wanna/hafta 등)\n'
     +'③ 어색한 표현: 더 자연스러운 네이티브 대안이 있으면 제시\n'
-    +'해당 없는 항목은 생략. color: #7C3AED(강세), #059669(연음), #D97706(표현) 중 선택.\n\n'
-    +'영어 문장:\n'+text;
+    +'해당 없는 항목은 생략. color: #7C3AED(강세), #059669(연음), #D97706(표현) 중 선택.\n'
+    +(needPhon
+      ?'\n[한국어 발음 표기 규칙] 모음 사이 t→ㄷ(better→베더,water→워더,city→시디), 유성 th→ㄷ(the→더,this→디스), 무성 th→ㅅ(think→씽크), 어말-er→얼(mother→머덜), r→ㄹ, v→ㅂ\n발음 표기할 단어: '+uncached.join(', ')+'\n'
+      :'')
+    +'\n영어 문장:\n'+text;
   var opts={method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:77,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},10000);
+    var tid=setTimeout(function(){ctrl.abort();},15000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
@@ -2585,71 +2597,24 @@ function callPronCoach(text){
         var d=JSON.parse(m[0]);
         var items=Array.isArray(d.pronunciation)?d.pronunciation:[];
         if(items.some(function(x){return _POLL_ERR.test((x.label||'')+(x.detail||''));})) throw new Error('error in response');
-        return items;
+        // Extract Korean phonetics if returned
+        var phonMap=Object.assign({},phonCached);
+        if(Array.isArray(d.phonetics)){
+          d.phonetics.forEach(function(item){
+            var k=(item.word||'').toLowerCase().replace(/[^a-z]/g,'');
+            var v=item.kor||'';
+            if(k&&v){phonMap[k]=v;localStorage.setItem('kphAI_'+k,v);}
+          });
+        }
+        return {pron:items,phonMap:phonMap};
       })
       .catch(function(e){
         clearTimeout(tid);
         if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000*(4-left));});
-        return [];
+        return {pron:[],phonMap:phonCached};
       });
   }
   return attempt(3);
-}
-
-// ── Korean phonetics via Pollinations AI (free, no key) ──
-function callKoreanPhonAI(words){
-  if(!words||!words.length) return Promise.resolve({});
-  var needed=[],cached={};
-  words.forEach(function(w){
-    var c=localStorage.getItem('kphAI_'+w);
-    if(c){cached[w]=c;} else {needed.push(w);}
-  });
-  console.log('[KorPhonAI] needed=',needed.length,'cached=',Object.keys(cached).length);
-  if(!needed.length) return Promise.resolve(cached);
-  // Use same array format as callFreeAI (known to work with Pollinations)
-  var prompt='다음 영어 단어들의 미국식 한국어 발음 표기를 JSON으로 반환해. 마크다운 없이:\n'
-    +'{"phonetics":[{"word":"better","kor":"베더"},{"word":"water","kor":"워더"}]}\n'
-    +'규칙: 모음 사이 t→ㄷ(water→워더,better→베더,city→시디,pretty→프리디), '
-    +'유성 th→ㄷ(the→더,this→디스,that→댓), 무성 th→ㅅ(think→씽크,three→스리), '
-    +'어말 -er→얼(mother→머덜,better→베더), r→ㄹ, v→ㅂ, f→ㅍ\n\n'
-    +'단어: '+needed.join(', ');
-  var opts={method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:99,jsonMode:true})};
-  function attempt(left){
-    var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},15000);
-    return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
-      .then(function(r){clearTimeout(tid);return r.text();})
-      .then(function(t){
-        console.log('[KorPhonAI] raw:',t.slice(0,400));
-        var m=t.match(/\{[\s\S]*\}/);
-        if(!m) throw new Error('no json');
-        var parsed=JSON.parse(m[0]);
-        var result={};
-        // Support both array format [{word,kor}] and object format {word:kor}
-        var list=parsed.phonetics||parsed.p||parsed.words||parsed.pronunciations||[];
-        if(Array.isArray(list)){
-          list.forEach(function(item){
-            var k=(item.word||item.english||'').toLowerCase().replace(/[^a-z]/g,'');
-            var v=item.kor||item.korean||item.pronunciation||'';
-            if(k&&v){result[k]=v;localStorage.setItem('kphAI_'+k,v);}
-          });
-        } else if(list&&typeof list==='object'){
-          Object.keys(list).forEach(function(w){
-            if(list[w]){var k=w.toLowerCase().replace(/[^a-z]/g,'');result[k]=list[w];localStorage.setItem('kphAI_'+k,list[w]);}
-          });
-        }
-        console.log('[KorPhonAI] got',Object.keys(result).length,'words:',Object.keys(result).slice(0,5));
-        return Object.assign(cached,result);
-      })
-      .catch(function(e){
-        clearTimeout(tid);
-        console.log('[KorPhonAI] fail (left='+left+'):',e&&e.message);
-        if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
-        return cached;
-      });
-  }
-  return attempt(2);
 }
 
 // ── Korean phonetic approximation from app-internal phonetic notation ──
@@ -2842,22 +2807,22 @@ function runAIAnalysis(txt){
 
   var fallback={translation:'',grammar:[],pron:[]};
   var analysisPromise=Promise.race([
-    Promise.all([translateFree(txt),callFreeAI(txt),callPronCoach(txt)])
-      .then(function(r){return {translation:r[0],grammar:r[1],pron:r[2]};}),
+    Promise.all([translateFree(txt),callFreeAI(txt),callPronCoach(txt,allWords)])
+      .then(function(r){
+        var pronResult=r[2]||{};
+        return {translation:r[0],grammar:r[1],pron:pronResult.pron||[],phonMap:pronResult.phonMap||{}};
+      }),
     new Promise(function(res){setTimeout(function(){res(fallback);},20000);})
   ]);
 
   Promise.all([analysisPromise,fetchPhonForWords(allWords)])
     .then(function(results){
       var d=results[0];
-      set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[],aiPron:d.pron||[]});
+      var phonMap=d.phonMap||{};
+      set({aiLoading:false,aiKor:d.translation||'',aiGrammar:d.grammar||[],aiPron:d.pron||[],
+        aiKorPhon:Object.keys(phonMap).length?phonMap:S.aiKorPhon});
     })
     .catch(function(){set({aiLoading:false,aiError:'오류. 네트워크를 확인해주세요.'});});
-
-  // AI Korean phonetics (non-blocking, updates when ready)
-  callKoreanPhonAI(allWords).then(function(phMap){
-    if(phMap&&Object.keys(phMap).length) set({aiKorPhon:phMap});
-  });
 }
 
 function ocrImage(input){
