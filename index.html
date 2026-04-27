@@ -1058,7 +1058,7 @@ function wordByWordHTML(eng,phon,_showKor){
     var ph=wordPhons[i]||'';
     var hasStress=ph&&/[A-Z]{2,}/.test(ph);
     var aiKp=S.aiKorPhon&&S.aiKorPhon[norm(word)];
-    var kp=(_showKor&&ph)?aiKp||phonToKorean(ph):'';
+    var kp=(_showKor&&ph)?aiKp||'':'';
     html+='<div style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:8px;">'
       +'<span style="font-size:15px;font-weight:'+(hasStress?'800':'500')+';color:'+(hasStress?'#111':'#444')+'">'
       +word+(linkSet[i]?'<span style="font-size:8px;color:#FF6B35;vertical-align:super">⌒</span>':'')
@@ -2604,25 +2604,27 @@ function callKoreanPhonAI(words){
     var c=localStorage.getItem('kphAI_'+w);
     if(c){cached[w]=c;} else {needed.push(w);}
   });
+  console.log('[KorPhonAI] needed=',needed.length,'cached=',Object.keys(cached).length);
   if(!needed.length) return Promise.resolve(cached);
-  var prompt='아래 영어 단어들의 한국어 발음을 표기해줘. 미국식 발음 기준.\n'
-    +'규칙: ①모음 사이 t→ㄷ(water→워더,better→베더,city→시디) '
-    +'②유성 th→ㄷ(the→더,this→디스) ③무성 th→ㅅ(think→씽크) '
-    +'④어말 -er→얼(mother→머덜,butter→버덜) ⑤r→ㄹ ⑥v→ㅂ\n'
-    +'JSON만 반환:\n{"p":{"word":"한국어"}}\n\n'
-    +'단어: '+needed.join(' ');
+  var prompt='Write the Korean pronunciation (한글) for each English word in American English.\n'
+    +'Rules: intervocalic t/tt→ㄷ (better→베더, water→워더, city→시디, pretty→프리디); '
+    +'voiced th→ㄷ (the→더, this→디스, that→댓); unvoiced th→ㅅ (think→씽크, three→스리); '
+    +'final -er→얼 (mother→머덜, better→베더); r→ㄹ; v→ㅂ; f→ㅍ.\n'
+    +'Return JSON only, no markdown:\n'
+    +'{"p":{"word":"한글","word2":"한글2"}}\n\n'
+    +'Words: '+needed.join(', ');
   var opts={method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:42,jsonMode:true})};
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:99,jsonMode:true})};
   function attempt(left){
     var ctrl=new AbortController();
-    var tid=setTimeout(function(){ctrl.abort();},12000);
+    var tid=setTimeout(function(){ctrl.abort();},15000);
     return fetch('https://text.pollinations.ai/',Object.assign({},opts,{signal:ctrl.signal}))
       .then(function(r){clearTimeout(tid);return r.text();})
       .then(function(t){
+        console.log('[KorPhonAI] raw response:',t.slice(0,300));
         var m=t.match(/\{[\s\S]*\}/);
         if(!m) throw new Error('no json');
         var raw=JSON.parse(m[0]).p||{};
-        // Normalize keys to lowercase so lookup always matches
         var result={};
         Object.keys(raw).forEach(function(w){
           if(raw[w]){
@@ -2631,10 +2633,12 @@ function callKoreanPhonAI(words){
             localStorage.setItem('kphAI_'+k,raw[w]);
           }
         });
+        console.log('[KorPhonAI] parsed',Object.keys(result).length,'words');
         return Object.assign(cached,result);
       })
-      .catch(function(){
+      .catch(function(e){
         clearTimeout(tid);
+        console.log('[KorPhonAI] error (left='+left+'):',e&&e.message);
         if(left>0) return new Promise(function(ok){setTimeout(function(){ok(attempt(left-1));},2000);});
         return cached;
       });
