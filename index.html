@@ -1677,11 +1677,11 @@ function _buildSongPickerHTML(){
     +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===1?'#fff':'#1a1a1a')+'">30초 프리뷰</div>'
     +'<div style="font-size:9px;color:'+(_musicTab===1?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">Spotify · 25곡</div>'
     +'</button>'
-    +'<button onclick="_musicTab=0;_musicPage=0;_rebuildSongPicker()" style="border:2px solid '+(_musicTab===0?'#1a1a1a':'#e8e8e8')+';border-radius:14px;padding:13px 8px;background:'+(_musicTab===0?'#1a1a1a':'#fff')+';cursor:pointer;text-align:center">'
-    +'<div style="font-size:18px;margin-bottom:4px">🎶</div>'
-    +'<div style="font-size:12px;font-weight:700;color:'+(_musicTab===0?'#fff':'#1a1a1a')+'">Full Version</div>'
-    +'<div style="font-size:9px;color:'+(_musicTab===0?'rgba(255,255,255,.5)':'#aaa')+';margin-top:2px">SoundCloud</div>'
-    +'</button>'
+    +'<div style="border:2px solid #e8e8e8;border-radius:14px;padding:13px 8px;background:#f5f5f5;text-align:center;opacity:.5">'
+    +'<div style="font-size:18px;margin-bottom:4px">🔒</div>'
+    +'<div style="font-size:12px;font-weight:700;color:#aaa">Full Version</div>'
+    +'<div style="font-size:9px;color:#bbb;margin-top:2px">준비 중</div>'
+    +'</div>'
     +'</div>';
   // ── 하단 곡 목록 ──
   var filtered=MUSIC_DATA.map(function(s,i){return{s:s,idx:i};}).filter(function(x){
@@ -2412,7 +2412,7 @@ function goMusic(tab){
   _timingOffset=0;
   _musicOpenAll=false;
   _calIdx=0;_calTimes=[];
-  _musicTab=(tab!==undefined)?tab:1;
+  _musicTab=1;
   _musicPage=0;
   if(_spotifyController){try{_spotifyController.destroy();}catch(e){}_spotifyController=null;}
   if(_musicAudio){try{_musicAudio.pause();}catch(e){}_musicAudio=null;}
@@ -2804,8 +2804,8 @@ function render(){
       +'<div style="font-size:24px;margin-bottom:10px">🎙</div>'
       +'<div style="font-weight:700;font-size:12px;color:#fff;line-height:1.4">원어민 귀에<br>내 영어가 어떻게<br>들리는지</div>'
       +'<div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.7">'
-      +'<span style="color:rgba(255,255,255,.4)">나:</span> I went to <i>de</i> store<br>'
-      +'<span style="color:rgba(255,255,255,.4)">원어민:</span> I went to <i>the</i> store'
+      +'<span style="color:rgba(255,255,255,.4)">나:</span> What the rate for a round trip<br>'
+      +'<span style="color:rgba(255,255,255,.4)">원어민:</span> What\'s the right for lound trap'
       +'</div>'
       +'</div>'
       +'<div onclick="goAnalyze()" style="background:#1a1a1a;border-radius:18px;padding:20px 16px;cursor:pointer">'
@@ -2813,7 +2813,7 @@ function render(){
       +'<div style="font-weight:700;font-size:12px;color:#fff;line-height:1.4">실질적으로<br>어떻게 발음해야<br>하는지</div>'
       +'<div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.7">'
       +'<span style="color:rgba(255,255,255,.4)">내 문장:</span> I want to go<br>'
-      +'<span style="color:rgba(255,255,255,.4)">실질적 발음:</span> 아이 워너 고우'
+      +'<span style="color:rgba(255,255,255,.4)">실질적 발음:</span> I wanna go'
       +'</div>'
       +'</div>'
       +'</div>'
