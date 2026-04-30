@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="200" fill="#1a1a1a"/>
+
+  <!-- Subtle grid dots (decorative) -->
+  <circle cx="180" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="320" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="460" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="564" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="704" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="844" cy="180" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="180" cy="280" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="320" cy="280" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="844" cy="280" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="180" cy="844" r="6" fill="#ffffff" opacity="0.07"/>
+  <circle cx="844" cy="844" r="6" fill="#ffffff" opacity="0.07"/>
+
+  <!-- Main word: "this" -->
+  <text
+    x="512"
+    y="490"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="260"
+    font-weight="700"
+    fill="#ffffff"
+    letter-spacing="-8"
+  >this</text>
+
+  <!-- Pronunciation: [dis] in orange -->
+  <text
+    x="512"
+    y="640"
+    text-anchor="middle"
+    font-family="'Courier New', Courier, monospace"
+    font-size="160"
+    font-weight="400"
+    fill="#FF6B35"
+    letter-spacing="4"
+  >[dis]</text>
+
+  <!-- Bottom label: PhonixCoach small -->
+  <text
+    x="512"
+    y="840"
+    text-anchor="middle"
+    font-family="Georgia, serif"
+    font-size="52"
+    font-weight="400"
+    fill="#ffffff"
+    opacity="0.3"
+    letter-spacing="6"
+  >PHONIX COACH</text>
+</svg>
