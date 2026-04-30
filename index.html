@@ -2592,81 +2592,27 @@ function callPronCoach(text){
 
 // ── Drill pronunciation tip generator ──
 // Generates a real, useful tip for Korean learners based on sentence content.
-function makeDrillTip(eng){
-  var FUNC={a:1,an:1,the:1,is:1,are:1,was:1,were:1,be:1,been:1,am:1,
-    have:1,has:1,had:1,do:1,does:1,did:1,will:1,would:1,shall:1,should:1,
-    may:1,might:1,can:1,could:1,must:1,
-    i:1,you:1,he:1,she:1,it:1,we:1,they:1,me:1,him:1,her:1,us:1,them:1,
-    my:1,your:1,his:1,its:1,our:1,their:1,
-    at:1,in:1,on:1,to:1,for:1,of:1,with:1,by:1,from:1,up:1,out:1,
-    and:1,or:1,but:1,so:1,if:1,as:1,that:1,this:1,these:1,those:1};
-  var words=eng.replace(/[^a-zA-Z\s]/g,' ').trim().split(/\s+/).map(function(w){
-    return w.toLowerCase().replace(/[^a-z]/g,'');
-  }).filter(function(w){return w.length>1;});
-
-  // Check content words first so common function words (the/this/that) don't dominate
-  for(var i=0;i<words.length;i++){
-    var w=words[i];
-    if(!w||FUNC[w]) continue;
-    var ph=wordPhon(w)||phonetize(w)||'';
-
-    // TH: only for non-trivial TH words
-    if(/^th/.test(w)&&w!=='the'&&w!=='this'&&w!=='that'&&w!=='they'&&w!=='them'&&w!=='their'&&w!=='there'&&w!=='these'&&w!=='those'){
-      var voicedTH={though:1,than:1,then:1,thus:1};
-      if(voicedTH[w]) return '"'+w+'" — 유성 TH: 혀를 이 사이에 살짝 대고 목소리를 내요. "ㄷ"이 아닙니다!';
-      return '"'+w+'" — 무성 TH: 혀를 이 사이에 살짝 내밀고 바람만 내보내요. 한국어에 없는 소리!';
-    }
-    // Initial R
-    if(/^r/.test(w)&&w.length>2){
-      return '"'+w+'" — R: 혀가 어디에도 닿으면 안 돼요! 입술을 살짝 둥글게 모으고 안쪽으로. "ㄹ"과 달라요.';
-    }
-    // V vs B
-    if(/^v|[aeiou]v[aeiou]/.test(w)&&!/[^a-z]/.test(w)){
-      return '"'+w+'" — V: 아랫입술을 윗니에 살짝 대고 소리내요. 입술을 완전히 붙이면 "B" 소리가 나요!';
-    }
-    // F vs P
-    if(/^f/.test(w)){
-      return '"'+w+'" — F: 윗니를 아랫입술에 가볍게 대고 바람을 내보내요. "ㅍ"처럼 입술을 모으면 P 소리!';
-    }
-    // Silent K
-    if(/^kn/.test(w)){
-      return '"'+w+'" — KN: K는 묵음! "'+ph+'"처럼 N부터 발음해요.';
-    }
-    // -tion
-    if(/tion$/.test(w)&&w.length>5){
-      return '"'+w+'" — "-tion" 끝: 항상 "shun"으로! ex) nation→NAY-shun, question→KWES-chun';
-    }
-    // -ture
-    if(/ture$/.test(w)){
-      return '"'+w+'" — "-ture" 끝: "cher"로 발음해요! nature→NAY-cher, picture→PIK-cher';
-    }
-    // Words with silent letters (would/could/should)
-    if(w==='would'||w==='could'||w==='should'){
-      return '"'+w+'" — L이 묵음! "wud/kud/shud"처럼. L을 발음하지 않아요.';
-    }
-    // W sound (lip rounding)
-    if(/^w/.test(w)&&w.length>2&&w!=='was'&&w!=='with'&&w!=='when'&&w!=='what'){
-      return '"'+w+'" — W: 입술을 동그랗게 오므렸다가 펼치며 발음해요. "ㅜ" 입 모양에서 시작!';
-    }
-    // Long words with 3+ syllables
-    if(ph&&ph.split('-').length>=3){
-      var syls=ph.split('-');
-      var stressIdx=syls.findIndex(function(s){return /[A-Z]{2}/.test(s);});
-      return '"'+w+'" → '+ph.toLowerCase().replace(/-/g,'·')+' ('+syls.length+'음절) — '+(stressIdx>=0?'강세: '+(stressIdx+1)+'번째 음절':'각 음절을 또렷하게');
-    }
-    // -ed ending
-    if(/[^aeiou]ed$/.test(w)&&w.length>4){
-      var b=w.slice(0,-2),last=b[b.length-1];
-      if(last==='t'||last==='d') return '"'+w+'" — -ed: 앞이 t/d면 "-id"로! "'+b+'-id"처럼 발음해요.';
-      return '"'+w+'" — -ed 결말: 앞이 무성음이면 "t", 유성음이면 "d"로만 발음해요.';
-    }
-  }
-  // Default: stress pattern
-  var content=words.filter(function(w){return !FUNC[w]&&w.length>2;});
-  if(content.length){
-    return '"'+content[0]+'" 같은 내용어는 강하고 길게, "a/the/in" 같은 기능어는 약하고 빠르게!';
-  }
-  return '내용어(명사·동사)는 강하게·길게, 기능어(관사·전치사)는 약하게·빠르게 발음해요.';
+var _drillTipCache={};
+function fetchDrillTip(eng){
+  if(_drillTipCache[eng]!==undefined) return;
+  _drillTipCache[eng]='';
+  var prompt='한국인 영어 학습자를 위해 다음 문장에서 가장 중요한 발음 포인트 1개를 알려줘.\n'
+    +'규칙: 한국어로, 한 문장, 이 문장에 실제로 있는 단어/표현 기준으로만. 일반론 금지.\n'
+    +'예시 형식: "\'water\'의 t는 튕기는 소리라 실제로는 \'워러\'처럼 들려요"\n'
+    +'영어 문장: '+eng;
+  var ctrl=new AbortController();
+  var tid=setTimeout(function(){ctrl.abort();},10000);
+  fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:99}),signal:ctrl.signal})
+    .then(function(r){clearTimeout(tid);return r.text();})
+    .then(function(t){
+      t=(t||'').trim().replace(/^["']|["']$/g,'');
+      if(t&&!_POLL_ERR.test(t)){
+        _drillTipCache[eng]=t;
+        if(S.screen==='practice'&&S.cat){var sents=DATA[S.cat]||[];var s=sents[S.idx];if(s&&s[0]===eng)render();}
+      }
+    })
+    .catch(function(){clearTimeout(tid);});
 }
 
 function runAIAnalysis(txt){
@@ -3080,7 +3026,8 @@ function render(){
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
     var eng=s[0],kor=s[1];
-    var tip=makeDrillTip(eng);
+    var tip=_drillTipCache[eng]||'';
+    if(!tip) fetchDrillTip(eng);
     // Fetch API phonetics for uncached words, then re-render with best quality
     var _drillUncached=[];
     eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
@@ -3101,7 +3048,7 @@ function render(){
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
       +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">발음 팁</div>'
-      +'<div style="font-size:12px;padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid '+cat.color+';color:#555;line-height:1.6;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'+tip+'</div>'
+      +'<div style="font-size:12px;padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid '+cat.color+';color:'+(tip?'#555':'#bbb')+';line-height:1.6;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'+(tip||'분석 중...')+'</div>'
       +'<button onclick="speakIt()" style="background:'+(S.speaking?'#059669':'#1a1a1a')+';color:#fff;border:none;border-radius:11px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">'+(S.speaking?'▶ 재생 중...':'▶ 원어민 발음 듣기')+'</button>'
       +'</div>';
 
