@@ -2592,27 +2592,143 @@ function callPronCoach(text){
 
 // ── Drill pronunciation tip generator ──
 // Generates a real, useful tip for Korean learners based on sentence content.
-var _drillTipCache={};
-function fetchDrillTip(eng){
-  if(_drillTipCache[eng]!==undefined) return;
-  _drillTipCache[eng]='';
-  var prompt='한국인 영어 학습자를 위해 다음 문장에서 가장 중요한 발음 포인트 1개를 알려줘.\n'
-    +'규칙: 한국어로, 한 문장, 이 문장에 실제로 있는 단어/표현 기준으로만. 일반론 금지.\n'
-    +'예시 형식: "\'water\'의 t는 튕기는 소리라 실제로는 \'워러\'처럼 들려요"\n'
-    +'영어 문장: '+eng;
-  var ctrl=new AbortController();
-  var tid=setTimeout(function(){ctrl.abort();},10000);
-  fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],model:'openai',seed:99}),signal:ctrl.signal})
-    .then(function(r){clearTimeout(tid);return r.text();})
-    .then(function(t){
-      t=(t||'').trim().replace(/^["']|["']$/g,'');
-      if(t&&!_POLL_ERR.test(t)){
-        _drillTipCache[eng]=t;
-        if(S.screen==='practice'&&S.cat){var sents=DATA[S.cat]||[];var s=sents[S.idx];if(s&&s[0]===eng)render();}
-      }
-    })
-    .catch(function(){clearTimeout(tid);});
+function makeDrillTip(eng){
+  var words=eng.replace(/[^a-zA-Z\s']/g,' ').trim().split(/\s+/).map(function(w){
+    return w.toLowerCase().replace(/[^a-z]/g,'');
+  }).filter(function(w){return w.length>1;});
+
+  var candidates=[];
+
+  // Flap T (t between vowels → 튕기는 소리)
+  var FLAP={water:'"water" — 중간 t는 튕기는 소리. "워터"가 아니라 "워러"처럼 들려요.',
+    better:'"better" — tt는 튕기는 소리. 실제로 "베러"에 가깝게 들려요.',
+    butter:'"butter" — tt 튕기는 소리. "버터"가 아니라 "버러"예요.',
+    little:'"little" — tt 튕기는 소리. "리틀"이 아니라 "리를"처럼요.',
+    bottle:'"bottle" — tt 튕기는 소리. "바틀"이 아니라 "바를"에 가까워요.',
+    getting:'"getting" — tt 튕기는 소리. "게팅"이 아니라 "게링"처럼 들려요.',
+    putting:'"putting" — tt 튕기는 소리. "풋팅"이 아니라 "푸링"에 가까워요.',
+    waiting:'"waiting" — t 튕기는 소리. "웨이팅"이 아니라 "웨이링"이에요.',
+    eating:'"eating" — t 튕기는 소리. "이팅"이 아니라 "이링"처럼 들려요.',
+    meeting:'"meeting" — t 튕기는 소리. "미팅"이 아니라 "미링"에 가까워요.',
+    city:'"city" — t 튕기는 소리. "시티"가 아니라 "시리"처럼 들려요.',
+    pretty:'"pretty" — tt 튕기는 소리. "프리티"가 아니라 "프리리"에 가까워요.',
+    twenty:'"twenty" — t 튕기는 소리. "투웬티"가 아니라 "투웨니"처럼 들려요.',
+    total:'"total" — 두 번째 t 튕기는 소리. "토탈"이 아니라 "토를"에 가까워요.'};
+
+  // Connected speech / reduction
+  var REDUCTIONS={
+    'want to':'"want to" — 연음으로 "워너"처럼 들려요. "원투"가 아니에요!',
+    'going to':'"going to" — 빠르게 "거너"처럼 들려요. "고잉투"라고 하면 어색해요.',
+    'have to':'"have to" — 연음으로 "해프타"처럼 들려요.',
+    'has to':'"has to" — "해스타"처럼 이어서 발음해요.',
+    'got to':'"got to" — "가라"처럼 연음돼요. "gotta"로 쓰기도 해요.',
+    'out of':'"out of" — "아우럽"처럼 이어서 발음해요.',
+    'kind of':'"kind of" — "카인덥"처럼 빠르게 줄여요.',
+    'sort of':'"sort of" — "쏘럽"처럼 줄여서 발음해요.',
+    'a lot of':'"a lot of" — "얼라럽"처럼 이어서 들려요.',
+    'used to':'"used to" — "유스타"처럼 연음돼요.',
+    'supposed to':'"supposed to" — "서포스타"처럼 줄여서 발음해요.'
+  };
+
+  var engLower=eng.toLowerCase();
+  for(var phrase in REDUCTIONS){
+    if(engLower.indexOf(phrase)>=0){candidates.push({p:10,t:REDUCTIONS[phrase]});}
+  }
+
+  for(var i=0;i<words.length;i++){
+    var w=words[i];
+    if(!w||w.length<2) continue;
+    var ph=wordPhon(w)||phonetize(w)||'';
+
+    // Flap T — 높은 우선순위
+    if(FLAP[w]){candidates.push({p:9,t:FLAP[w]});continue;}
+
+    // L vs R 구별 (한국인에게 어려운 단어)
+    if(/[rl]/.test(w)&&/[rl].*[rl]/.test(w)){
+      candidates.push({p:8,t:'"'+w+'" — L과 R이 같이 있어요! L은 혀끝을 윗잇몸에 붙이고, R은 혀가 어디에도 닿지 않아요.'});
+    } else if(/^r/.test(w)&&w.length>2&&w!=='really'&&w!=='right'&&w!=='run'){
+      candidates.push({p:7,t:'"'+w+'" — R은 혀를 어디에도 닿지 않게! 입술을 살짝 오므리면서 "ㄹ"이 아닌 소리를 내요.'});
+    } else if(/^r/.test(w)){
+      candidates.push({p:6,t:'"'+w+'" — R: "ㄹ"로 발음하면 원어민이 못 알아들어요. 혀를 뒤로 말고 입술을 살짝 둥글게!'});
+    }
+
+    // V vs B
+    if(/^v/.test(w)){
+      candidates.push({p:8,t:'"'+w+'" — V는 "ㅂ"이 아니에요! 윗니를 아랫입술에 살짝 대고 바람을 내보내요.'});}
+    if(/[aeiou]v[aeiou]/.test(w)&&w!=='have'&&w!=='give'&&w!=='live'){
+      candidates.push({p:7,t:'"'+w+'" — 중간 V 주의! 윗니를 아랫입술에 대고 "ㅂ"이 아닌 V 소리를 내야 해요.'});}
+
+    // F vs P
+    if(/^f/.test(w)){
+      candidates.push({p:8,t:'"'+w+'" — F는 "ㅍ"이 아니에요! 윗니를 아랫입술에 가볍게 대고 바람만 내보내요.'});}
+
+    // TH — 흔한 단어 제외
+    var commonTH={the:1,this:1,that:1,they:1,them:1,their:1,there:1,these:1,those:1,then:1,than:1};
+    if(/^th/.test(w)&&!commonTH[w]){
+      var voiced={though:1,thus:1,therefore:1,thereby:1,thereof:1};
+      if(voiced[w]) candidates.push({p:8,t:'"'+w+'" — 유성 TH: 혀끝을 윗니 사이에 살짝 끼우고 목소리를 내요.'});
+      else candidates.push({p:8,t:'"'+w+'" — 무성 TH: 혀끝을 윗니 사이에 끼우고 바람만 내보내요. "ㄷ/ㅅ"이 아니에요!'});
+    }
+
+    // Z sound
+    if(/^z/.test(w)||/[aeiou]z[aeiou]/.test(w)){
+      candidates.push({p:7,t:'"'+w+'" — Z는 "ㅈ"이 아니에요! "ㅅ"에 목소리를 더한 울리는 소리예요.'});}
+
+    // Silent letters
+    if(/^kn/.test(w)) candidates.push({p:9,t:'"'+w+'" — K는 묵음! "'+ph.toLowerCase()+'"처럼 N부터 발음해요.'});
+    if(/^wr/.test(w)) candidates.push({p:9,t:'"'+w+'" — W는 묵음! "'+ph.toLowerCase()+'"처럼 R부터 발음해요.'});
+    if(/^gn/.test(w)) candidates.push({p:9,t:'"'+w+'" — G는 묵음! N부터 발음해요.'});
+    if(w==='would'||w==='could'||w==='should') candidates.push({p:9,t:'"'+w+'" — L이 묵음! "'+{would:'wud',could:'kud',should:'shud'}[w]+'"처럼 발음해요.'});
+    if(w==='know'||w==='knew'||w==='known') candidates.push({p:9,t:'"'+w+'" — K는 묵음! "노우/뉴/노운"처럼 발음해요.'});
+    if(w==='knife'||w==='knight') candidates.push({p:9,t:'"'+w+'" — K는 묵음! "나이프/나이트"처럼 발음해요.'});
+
+    // -tion / -sion
+    if(/tion$/.test(w)&&w.length>5) candidates.push({p:8,t:'"'+w+'" — "-tion"은 항상 "shun"! "'+ph.toLowerCase().split('-').slice(-1)[0]+'"처럼 발음해요.'});
+    if(/sion$/.test(w)&&w.length>5){
+      if(/[aeiou]sion$/.test(w)) candidates.push({p:8,t:'"'+w+'" — "-sion"은 "zhun"! 목소리 있는 소리예요.'});
+      else candidates.push({p:8,t:'"'+w+'" — "-sion"은 "shun"으로 발음해요.'});
+    }
+
+    // -ture
+    if(/ture$/.test(w)) candidates.push({p:8,t:'"'+w+'" — "-ture"는 "cher"로 발음! "'+w.replace(/ture$/,'cher')+'"처럼요.'});
+
+    // -ed 발음
+    if(/[^aeiou]ed$/.test(w)&&w.length>4){
+      var base=w.slice(0,-2),last=base[base.length-1];
+      if(last==='t'||last==='d') candidates.push({p:8,t:'"'+w+'" — -ed: 앞이 t/d라서 "-id"로 발음해요. "'+base+'-id"처럼요.'});
+      else if('pbkgfvszʃʒtʃ'.indexOf(last)>=0||'p k f s ch sh'.split(' ').some(function(x){return base.endsWith(x);}))
+        candidates.push({p:7,t:'"'+w+'" — -ed: 무성음 뒤라서 "t"로만 발음해요. "'+base+'t"처럼 들려요.'});
+      else candidates.push({p:7,t:'"'+w+'" — -ed: 유성음 뒤라서 "d"로만 발음해요. "'+base+'d"처럼 들려요.'});
+    }
+
+    // W 입술 모양
+    if(/^w/.test(w)&&w.length>3&&!{was:1,with:1,when:1,what:1,will:1,well:1,went:1,were:1,which:1}[w]){
+      candidates.push({p:5,t:'"'+w+'" — W: 입술을 "ㅜ" 모양으로 오므렸다 펼치며 발음해요.'});}
+
+    // 다음절 강세
+    if(ph&&ph.split('-').length>=3){
+      var syls=ph.split('-');
+      var si=syls.findIndex(function(s){return /[A-Z]{2}/.test(s);});
+      if(si>=0) candidates.push({p:6,t:'"'+w+'" — '+syls.length+'음절, '+(si+1)+'번째 음절에 강세! "'+ph.toLowerCase().replace(/-/g,'·')+'"처럼 읽어요.'});
+    }
+
+    // Schwa (약모음 /ə/) — 기능어
+    var SCHWA={about:'"about" — 첫 음절 "a"는 약하게 "어"처럼. "어바웃"이에요.',
+      again:'"again" — 첫 음절은 약한 "어". "어겐"처럼요.',
+      around:'"around" — 첫 음절은 약한 "어". "어라운드"예요.',
+      support:'"support" — 첫 음절은 약한 "어". "서포트"가 아닌 "서"로 약하게!',
+      today:'"today" — to는 약하게 "터". "투데이"가 아니라 "터데이"처럼 들려요.',
+      tomorrow:'"tomorrow" — to는 약하게 "터". "투마로우"가 아니라 "터마로우"예요.',
+      together:'"together" — to는 약하게 "터". "투게더"가 아니라 "터게더"예요.',
+      because:'"because" — be는 약하게 "비". "비커즈"처럼 첫 음절을 짧게요.',
+      before:'"before" — be는 약하게 "비". "비포어"처럼 짧게요.',
+      above:'"above" — "어버브"처럼 첫 음절을 약하게.'};
+    if(SCHWA[w]) candidates.push({p:7,t:SCHWA[w]});
+  }
+
+  if(!candidates.length) return '내용어(명사·동사)는 강하게·길게, 기능어(관사·전치사)는 약하게·빠르게 발음해요.';
+  candidates.sort(function(a,b){return b.p-a.p;});
+  return candidates[0].t;
 }
 
 function runAIAnalysis(txt){
@@ -3026,8 +3142,7 @@ function render(){
     var s=sents[S.idx];
     if(!s||!s[0]){app.innerHTML='<div style="padding:40px;text-align:center;color:#888">불러오는 중...</div>';return;}
     var eng=s[0],kor=s[1];
-    var tip=_drillTipCache[eng]||'';
-    if(!tip) fetchDrillTip(eng);
+    var tip=makeDrillTip(eng);
     // Fetch API phonetics for uncached words, then re-render with best quality
     var _drillUncached=[];
     eng.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(function(w){w=w.replace(/[^a-z]/g,'');if(w.length>1&&!PH[w]&&!_CMU[w]&&!_PHON_EXCEPTIONS[w]&&PHON_CACHE[w]===undefined&&_drillUncached.indexOf(w)<0)_drillUncached.push(w);});
@@ -3048,7 +3163,7 @@ function render(){
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">억양</div>'
       +'<div style="margin-bottom:16px"><span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:'+intoBg+';color:'+intoCol+'">'+into+'</span></div>'
       +'<div style="font-size:10px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">발음 팁</div>'
-      +'<div style="font-size:12px;padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid '+cat.color+';color:'+(tip?'#555':'#bbb')+';line-height:1.6;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'+(tip||'분석 중...')+'</div>'
+      +'<div style="font-size:12px;padding:7px 10px;background:#fff;border-radius:8px;border-left:3px solid '+cat.color+';color:#555;line-height:1.6;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'+tip+'</div>'
       +'<button onclick="speakIt()" style="background:'+(S.speaking?'#059669':'#1a1a1a')+';color:#fff;border:none;border-radius:11px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer">'+(S.speaking?'▶ 재생 중...':'▶ 원어민 발음 듣기')+'</button>'
       +'</div>';
 
