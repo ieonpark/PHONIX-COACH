@@ -2604,14 +2604,15 @@ function makeDrillTip(eng){
     return w.toLowerCase().replace(/[^a-z]/g,'');
   }).filter(function(w){return w.length>1;});
 
+  // Check content words first so common function words (the/this/that) don't dominate
   for(var i=0;i<words.length;i++){
     var w=words[i];
-    if(!w) continue;
+    if(!w||FUNC[w]) continue;
     var ph=wordPhon(w)||phonetize(w)||'';
 
-    // TH: voiced vs unvoiced
-    if(/^th/.test(w)){
-      var voicedTH={the:1,this:1,that:1,those:1,these:1,they:1,them:1,their:1,there:1,though:1,than:1,then:1,thus:1};
+    // TH: only for non-trivial TH words
+    if(/^th/.test(w)&&w!=='the'&&w!=='this'&&w!=='that'&&w!=='they'&&w!=='them'&&w!=='their'&&w!=='there'&&w!=='these'&&w!=='those'){
+      var voicedTH={though:1,than:1,then:1,thus:1};
       if(voicedTH[w]) return '"'+w+'" — 유성 TH: 혀를 이 사이에 살짝 대고 목소리를 내요. "ㄷ"이 아닙니다!';
       return '"'+w+'" — 무성 TH: 혀를 이 사이에 살짝 내밀고 바람만 내보내요. 한국어에 없는 소리!';
     }
@@ -2648,7 +2649,7 @@ function makeDrillTip(eng){
       return '"'+w+'" — W: 입술을 동그랗게 오므렸다가 펼치며 발음해요. "ㅜ" 입 모양에서 시작!';
     }
     // Long words with 3+ syllables
-    if(ph&&ph.split('-').length>=3&&!FUNC[w]){
+    if(ph&&ph.split('-').length>=3){
       var syls=ph.split('-');
       var stressIdx=syls.findIndex(function(s){return /[A-Z]{2}/.test(s);});
       return '"'+w+'" → '+ph.toLowerCase().replace(/-/g,'·')+' ('+syls.length+'음절) — '+(stressIdx>=0?'강세: '+(stressIdx+1)+'번째 음절':'각 음절을 또렷하게');
