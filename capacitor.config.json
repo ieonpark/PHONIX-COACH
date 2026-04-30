@@ -1,0 +1,8 @@
+{
+  "appId": "com.phonixcoach.app",
+  "appName": "PhonixCoach",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

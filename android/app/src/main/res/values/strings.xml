@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PhonixCoach</string>
+    <string name="title_activity_main">PhonixCoach</string>
+    <string name="package_name">com.phonixcoach.app</string>
+    <string name="custom_url_scheme">com.phonixcoach.app</string>
+</resources>
